@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>【デモ版】読谷村 選挙特設サイト 2026 | 沖縄県知事選挙・読谷村議会議員選挙</title>
+<style>
+  :root{
+    --sea:#1791b0;
+    --sea-dark:#0e5f76;
+    --sun:#ffb545;
+    --coral:#ff7a59;
+    --gov:#e2483d;
+    --assembly:#8b5cd6;
+    --sand:#fff8ef;
+    --sand-2:#fff1dc;
+    --ink:#233238;
+    --ink-soft:#5c6b70;
+    --line:#e7ddcb;
+    --card:#ffffff;
+    --good:#2eb872;
+    --warn:#e5484d;
+    --radius:18px;
+    --shadow:0 6px 20px rgba(23,80,100,.10);
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:"Hiragino Maru Gothic ProN","Hiragino Maru Gothic Pro","BIZ UDPGothic","Yu Gothic","Hiragino Sans",sans-serif;
+    background:var(--sand);
+    color:var(--ink);
+    line-height:1.75;
+  }
+  img,svg{max-width:100%;}
+  a{color:var(--sea-dark);}
+  .wrap{max-width:1040px;margin:0 auto;padding:0 20px;}
+
+  /* ---------- Header / Nav ---------- */
+  header.site{
+    background:linear-gradient(135deg,var(--sea) 0%,var(--sea-dark) 100%);
+    color:#fff;
+    padding:14px 0;
+    position:sticky;top:0;z-index:50;
+    box-shadow:0 2px 12px rgba(0,0,0,.12);
+  }
+  .nav-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;}
+  .brand .badge{
+    background:var(--sun);color:#5a3a00;border-radius:8px;padding:3px 9px;font-size:12px;font-weight:800;
+  }
+  nav.tabs{display:flex;gap:4px;flex-wrap:wrap;}
+  nav.tabs a{
+    color:#eaf7fb;text-decoration:none;font-size:13px;font-weight:700;
+    padding:8px 12px;border-radius:999px;transition:.2s;white-space:nowrap;
+  }
+  nav.tabs a:hover{background:rgba(255,255,255,.18);}
+  nav.tabs a.active{background:rgba(255,255,255,.28);}
+
+  /* タブ表示モード（NAV_MODE = "tabs" のとき有効。JS側で切替可能） */
+  body.tabs-mode section[data-tab-panel]{display:none;}
+  body.tabs-mode section[data-tab-panel].active{display:block;}
+
+  /* ---------- Hero（コンパクト表示） ---------- */
+  .hero{
+    background:
+      radial-gradient(circle at 15% 20%, rgba(255,181,69,.35), transparent 45%),
+      radial-gradient(circle at 85% 0%, rgba(255,122,89,.30), transparent 40%),
+      linear-gradient(160deg,var(--sea) 0%,var(--sea-dark) 70%);
+    color:#fff;padding:14px 0;position:relative;overflow:hidden;
+  }
+  .hero .wrap{position:relative;z-index:2;}
+  .hero-row{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+  .hero-text{display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .hero .eyebrow{
+    display:inline-block;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);
+    padding:3px 10px;border-radius:999px;font-size:11px;font-weight:700;white-space:nowrap;
+  }
+  .hero h1{font-size:16px;margin:0;font-weight:800;letter-spacing:.02em;}
+  .hero .datebox{
+    display:inline-flex;align-items:baseline;gap:6px;background:#fff;color:var(--sea-dark);
+    padding:5px 14px;border-radius:10px;box-shadow:var(--shadow);font-weight:800;flex:0 0 auto;
+  }
+  .hero .datebox .big{font-size:15px;}
+  .hero .datebox .small{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
+  .sample-flag{
+    margin-top:8px;font-size:10.5px;background:rgba(0,0,0,.18);
+    display:inline-block;padding:3px 10px;border-radius:6px;line-height:1.5;
+  }
+
+  /* ---------- Section shell ---------- */
+  section{padding:56px 0;}
+  section.alt{background:var(--sand-2);}
+  .sec-head{margin-bottom:30px;}
+  .sec-head .kicker{
+    color:var(--coral);font-weight:800;font-size:13px;letter-spacing:.08em;text-transform:uppercase;
+  }
+  .sec-head h2{font-size:clamp(22px,3vw,30px);margin:6px 0 8px;color:var(--sea-dark);}
+  .sec-head p{color:var(--ink-soft);margin:0;max-width:640px;}
+
+  /* ---------- Cards: election info ---------- */
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
+  @media(max-width:760px){.grid-2{grid-template-columns:1fr;}}
+  .e-card{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);
+    padding:26px 26px 22px;border-top:6px solid var(--gov);
+  }
+  .e-card.assembly{border-top-color:var(--assembly);}
+  .e-card h3{margin:0 0 4px;font-size:20px;color:var(--ink);}
+  .e-card .tag{
+    display:inline-block;font-size:12px;font-weight:700;color:#fff;background:var(--gov);
+    padding:3px 10px;border-radius:999px;margin-bottom:14px;
+  }
+  .e-card.assembly .tag{background:var(--assembly);}
+  .e-card dl{margin:0;display:grid;grid-template-columns:88px 1fr;row-gap:10px;column-gap:10px;font-size:14.5px;}
+  .e-card dt{color:var(--ink-soft);font-weight:700;}
+  .e-card dd{margin:0;}
+
+  /* ---------- Early voting timeline ---------- */
+  .timeline-card{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;overflow-x:auto;
+  }
+  .tl-row{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+  .tl-row:last-child{margin-bottom:0;}
+  .tl-label{width:150px;flex:0 0 150px;font-weight:800;font-size:14px;color:var(--ink);}
+  .tl-label .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;}
+  .tl-track{
+    position:relative;flex:1;min-width:560px;background:#f1ede2;border-radius:10px;height:40px;
+  }
+  .tl-grid{position:absolute;inset:0;display:grid;}
+  .tl-grid span{border-right:1px dashed #e0d9c5;}
+  .tl-grid span:last-child{border-right:none;}
+  .tl-bar{
+    position:absolute;top:6px;bottom:6px;border-radius:8px;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800;
+    box-shadow:0 3px 8px rgba(0,0,0,.12);
+  }
+  .tl-voteday{
+    position:absolute;top:-4px;bottom:-4px;width:6px;background:var(--sun);border-radius:4px;
+  }
+  .tl-datelabels{display:flex;margin-left:164px;min-width:560px;justify-content:space-between;font-size:11px;color:var(--ink-soft);margin-top:8px;}
+  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-size:13px;color:var(--ink-soft);}
+  .legend span.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
+
+  .note-box{
+    margin-top:20px;background:var(--sand-2);border:1px solid var(--line);border-radius:12px;
+    padding:14px 18px;font-size:13.5px;color:var(--ink-soft);
+  }
+
+  /* ---------- 期日前投票：スマホ用の縦型タイムライン ---------- */
+  .vtl-card{display:none;}
+  .vtl-body{display:flex;gap:14px;height:280px;margin-bottom:16px;}
+  .vtl-track{
+    width:36px;flex:0 0 36px;border-radius:10px;overflow:hidden;
+    display:flex;flex-direction:column;background:#f1ede2;
+  }
+  .vtl-seg{width:100%;}
+  .vtl-labels{flex:1;display:flex;flex-direction:column;}
+  .vtl-item{display:flex;flex-direction:column;justify-content:center;padding:4px 0;border-bottom:1px dashed var(--line);}
+  .vtl-item:last-child{border-bottom:none;}
+  .vtl-item .d{font-size:12.5px;font-weight:800;color:var(--ink);}
+  .vtl-item .chips{margin-top:3px;}
+  .vtl-voteday{display:flex;align-items:center;gap:14px;}
+  .vtl-voteday-bar{width:36px;height:36px;flex:0 0 36px;border-radius:10px;background:var(--sun);}
+  .chip{
+    display:inline-block;font-size:10.5px;font-weight:700;color:#fff;
+    padding:2px 8px;border-radius:999px;margin-right:4px;
+  }
+  .chip.gov{background:var(--gov);}
+  .chip.asm{background:var(--assembly);}
+
+  /* ---------- 投票率速報：スマホ用の縦型リスト ---------- */
+  .turnout-mobile{display:none;}
+  .tm-row{padding:10px 2px;border-bottom:1px solid var(--line);}
+  .tm-row:last-child{border-bottom:none;}
+  .tm-date{font-size:12.5px;font-weight:800;color:var(--ink);margin-bottom:8px;}
+  .tm-line{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
+  .tm-line:last-child{margin-bottom:0;}
+  .tm-tag{flex:0 0 32px;font-size:10.5px;font-weight:700;color:var(--ink-soft);}
+  .tm-track{flex:1;background:#f1ede2;border-radius:6px;height:14px;overflow:hidden;}
+  .tm-fill{height:100%;border-radius:6px;transition:width .4s ease;}
+  .tm-val{flex:0 0 46px;text-align:right;font-size:11.5px;font-weight:800;color:var(--ink);}
+
+  @media(max-width:760px){
+    .timeline-card .tl-row,
+    .timeline-card .tl-datelabels,
+    .timeline-card .legend{display:none;}
+    .vtl-card{display:block;}
+    .chart-scroll{display:none;}
+    .turnout-mobile{display:block;}
+  }
+  /* 上のCSS @media と同じ切替をJS側でも二重に保証（body.is-mobile-view） */
+  body.is-mobile-view .timeline-card .tl-row,
+  body.is-mobile-view .timeline-card .tl-datelabels,
+  body.is-mobile-view .timeline-card .legend{display:none;}
+  body.is-mobile-view .vtl-card{display:block;}
+  body.is-mobile-view .chart-scroll{display:none;}
+  body.is-mobile-view .turnout-mobile{display:block;}
+  body.is-desktop-view .vtl-card{display:none;}
+  body.is-desktop-view .turnout-mobile{display:none;}
+
+  /* ---------- Turnout chart ---------- */
+  .switcher{display:flex;gap:8px;margin-bottom:22px;}
+  .switcher button{
+    border:2px solid var(--sea);background:#fff;color:var(--sea-dark);font-weight:800;
+    padding:9px 18px;border-radius:999px;cursor:pointer;font-size:14px;transition:.15s;
+  }
+  .switcher button.active{background:var(--sea);color:#fff;}
+  .switcher button[data-target="governor"]{border-color:var(--gov);color:var(--gov);}
+  .switcher button[data-target="governor"].active{background:var(--gov);color:#fff;}
+  .switcher button[data-target="assembly"]{border-color:var(--assembly);color:var(--assembly);}
+  .switcher button[data-target="assembly"].active{background:var(--assembly);color:#fff;}
+  .chart-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;}
+  .chart-card .updated{font-size:12.5px;color:var(--ink-soft);margin-bottom:18px;}
+  .chart-card .updated b{color:var(--coral);}
+  .chart-scroll{overflow-x:auto;padding-bottom:8px;}
+  .chart-inner{width:max-content;min-width:100%;}
+  .bars{display:flex;align-items:flex-end;gap:18px;height:220px;padding:0 6px;border-bottom:2px solid var(--line);}
+  .bar-group{flex:0 0 54px;width:54px;display:flex;justify-content:center;align-items:flex-end;gap:6px;height:100%;position:relative;}
+  .bar{
+    width:22px;border-radius:6px 6px 0 0;position:relative;transition:height .4s ease;
+  }
+  .bar.cur{background:linear-gradient(180deg,var(--gov) 0%,var(--sea-dark) 100%);}
+  .bar.prev{background:#cfd8d9;}
+  .bar .val{
+    position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10.5px;font-weight:800;color:var(--ink);white-space:nowrap;
+  }
+  .bar-labels{display:flex;gap:18px;padding:0 6px;margin-top:8px;}
+  .bar-labels div{flex:0 0 54px;width:54px;text-align:center;font-size:12px;color:var(--ink-soft);}
+  .chart-legend{display:flex;gap:20px;margin-top:20px;font-size:13px;color:var(--ink-soft);}
+  .summary-row{display:flex;gap:18px;margin-top:26px;flex-wrap:wrap;}
+  .summary-pill{
+    background:var(--sand-2);border-radius:14px;padding:14px 20px;flex:1;min-width:180px;
+  }
+  .summary-pill .label{font-size:12px;color:var(--ink-soft);font-weight:700;}
+  .summary-pill .num{font-size:26px;font-weight:800;color:var(--sea-dark);}
+  .diff.up{color:var(--good);}
+  .diff.down{color:var(--warn);}
+
+  /* ---------- Q&A ---------- */
+  .qa-cat{margin-bottom:8px;}
+  .qa-cat h4{
+    color:var(--coral);font-size:14px;font-weight:800;margin:28px 0 10px;letter-spacing:.03em;
+  }
+  .qa-cat h4:first-child{margin-top:0;}
+  details.qa{
+    background:var(--card);border-radius:14px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden;
+  }
+  details.qa summary{
+    list-style:none;cursor:pointer;padding:16px 20px;font-weight:700;font-size:15px;
+    display:flex;align-items:center;gap:12px;
+  }
+  details.qa summary::-webkit-details-marker{display:none;}
+  details.qa summary .q-mark{
+    flex:0 0 26px;height:26px;border-radius:50%;background:var(--sea);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:900;
+  }
+  details.qa summary .arrow{margin-left:auto;transition:transform .2s;color:var(--ink-soft);}
+  details.qa[open] summary .arrow{transform:rotate(180deg);}
+  details.qa .a-body{
+    padding:0 20px 20px 58px;color:var(--ink-soft);font-size:14.5px;
+  }
+
+  /* ---------- Violation section ---------- */
+  .violation-card{
+    background:linear-gradient(180deg,#fff 0%,#fff8f7 100%);
+    border:1px solid #ffd9d2;border-radius:var(--radius);box-shadow:var(--shadow);padding:30px;
+  }
+  .split-note{
+    display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:22px 0;
+  }
+  @media(max-width:760px){.split-note{grid-template-columns:1fr;}}
+  .split-note .box{border-radius:14px;padding:18px 20px;font-size:14px;}
+  .split-note .box.village{background:#eef6fb;border:1px solid #cfe6f2;}
+  .split-note .box.police{background:#fff2ee;border:1px solid #ffd3c4;}
+  .split-note .box h5{margin:0 0 8px;font-size:14.5px;color:var(--ink);}
+  .split-note .box h5 .icon{margin-right:6px;}
+  ul.plain{margin:10px 0 0;padding-left:20px;font-size:14px;color:var(--ink-soft);}
+  ul.plain li{margin-bottom:6px;}
+  .contact-strip{
+    margin-top:22px;display:flex;gap:24px;flex-wrap:wrap;font-size:14px;background:#fff;
+    border-radius:12px;padding:16px 20px;border:1px solid var(--line);
+  }
+  .contact-strip div b{display:block;font-size:12px;color:var(--ink-soft);font-weight:700;margin-bottom:2px;}
+
+  /* ---------- Polling places ---------- */
+  .poll-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media(max-width:760px){.poll-grid{grid-template-columns:1fr;}}
+  .poll-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:20px;}
+  .poll-card .num{
+    display:inline-flex;align-items:center;justify-content:center;width:32px;height:32px;
+    border-radius:50%;background:var(--sea);color:#fff;font-weight:800;font-size:13px;margin-bottom:10px;
+  }
+  .poll-card h5{margin:0 0 4px;font-size:15px;}
+  .poll-card .addr{font-size:13px;color:var(--ink-soft);margin-bottom:10px;}
+  .poll-card .area{font-size:12px;background:var(--sand-2);border-radius:8px;padding:7px 10px;color:var(--ink-soft);line-height:1.5;}
+  .poll-card a.map{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
+
+  /* ---------- Contact / footer ---------- */
+  .contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media(max-width:760px){.contact-grid{grid-template-columns:1fr;}}
+  .c-card{
+    background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:22px;text-align:left;
+  }
+  .c-card .ico{
+    width:40px;height:40px;border-radius:10px;background:var(--sand-2);display:flex;align-items:center;justify-content:center;
+    font-size:20px;margin-bottom:12px;
+  }
+  .c-card h5{margin:0 0 6px;font-size:15px;}
+  .c-card p{margin:0;font-size:13.5px;color:var(--ink-soft);}
+  .c-card a.btn{
+    display:inline-block;margin-top:12px;font-size:13px;font-weight:800;color:#fff;background:var(--sea);
+    padding:8px 16px;border-radius:999px;text-decoration:none;
+  }
+
+  footer{background:var(--sea-dark);color:#dceef4;padding:34px 0;font-size:13px;}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
+  footer a{color:#dceef4;}
+
+  .disclaimer{
+    background:#fff4de;border:1px dashed #e8bf6a;color:#7a5b12;font-size:12.5px;
+    border-radius:10px;padding:10px 14px;margin:10px 0 0;
+  }
+</style>
+</head>
+<body>
+
+<header class="site">
+  <div class="wrap nav-row">
+    <div class="brand">🌺 <span>読谷村 選挙特設サイト</span><span class="badge">2026</span><span class="badge" style="background:var(--coral);color:#fff;">デモ版</span></div>
+    <nav class="tabs">
+      <a href="#info">選挙情報</a>
+      <a href="#early">期日前投票</a>
+      <a href="#polling">投票所案内</a>
+      <a href="#turnout">投票率速報</a>
+      <a href="#qa">Q&amp;A</a>
+      <a href="#violation">選挙違反かも？</a>
+      <a href="#contact">お問い合わせ</a>
+    </nav>
+  </div>
+</header>
+
+<section class="hero">
+  <div class="wrap">
+    <div class="hero-row">
+      <span class="eyebrow">沖縄県知事選挙 × 読谷村議会議員選挙　同日開催</span>
+      <div class="datebox">
+        <span class="small">投開票日</span>
+        <span class="big">9月13日（日）</span>
+      </div>
+    </div>
+    <span class="sample-flag">※本サイトの日程・数値はレイアウト確認用のサンプルです。公開前に正式情報へ差し替えてください。</span>
+  </div>
+</section>
+
+<!-- ========== 選挙情報 ========== -->
+<section id="info" data-tab-panel>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Election Info</div>
+      <h2>知事選・村議選の諸情報</h2>
+      <p>2つの選挙が同時に行われます。それぞれの基本情報を確認しましょう。</p>
+    </div>
+    <div class="grid-2">
+      <div class="e-card governor">
+        <span class="tag">沖縄県知事選挙</span>
+        <h3>沖縄県知事選挙</h3>
+        <dl>
+          <dt>告示日</dt><dd>8月27日（木）<span style="color:#aaa">[仮]</span></dd>
+          <dt>投票日</dt><dd>9月13日（日）</dd>
+          <dt>投票時間</dt><dd>7:00〜20:00（一部繰上げあり）</dd>
+          <dt>任期</dt><dd>4年</dd>
+          <dt>選出</dt><dd>1名</dd>
+          <dt>前回</dt><dd>2022年9月執行</dd>
+        </dl>
+      </div>
+      <div class="e-card assembly">
+        <span class="tag">読谷村議会議員選挙</span>
+        <h3>読谷村議会議員選挙</h3>
+        <dl>
+          <dt>告示日</dt><dd>9月8日（火）<span style="color:#aaa">[仮]</span></dd>
+          <dt>投票日</dt><dd>9月13日（日）</dd>
+          <dt>投票時間</dt><dd>7:00〜20:00</dd>
+          <dt>任期</dt><dd>4年</dd>
+          <dt>定数</dt><dd>18名<span style="color:#aaa">[仮]</span></dd>
+          <dt>前回</dt><dd>2022年9月執行</dd>
+        </dl>
+      </div>
+    </div>
+    <div class="disclaimer">告示日・定数などの数値はサンプルです。正式な日程は読谷村選挙管理委員会の公表情報をご確認ください。</div>
+  </div>
+</section>
+
+<!-- ========== 期日前投票 ========== -->
+<section id="early" class="alt" data-tab-panel>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Early Voting</div>
+      <h2>期日前投票のご案内</h2>
+      <p>知事選と村議選では期日前投票を行える期間が異なります。下のバーで、いつからどちらの投票ができるか一目で確認できます。</p>
+    </div>
+    <div class="timeline-card">
+      <div class="tl-row">
+        <div class="tl-label"><span class="dot" style="background:var(--gov)"></span>沖縄県知事選挙</div>
+        <div class="tl-track" id="tl-governor"></div>
+      </div>
+      <div class="tl-row">
+        <div class="tl-label"><span class="dot" style="background:var(--assembly)"></span>読谷村議会議員選挙</div>
+        <div class="tl-track" id="tl-assembly"></div>
+      </div>
+      <div class="tl-datelabels" id="tl-dates"></div>
+      <div class="legend">
+        <span><span class="sw" style="background:var(--gov)"></span>知事選 期日前投票期間</span>
+        <span><span class="sw" style="background:var(--assembly)"></span>村議選 期日前投票期間</span>
+        <span><span class="sw" style="background:var(--sun)"></span>投開票日（9/13）</span>
+      </div>
+
+      <!-- スマホ表示用：縦型タイムライン（PCでは非表示） -->
+      <div class="vtl-card" id="vtl-card">
+        <div class="vtl-body">
+          <div class="vtl-track" id="vtl-track"></div>
+          <div class="vtl-labels" id="vtl-labels"></div>
+        </div>
+        <div class="vtl-voteday">
+          <div class="vtl-voteday-bar"></div>
+          <div id="vtl-voteday-text"></div>
+        </div>
+      </div>
+
+      <div class="note-box">
+        💡 <b>9/9〜9/12は両方の選挙の期日前投票が可能な期間</b>です。8/28〜9/8は知事選のみ期日前投票ができます（村議選はまだ告示前）。投票所の場所・受付時間は投票所によって異なる場合があるため、詳細は村の公式ページでご確認ください。
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 投票所案内 ========== -->
+<section id="polling" class="alt" data-tab-panel>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Polling Places</div>
+      <h2>投票所のご案内</h2>
+      <p>投票日当日の投票所は村内6か所です。お住まいの地域に対応する投票所をご確認ください（期日前投票所は当日投票所と異なります）。</p>
+    </div>
+    <div class="poll-grid">
+      <div class="poll-card">
+        <div class="num">1</div>
+        <h5>読谷小学校 体育館</h5>
+        <div class="addr">読谷村字高志保1277番地1</div>
+        <div class="area">対象地域：上地・波平・高志保</div>
+        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E8%AA%AD%E8%B0%B7%E5%B0%8F%E5%AD%A6%E6%A0%A1&ll=26.406841866325,127.73198351518&z=17">地図を見る →</a>
+      </div>
+      <div class="poll-card">
+        <div class="num">2</div>
+        <h5>渡慶次小学校 多目的教室</h5>
+        <div class="addr">読谷村字瀬名波510番地</div>
+        <div class="area">対象地域：渡慶次・儀間・瀬名波・宇座・長浜</div>
+        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E6%B8%A1%E6%85%B6%E6%AC%A1%E5%B0%8F%E5%AD%A6%E6%A0%A1&ll=26.418195282178,127.72873666897&z=18">地図を見る →</a>
+      </div>
+      <div class="poll-card">
+        <div class="num">3</div>
+        <h5>古堅中学校 校舎ロビー</h5>
+        <div class="addr">読谷村字伊良皆297番地</div>
+        <div class="area">対象地域：伊良皆・大木・県営比謝団地・比謝365・366・370番地台</div>
+        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E7%AB%8B%E5%8F%A4%E5%A0%85%E4%B8%AD%E5%AD%A6%E6%A0%A1&ll=26.3809514,127.7525614&z=18">地図を見る →</a>
+      </div>
+      <div class="poll-card">
+        <div class="num">4</div>
+        <h5>喜名自治会館（喜名公民館）</h5>
+        <div class="addr">読谷村字喜名2207番地</div>
+        <div class="area">対象地域：喜名・座喜味</div>
+        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E5%96%9C%E5%90%8D%E5%85%AC%E6%B0%91%E9%A4%A8&ll=26.3990252,127.7567141&z=18">地図を見る →</a>
+      </div>
+      <div class="poll-card">
+        <div class="num">5</div>
+        <h5>楚辺自治会館 多目的ホール</h5>
+        <div class="addr">読谷村字楚辺1928番地1</div>
+        <div class="area">対象地域：座喜味［古堅小学校区のみ］・楚辺［大添原含む］・都屋</div>
+        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E6%A5%9A%E8%BE%BA%E5%85%AC%E6%B0%91%E9%A4%A8&ll=26.3855965,127.7270071&z=18">地図を見る →</a>
+      </div>
+      <div class="poll-card">
+        <div class="num">6</div>
+        <h5>古堅自治会館（古堅公民館）</h5>
+        <div class="addr">読谷村字古堅75番地3</div>
+        <div class="area">対象地域：渡具知・比謝［県営比謝団地及び比謝365・366・370番地台を除く］・大湾・古堅・比謝矼</div>
+        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E5%8F%A4%E5%A0%85%E5%85%AC%E6%B0%91%E9%A4%A8&ll=26.369422,127.750469&z=18">地図を見る →</a>
+      </div>
+    </div>
+    <div class="note-box">
+      出典：読谷村公式サイト「<a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/gyomu/senkyo/1191.html" target="_blank" rel="noopener">投票所のご案内</a>」（2024年10月10日更新）。最新情報・地域境界の詳細は公式ページでご確認ください。期日前投票所は当日投票所とは別会場です。
+    </div>
+  </div>
+</section>
+
+<!-- ========== 投票率速報 ========== -->
+<section id="turnout" data-tab-panel>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Turnout Report</div>
+      <h2>期日前投票 投票率速報</h2>
+      <p>期日前投票期間中、毎日の投票率を前回（2022年）の同一選挙と比較して掲載します。数値は投票所からの報告をもとに順次更新されます。</p>
+    </div>
+
+    <div class="switcher">
+      <button class="active" data-target="governor">沖縄県知事選挙</button>
+      <button data-target="assembly">読谷村議会議員選挙</button>
+    </div>
+
+    <div class="chart-card">
+      <div class="updated">最終更新：<b>9月◯日 18:00時点</b>（サンプル表示）</div>
+      <div class="chart-scroll">
+        <div class="chart-inner">
+          <div class="bars" id="bars"></div>
+          <div class="bar-labels" id="bar-labels"></div>
+        </div>
+      </div>
+
+      <!-- スマホ表示用：縦積みの横バーリスト（PCでは非表示） -->
+      <div class="turnout-mobile" id="turnout-mobile"></div>
+
+      <div class="chart-legend">
+        <span><span class="sw" id="legend-cur-sw" style="background:var(--gov)"></span>今回（2026年）累積投票率</span>
+        <span><span class="sw" style="background:#cfd8d9"></span>前回（2022年）同時点の累積投票率</span>
+      </div>
+      <div class="summary-row" id="summary-row"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== Q&A ========== -->
+<section id="qa" class="alt" data-tab-panel>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Q &amp; A</div>
+      <h2>選挙に関するQ&amp;A</h2>
+      <p>投票に関してよく寄せられる質問をまとめました。</p>
+    </div>
+
+    <div class="qa-cat">
+      <h4>投票について</h4>
+      <details class="qa" open>
+        <summary><span class="q-mark">Q</span>投票日に用事があって行けません。どうすればいいですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">投票日当日に投票できない方は、告示日の翌日から投票日前日まで「期日前投票」を利用できます。村内の指定された期日前投票所で、当日投票と同じように投票できます。</div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>投票所には何を持っていけばいいですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">ご自宅に届く「投票所入場整理券（はがき）」をお持ちください。万一お手元に届いていなくても、本人確認ができれば投票は可能です。</div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>知事選と村議選、同時に投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">はい。9月13日の投票日は両方の投票用紙が同じ会場で交付されます。期日前投票期間中は、村議選の告示（9/8予定）以降に両方の投票が可能になります。</div>
+      </details>
+    </div>
+
+    <div class="qa-cat">
+      <h4>期日前投票について</h4>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>期日前投票の理由は必要ですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">宣誓書への記入が必要ですが、仕事や旅行、体調など該当する事由にチェックするだけで手続きできます。詳しい審査などはありません。</div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>村外に住んでいても期日前投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">読谷村の選挙人名簿に登録されている方が対象です。長期出張や進学などで村外に滞在中の方は、不在者投票制度をご利用いただけます。詳細は村選挙管理委員会へお問い合わせください。</div>
+      </details>
+    </div>
+
+    <div class="qa-cat">
+      <h4>開票・結果について</h4>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>開票結果はいつ、どこで確認できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">投票日当日の夜、開票作業終了後に速報が発表されます。村の公式サイトや報道機関の選挙特設ページで確認できます。</div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 選挙違反 ========== -->
+<section id="violation" data-tab-panel>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Election Violation</div>
+      <h2>選挙違反かもしれないと思ったら</h2>
+      <p>「これって選挙違反では？」と感じたときの対応先を整理しました。役割が異なるため、まずはこちらをご確認ください。</p>
+    </div>
+    <div class="violation-card">
+      <p style="margin-top:0;font-size:15px;">
+        <b>読谷村選挙管理委員会には、違反を取り締まる権限（検挙・捜査）はありません。</b>
+        委員会が行えるのは、候補者や運動員への<b>注意・指導</b>までです。実際の取り締まりや捜査は<b>警察（沖縄県警察）</b>の役割になります。
+      </p>
+      <div class="split-note">
+        <div class="box village">
+          <h5><span class="icon">🏢</span>読谷村選挙管理委員会</h5>
+          <p>できること：注意・指導、選挙運動に関するルールの案内・相談対応</p>
+          <ul class="plain">
+            <li>ポスター掲示のルール違反の指摘</li>
+            <li>選挙運動の期間・方法に関する助言</li>
+            <li>候補者・陣営への注意喚起</li>
+          </ul>
+          <ul class="plain"><li><b>できないこと：</b>検挙・捜査・罰則の適用</li></ul>
+        </div>
+        <div class="box police">
+          <h5><span class="icon">🚓</span>警察（沖縄県警察）</h5>
+          <p>できること：捜査、検挙、公職選挙法違反の取り締まり</p>
+          <ul class="plain">
+            <li>買収・供応など金銭が絡む違反</li>
+            <li>戸別訪問など禁止行為の捜査</li>
+            <li>悪質な誹謗中傷・なりすまし等の捜査</li>
+          </ul>
+        </div>
+      </div>
+      <p style="font-size:14px;color:var(--ink-soft);">よくある違反の例：戸別訪問、飲食物の提供、買収、投票の依頼を伴う金品授受、虚偽事項の公表、選挙運動期間外の運動（事前運動）など。判断に迷う場合も、まずは下記へご相談ください。</p>
+      <div class="contact-strip">
+        <div><b>選挙運動に関する相談</b>読谷村選挙管理委員会：098-982-9227</div>
+        <div><b>違反の疑いがある通報</b>沖縄県警察 選挙違反通報窓口：098-000-0000（仮）／緊急時は110番</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== お問い合わせ ========== -->
+<section id="contact" class="alt" data-tab-panel>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Contact</div>
+      <h2>お問い合わせ・関連リンク</h2>
+    </div>
+    <div class="contact-grid">
+      <div class="c-card">
+        <div class="ico">📞</div>
+        <h5>読谷村選挙管理委員会</h5>
+        <p>投票所・期日前投票・選挙運動に関するお問い合わせ<br>電話：098-982-9227<br>受付：平日 8:30〜12:00 / 13:00〜17:15</p>
+      </div>
+      <div class="c-card">
+        <div class="ico">🌐</div>
+        <h5>沖縄県選挙管理委員会</h5>
+        <p>知事選挙全般に関する情報はこちら</p>
+        <a class="btn" href="#">県選管サイトへ（仮リンク）</a>
+      </div>
+      <div class="c-card">
+        <div class="ico">🏛️</div>
+        <h5>読谷村役場</h5>
+        <p>〒904-0392 沖縄県中頭郡読谷村字座喜味2901番地1<br>代表：098-982-9200</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div>© 2026 読谷村選挙管理委員会（本サイトはサンプルです）</div>
+    <div><a href="#info">選挙情報</a> ・ <a href="#early">期日前投票</a> ・ <a href="#polling">投票所案内</a> ・ <a href="#turnout">投票率速報</a> ・ <a href="#qa">Q&amp;A</a></div>
+  </div>
+</footer>
+
+<script>
+/* ============================================================
+   編集用データ（サンプル値）
+   実際の運用時は、この中の数値・日付だけを書き換えれば
+   サイト全体（バー表示・グラフ）に自動反映されます。
+   ============================================================ */
+
+const ELECTION_DATA = {
+  governor: {
+    label: "沖縄県知事選挙",
+    color: "var(--gov)",
+    earlyStart: "2026-08-28",
+    earlyEnd: "2026-09-12",
+  },
+  assembly: {
+    label: "読谷村議会議員選挙",
+    color: "var(--assembly)",
+    earlyStart: "2026-09-09",
+    earlyEnd: "2026-09-12",
+  },
+  voteDay: "2026-09-13"
+};
+
+// 投票率速報：日付ごとの「累積投票率(%)」サンプル値。null は未実施日。
+const TURNOUT_DATA = {
+  governor: {
+    dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
+    current:  [1.2, 2.6, 4.1, 5.9, 7.8, 9.5, 11.0, 12.9, 14.5, 16.0, 17.8, 19.6, 21.9, 24.3, 26.8, null],
+    previous: [1.0, 2.3, 3.8, 5.4, 7.1, 8.9, 10.4, 12.1, 13.6, 15.0, 16.5, 18.1, 20.0, 22.1, 24.4, 26.8]
+  },
+  assembly: {
+    dates: ["9/9","9/10","9/11","9/12"],
+    current:  [3.1, 6.9, 10.8, null],
+    previous: [2.8, 6.2, 9.9, 13.5]
+  }
+};
+
+/* ============================================================ */
+
+function fmtDate(d){
+  const dt = new Date(d+"T00:00:00");
+  return (dt.getMonth()+1)+"/"+dt.getDate();
+}
+function dayDiff(a,b){
+  return Math.round((new Date(b+"T00:00:00")-new Date(a+"T00:00:00"))/86400000);
+}
+function addDays(dateStr, n){
+  // タイムゾーンの影響を受けないよう、UTC基準で日付計算する
+  const [y, m, d] = dateStr.split("-").map(Number);
+  const dt = new Date(Date.UTC(y, m-1, d));
+  dt.setUTCDate(dt.getUTCDate()+n);
+  return dt.toISOString().slice(0,10);
+}
+
+// ---- 期日前投票タイムライン（スマホ用・縦型）描画 ----
+function buildVerticalTimeline(){
+  const track = document.getElementById("vtl-track");
+  const labels = document.getElementById("vtl-labels");
+  if(!track || !labels) return;
+  track.innerHTML = "";
+  labels.innerHTML = "";
+
+  const gov = ELECTION_DATA.governor, asm = ELECTION_DATA.assembly;
+  const rangeStart = [gov.earlyStart, asm.earlyStart].sort()[0];
+  const totalDays = dayDiff(rangeStart, ELECTION_DATA.voteDay); // 投開票日の前日まで
+
+  // 日ごとに「知事選/村議選それぞれの期日前投票が可能か」を判定し、
+  // 同じ組み合わせが続く区間をひとつのセグメントにまとめる
+  const segments = [];
+  let segStart = 0, prevKey = null;
+  for(let i=0;i<totalDays;i++){
+    const d = addDays(rangeStart, i);
+    const key = (d>=gov.earlyStart && d<=gov.earlyEnd ? "g":"") + (d>=asm.earlyStart && d<=asm.earlyEnd ? "a":"");
+    if(prevKey === null){ prevKey = key; segStart = i; }
+    else if(key !== prevKey){
+      segments.push({start:segStart, end:i-1, key:prevKey});
+      segStart = i; prevKey = key;
+    }
+  }
+  if(totalDays > 0) segments.push({start:segStart, end:totalDays-1, key:prevKey});
+
+  segments.forEach(seg=>{
+    const days = seg.end - seg.start + 1;
+
+    const bar = document.createElement("div");
+    bar.className = "vtl-seg";
+    bar.style.flex = days + " 1 0";
+    bar.style.background =
+      seg.key.includes("g") && seg.key.includes("a") ? "linear-gradient(90deg, var(--gov) 50%, var(--assembly) 50%)" :
+      seg.key.includes("g") ? "var(--gov)" :
+      seg.key.includes("a") ? "var(--assembly)" : "#f1ede2";
+    track.appendChild(bar);
+
+    const item = document.createElement("div");
+    item.className = "vtl-item";
+    item.style.flex = days + " 1 0";
+    const dStart = addDays(rangeStart, seg.start);
+    const dEnd = addDays(rangeStart, seg.end);
+    const dateText = (seg.start===seg.end) ? fmtDate(dStart) : (fmtDate(dStart)+"〜"+fmtDate(dEnd));
+    let chips = "";
+    if(seg.key.includes("g")) chips += '<span class="chip gov">知事選</span>';
+    if(seg.key.includes("a")) chips += '<span class="chip asm">村議選</span>';
+    if(!chips) chips = '<span style="font-size:10.5px;color:var(--ink-soft);">期日前投票なし</span>';
+    item.innerHTML = `<div class="d">${dateText}</div><div class="chips">${chips}</div>`;
+    labels.appendChild(item);
+  });
+
+  const voteText = document.getElementById("vtl-voteday-text");
+  if(voteText){
+    voteText.innerHTML =
+      `<div class="d">${fmtDate(ELECTION_DATA.voteDay)}（投開票日）</div>` +
+      `<div class="chips"><span class="chip gov">知事選</span><span class="chip asm">村議選</span></div>`;
+  }
+}
+
+// ---- 期日前投票タイムライン描画 ----
+// PC用（横型）・スマホ用（縦型）のどちらか一方でエラーが起きても、
+// 他の機能（投票率グラフやナビ）の初期化が止まらないようtry/catchで保護
+(function renderTimeline(){
+ try{
+  const rangeStart = ELECTION_DATA.governor.earlyStart;
+  const rangeEnd = ELECTION_DATA.voteDay;
+  const totalDays = dayDiff(rangeStart, rangeEnd) + 1;
+
+  function buildTrack(el, ev){
+    const track = document.getElementById(el);
+    const grid = document.createElement("div");
+    grid.className = "tl-grid";
+    grid.style.gridTemplateColumns = `repeat(${totalDays}, 1fr)`;
+    for(let i=0;i<totalDays;i++){ const s=document.createElement("span"); grid.appendChild(s); }
+    track.appendChild(grid);
+
+    const startOffset = dayDiff(rangeStart, ev.earlyStart);
+    const spanDays = dayDiff(ev.earlyStart, ev.earlyEnd) + 1;
+    const bar = document.createElement("div");
+    bar.className = "tl-bar";
+    bar.style.left = (startOffset/totalDays*100)+"%";
+    bar.style.width = (spanDays/totalDays*100)+"%";
+    bar.style.background = ev.color;
+    bar.textContent = fmtDate(ev.earlyStart)+"〜"+fmtDate(ev.earlyEnd);
+    track.appendChild(bar);
+
+    const voteOffset = dayDiff(rangeStart, ELECTION_DATA.voteDay);
+    const voteDayEl = document.createElement("div");
+    voteDayEl.className = "tl-voteday";
+    voteDayEl.style.left = (voteOffset/totalDays*100)+"%";
+    track.appendChild(voteDayEl);
+  }
+
+  buildTrack("tl-governor", ELECTION_DATA.governor);
+  buildTrack("tl-assembly", ELECTION_DATA.assembly);
+
+  const labelsWrap = document.getElementById("tl-dates");
+  [rangeStart, ELECTION_DATA.assembly.earlyStart, ELECTION_DATA.governor.earlyEnd, ELECTION_DATA.voteDay]
+    .forEach(d=>{
+      const s = document.createElement("span");
+      s.textContent = fmtDate(d);
+      labelsWrap.appendChild(s);
+    });
+
+  buildVerticalTimeline();
+ }catch(err){
+  if(window.console && console.error) console.error("renderTimeline failed:", err);
+ }
+})();
+
+// ---- 投票率速報グラフ（スマホ用・縦積みの横バーリスト）描画 ----
+function renderTurnoutMobile(key, themeColor){
+  const data = TURNOUT_DATA[key];
+  const wrap = document.getElementById("turnout-mobile");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+
+  const allVals = data.current.concat(data.previous).filter(v=>v!==null);
+  const max = Math.max(...allVals, 10);
+
+  data.dates.forEach((d, i)=>{
+    const cur = data.current[i];
+    const prev = data.previous[i];
+    const row = document.createElement("div");
+    row.className = "tm-row";
+    row.innerHTML = `
+      <div class="tm-date">${d}</div>
+      <div class="tm-line">
+        <div class="tm-tag">今回</div>
+        <div class="tm-track"><div class="tm-fill" style="width:${cur!==null?(cur/max*100):0}%;background:${themeColor}"></div></div>
+        <div class="tm-val">${cur!==null?cur+"%":"—"}</div>
+      </div>
+      <div class="tm-line">
+        <div class="tm-tag">前回</div>
+        <div class="tm-track"><div class="tm-fill" style="width:${prev!==null?(prev/max*100):0}%;background:#cfd8d9"></div></div>
+        <div class="tm-val">${prev!==null?prev+"%":"—"}</div>
+      </div>`;
+    wrap.appendChild(row);
+  });
+}
+
+// ---- 投票率速報グラフ（PC用・横棒グラフ）描画 ----
+function renderTurnout(key){
+  const data = TURNOUT_DATA[key];
+  const themeColor = ELECTION_DATA[key].color;
+  const barsWrap = document.getElementById("bars");
+  const labelsWrap = document.getElementById("bar-labels");
+  barsWrap.innerHTML = "";
+  labelsWrap.innerHTML = "";
+
+  const legendSw = document.getElementById("legend-cur-sw");
+  if(legendSw) legendSw.style.background = themeColor;
+
+  renderTurnoutMobile(key, themeColor);
+
+  const allVals = data.current.concat(data.previous).filter(v=>v!==null);
+  const max = Math.max(...allVals, 10);
+
+  data.dates.forEach((d, i)=>{
+    const group = document.createElement("div");
+    group.className = "bar-group";
+
+    const cur = data.current[i];
+    const prev = data.previous[i];
+
+    const prevBar = document.createElement("div");
+    prevBar.className = "bar prev";
+    prevBar.style.height = (prev!==null ? (prev/max*100) : 0)+"%";
+    if(prev!==null){
+      const v = document.createElement("span"); v.className="val"; v.textContent=prev+"%";
+      prevBar.appendChild(v);
+    }
+
+    const curBar = document.createElement("div");
+    curBar.className = "bar cur";
+    curBar.style.height = (cur!==null ? (cur/max*100) : 0)+"%";
+    curBar.style.background = `linear-gradient(180deg, ${themeColor} 0%, var(--sea-dark) 100%)`;
+    if(cur!==null){
+      const v = document.createElement("span"); v.className="val"; v.style.color=themeColor; v.textContent=cur+"%";
+      curBar.appendChild(v);
+    }
+
+    group.appendChild(prevBar);
+    group.appendChild(curBar);
+    barsWrap.appendChild(group);
+
+    const lbl = document.createElement("div");
+    lbl.textContent = d;
+    labelsWrap.appendChild(lbl);
+  });
+
+  // サマリー
+  const summary = document.getElementById("summary-row");
+  const lastCurIdx = [...data.current].reverse().findIndex(v=>v!==null);
+  const idx = lastCurIdx===-1 ? -1 : data.current.length-1-lastCurIdx;
+  const latestCur = idx>=0 ? data.current[idx] : null;
+  const latestPrev = idx>=0 ? data.previous[idx] : null;
+  const diff = (latestCur!==null && latestPrev!==null) ? (latestCur-latestPrev) : null;
+
+  summary.innerHTML = "";
+  const pills = [
+    {label:"現在の累積投票率", num: latestCur!==null ? latestCur+"%" : "—"},
+    {label:"前回同時点の投票率", num: latestPrev!==null ? latestPrev+"%" : "—"},
+    {label:"前回との差", num: diff!==null ? (diff>=0?"+":"")+diff.toFixed(1)+"pt" : "—",
+     cls: diff!==null ? (diff>=0?"up":"down") : ""}
+  ];
+  pills.forEach(p=>{
+    const div = document.createElement("div");
+    div.className = "summary-pill";
+    div.innerHTML = `<div class="label">${p.label}</div><div class="num ${p.cls?('diff '+p.cls):''}">${p.num}</div>`;
+    summary.appendChild(div);
+  });
+}
+
+// グラフ描画でエラーが起きても、ナビ等の初期化が止まらないようtry/catchで保護
+try{
+  renderTurnout("governor");
+
+  document.querySelectorAll(".switcher button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      document.querySelectorAll(".switcher button").forEach(b=>b.classList.remove("active"));
+      btn.classList.add("active");
+      renderTurnout(btn.dataset.target);
+    });
+  });
+}catch(err){
+  if(window.console && console.error) console.error("renderTurnout init failed:", err);
+}
+
+/* ============================================================
+   レイアウト切替（PC=横長 / スマホ=縦長）の二重保証
+   CSSの @media (max-width:760px) が主だが、埋め込みプレビュー等の
+   環境によってメディアクエリの判定が実際の画面幅と食い違うケースに
+   備えて、JS側でも画面幅を見て body に is-mobile-view / is-desktop-view
+   クラスを付け、同じ切替をCSSで二重に効かせている。
+   ============================================================ */
+(function initResponsiveLayout(){
+  try{
+    const BP = 760;
+    function apply(){
+      const w = window.innerWidth || document.documentElement.clientWidth || 0;
+      const mobile = w <= BP;
+      document.body.classList.toggle("is-mobile-view", mobile);
+      document.body.classList.toggle("is-desktop-view", !mobile);
+    }
+    apply();
+    window.addEventListener("resize", apply);
+    window.addEventListener("orientationchange", apply);
+  }catch(err){
+    if(window.console && console.error) console.error("initResponsiveLayout failed:", err);
+  }
+})();
+
+/* ============================================================
+   ナビゲーション方式の切替
+   NAV_MODE = "tabs"   → PC・スマホともに常にタブ切替（現在の設定）
+   NAV_MODE = "anchor" → PC・スマホともに常にページ内アンカー移動
+   仕様確定後、この一行を書き換えるだけで挙動を切り替えられます。
+   （以前あった画面幅による自動切替(auto)は、環境によって判定が不安定になる
+   　ことがあったため廃止し、シンプルな固定モードのみにしています）
+   ============================================================ */
+const NAV_MODE = "tabs";
+
+(function initNav(){
+  try{
+    const navLinks = Array.from(document.querySelectorAll('nav.tabs a, footer a[href^="#"]'));
+    const panels = Array.from(document.querySelectorAll("section[data-tab-panel]"));
+
+    function activate(id, opts){
+      const target = panels.some(p=>p.id===id) ? id : (panels[0] && panels[0].id);
+      if(!target) return;
+      panels.forEach(p=>p.classList.toggle("active", p.id===target));
+      navLinks.forEach(a=>a.classList.toggle("active", a.getAttribute("href")==="#"+target));
+      if(!opts || !opts.skipScroll){
+        try{ window.scrollTo({top:0, behavior:"instant"}); }catch(err){ window.scrollTo(0,0); }
+      }
+    }
+
+    if(NAV_MODE === "tabs" && panels.length){
+      document.body.classList.add("tabs-mode");
+
+      navLinks.forEach(a=>{
+        a.addEventListener("click", (e)=>{
+          const href = a.getAttribute("href") || "";
+          if(href.charAt(0) !== "#") return;
+          e.preventDefault();
+          const id = href.slice(1);
+          activate(id);
+          try{ history.replaceState(null, "", "#"+id); }catch(err){ /* no-op */ }
+        });
+      });
+
+      const initial = (location.hash ? location.hash.slice(1) : panels[0].id);
+      activate(initial, {skipScroll:true});
+    }
+    // NAV_MODE === "anchor" の場合は何もせず、ブラウザ標準のアンカー移動に任せる
+  }catch(err){
+    // ナビ初期化に失敗しても他の機能（グラフ等）に影響しないようにする
+    if(window.console && console.error) console.error("initNav failed:", err);
+  }
+})();
+</script>
+
+</body>
+</html>
