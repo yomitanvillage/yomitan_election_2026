@@ -116,30 +116,39 @@
   .e-card dt{color:var(--ink-soft);font-weight:700;}
   .e-card dd{margin:0;}
 
-  /* ---------- Early voting timeline ---------- */
+  /* ---------- Early voting timeline ----------
+     PC・スマホとも常に横長（左にラベル、右に帯グラフ）のレイアウトで統一。
+     固定の最小幅を持たせず、コンテナ幅に応じて伸縮させることで、
+     スマホでも横スクロールなしで1画面に収まるようにしている。 */
   .timeline-card{
-    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;overflow-x:auto;
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 18px;
   }
-  .tl-row{display:flex;align-items:center;gap:14px;margin-bottom:18px;}
+  .tl-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
   .tl-row:last-child{margin-bottom:0;}
-  .tl-label{width:150px;flex:0 0 150px;font-weight:800;font-size:14px;color:var(--ink);}
-  .tl-label .dot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;}
+  .tl-label{
+    width:78px;flex:0 0 78px;font-weight:800;font-size:12px;color:var(--ink);line-height:1.3;
+  }
+  .tl-label .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;}
   .tl-track{
-    position:relative;flex:1;min-width:560px;background:#f1ede2;border-radius:10px;height:40px;
+    position:relative;flex:1;min-width:0;background:#f1ede2;border-radius:10px;height:34px;
   }
   .tl-grid{position:absolute;inset:0;display:grid;}
   .tl-grid span{border-right:1px dashed #e0d9c5;}
   .tl-grid span:last-child{border-right:none;}
   .tl-bar{
-    position:absolute;top:6px;bottom:6px;border-radius:8px;
-    display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:800;
-    box-shadow:0 3px 8px rgba(0,0,0,.12);
+    position:absolute;top:5px;bottom:5px;border-radius:7px;overflow:hidden;
+    display:flex;align-items:center;justify-content:center;color:#fff;font-size:10.5px;font-weight:800;
+    box-shadow:0 3px 8px rgba(0,0,0,.12);padding:0 3px;
   }
+  .tl-bar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
   .tl-voteday{
-    position:absolute;top:-4px;bottom:-4px;width:6px;background:var(--sun);border-radius:4px;
+    position:absolute;top:-4px;bottom:-4px;width:5px;background:var(--sun);border-radius:4px;
   }
-  .tl-datelabels{display:flex;margin-left:164px;min-width:560px;justify-content:space-between;font-size:11px;color:var(--ink-soft);margin-top:8px;}
-  .legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-size:13px;color:var(--ink-soft);}
+  .tl-datelabels{
+    display:flex;margin-left:88px;min-width:0;justify-content:space-between;
+    font-size:9.5px;color:var(--ink-soft);margin-top:6px;
+  }
+  .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px;font-size:12px;color:var(--ink-soft);}
   .legend span.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
 
   .note-box{
@@ -147,27 +156,10 @@
     padding:14px 18px;font-size:13.5px;color:var(--ink-soft);
   }
 
-  /* ---------- 期日前投票：スマホ用の縦型タイムライン ---------- */
-  .vtl-card{display:none;}
-  .vtl-body{display:flex;gap:14px;height:280px;margin-bottom:16px;}
-  .vtl-track{
-    width:36px;flex:0 0 36px;border-radius:10px;overflow:hidden;
-    display:flex;flex-direction:column;background:#f1ede2;
+  /* 帯グラフの中の日付テキストは、幅が狭い端末では省略（凡例と下の日付ラベルで補える） */
+  @media(max-width:420px){
+    .tl-bar span{display:none;}
   }
-  .vtl-seg{width:100%;}
-  .vtl-labels{flex:1;display:flex;flex-direction:column;}
-  .vtl-item{display:flex;flex-direction:column;justify-content:center;padding:4px 0;border-bottom:1px dashed var(--line);}
-  .vtl-item:last-child{border-bottom:none;}
-  .vtl-item .d{font-size:12.5px;font-weight:800;color:var(--ink);}
-  .vtl-item .chips{margin-top:3px;}
-  .vtl-voteday{display:flex;align-items:center;gap:14px;}
-  .vtl-voteday-bar{width:36px;height:36px;flex:0 0 36px;border-radius:10px;background:var(--sun);}
-  .chip{
-    display:inline-block;font-size:10.5px;font-weight:700;color:#fff;
-    padding:2px 8px;border-radius:999px;margin-right:4px;
-  }
-  .chip.gov{background:var(--gov);}
-  .chip.asm{background:var(--assembly);}
 
   /* ---------- 投票率速報：スマホ用の縦型リスト ---------- */
   .turnout-mobile{display:none;}
@@ -182,21 +174,12 @@
   .tm-val{flex:0 0 46px;text-align:right;font-size:11.5px;font-weight:800;color:var(--ink);}
 
   @media(max-width:760px){
-    .timeline-card .tl-row,
-    .timeline-card .tl-datelabels,
-    .timeline-card .legend{display:none;}
-    .vtl-card{display:block;}
     .chart-scroll{display:none;}
     .turnout-mobile{display:block;}
   }
   /* 上のCSS @media と同じ切替をJS側でも二重に保証（body.is-mobile-view） */
-  body.is-mobile-view .timeline-card .tl-row,
-  body.is-mobile-view .timeline-card .tl-datelabels,
-  body.is-mobile-view .timeline-card .legend{display:none;}
-  body.is-mobile-view .vtl-card{display:block;}
   body.is-mobile-view .chart-scroll{display:none;}
   body.is-mobile-view .turnout-mobile{display:block;}
-  body.is-desktop-view .vtl-card{display:none;}
   body.is-desktop-view .turnout-mobile{display:none;}
 
   /* ---------- Turnout chart ---------- */
@@ -413,18 +396,6 @@
         <span><span class="sw" style="background:var(--gov)"></span>知事選 期日前投票期間</span>
         <span><span class="sw" style="background:var(--assembly)"></span>村議選 期日前投票期間</span>
         <span><span class="sw" style="background:var(--sun)"></span>投開票日（9/13）</span>
-      </div>
-
-      <!-- スマホ表示用：縦型タイムライン（PCでは非表示） -->
-      <div class="vtl-card" id="vtl-card">
-        <div class="vtl-body">
-          <div class="vtl-track" id="vtl-track"></div>
-          <div class="vtl-labels" id="vtl-labels"></div>
-        </div>
-        <div class="vtl-voteday">
-          <div class="vtl-voteday-bar"></div>
-          <div id="vtl-voteday-text"></div>
-        </div>
       </div>
 
       <div class="note-box">
@@ -706,70 +677,8 @@ function addDays(dateStr, n){
   return dt.toISOString().slice(0,10);
 }
 
-// ---- 期日前投票タイムライン（スマホ用・縦型）描画 ----
-function buildVerticalTimeline(){
-  const track = document.getElementById("vtl-track");
-  const labels = document.getElementById("vtl-labels");
-  if(!track || !labels) return;
-  track.innerHTML = "";
-  labels.innerHTML = "";
-
-  const gov = ELECTION_DATA.governor, asm = ELECTION_DATA.assembly;
-  const rangeStart = [gov.earlyStart, asm.earlyStart].sort()[0];
-  const totalDays = dayDiff(rangeStart, ELECTION_DATA.voteDay); // 投開票日の前日まで
-
-  // 日ごとに「知事選/村議選それぞれの期日前投票が可能か」を判定し、
-  // 同じ組み合わせが続く区間をひとつのセグメントにまとめる
-  const segments = [];
-  let segStart = 0, prevKey = null;
-  for(let i=0;i<totalDays;i++){
-    const d = addDays(rangeStart, i);
-    const key = (d>=gov.earlyStart && d<=gov.earlyEnd ? "g":"") + (d>=asm.earlyStart && d<=asm.earlyEnd ? "a":"");
-    if(prevKey === null){ prevKey = key; segStart = i; }
-    else if(key !== prevKey){
-      segments.push({start:segStart, end:i-1, key:prevKey});
-      segStart = i; prevKey = key;
-    }
-  }
-  if(totalDays > 0) segments.push({start:segStart, end:totalDays-1, key:prevKey});
-
-  segments.forEach(seg=>{
-    const days = seg.end - seg.start + 1;
-
-    const bar = document.createElement("div");
-    bar.className = "vtl-seg";
-    bar.style.flex = days + " 1 0";
-    bar.style.background =
-      seg.key.includes("g") && seg.key.includes("a") ? "linear-gradient(90deg, var(--gov) 50%, var(--assembly) 50%)" :
-      seg.key.includes("g") ? "var(--gov)" :
-      seg.key.includes("a") ? "var(--assembly)" : "#f1ede2";
-    track.appendChild(bar);
-
-    const item = document.createElement("div");
-    item.className = "vtl-item";
-    item.style.flex = days + " 1 0";
-    const dStart = addDays(rangeStart, seg.start);
-    const dEnd = addDays(rangeStart, seg.end);
-    const dateText = (seg.start===seg.end) ? fmtDate(dStart) : (fmtDate(dStart)+"〜"+fmtDate(dEnd));
-    let chips = "";
-    if(seg.key.includes("g")) chips += '<span class="chip gov">知事選</span>';
-    if(seg.key.includes("a")) chips += '<span class="chip asm">村議選</span>';
-    if(!chips) chips = '<span style="font-size:10.5px;color:var(--ink-soft);">期日前投票なし</span>';
-    item.innerHTML = `<div class="d">${dateText}</div><div class="chips">${chips}</div>`;
-    labels.appendChild(item);
-  });
-
-  const voteText = document.getElementById("vtl-voteday-text");
-  if(voteText){
-    voteText.innerHTML =
-      `<div class="d">${fmtDate(ELECTION_DATA.voteDay)}（投開票日）</div>` +
-      `<div class="chips"><span class="chip gov">知事選</span><span class="chip asm">村議選</span></div>`;
-  }
-}
-
-// ---- 期日前投票タイムライン描画 ----
-// PC用（横型）・スマホ用（縦型）のどちらか一方でエラーが起きても、
-// 他の機能（投票率グラフやナビ）の初期化が止まらないようtry/catchで保護
+// ---- 期日前投票タイムライン描画（PC・スマホ共通の横長バー） ----
+// エラーが起きても、他の機能（投票率グラフやナビ）の初期化が止まらないようtry/catchで保護
 (function renderTimeline(){
  try{
   const rangeStart = ELECTION_DATA.governor.earlyStart;
@@ -791,7 +700,9 @@ function buildVerticalTimeline(){
     bar.style.left = (startOffset/totalDays*100)+"%";
     bar.style.width = (spanDays/totalDays*100)+"%";
     bar.style.background = ev.color;
-    bar.textContent = fmtDate(ev.earlyStart)+"〜"+fmtDate(ev.earlyEnd);
+    const barText = document.createElement("span");
+    barText.textContent = fmtDate(ev.earlyStart)+"〜"+fmtDate(ev.earlyEnd);
+    bar.appendChild(barText);
     track.appendChild(bar);
 
     const voteOffset = dayDiff(rangeStart, ELECTION_DATA.voteDay);
@@ -811,8 +722,6 @@ function buildVerticalTimeline(){
       s.textContent = fmtDate(d);
       labelsWrap.appendChild(s);
     });
-
-  buildVerticalTimeline();
  }catch(err){
   if(window.console && console.error) console.error("renderTimeline failed:", err);
  }
