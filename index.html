@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>【デモ版】読谷村 選挙特設サイト 2026 | 沖縄県知事選挙・読谷村議会議員選挙</title>
+<title>読谷村 選挙特設サイト 2026 | 沖縄県知事選挙・読谷村議会議員選挙</title>
 <style>
   :root{
     --sea:#1791b0;
@@ -83,10 +83,20 @@
   }
   .hero .datebox .big{font-size:15px;}
   .hero .datebox .small{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
-  .sample-flag{
-    margin-top:8px;font-size:10.5px;background:rgba(0,0,0,.18);
-    display:inline-block;padding:3px 10px;border-radius:6px;line-height:1.5;
+  .ai-dial-cta{margin-top:14px;}
+  .ai-dial-btn{
+    display:inline-flex;align-items:center;gap:12px;background:#fff;color:var(--sea-dark);
+    border:none;border-radius:14px;padding:9px 18px 9px 9px;cursor:pointer;box-shadow:var(--shadow);
+    font-family:inherit;text-align:left;transition:.15s;
   }
+  .ai-dial-btn:hover{background:#fffaf0;}
+  .ai-dial-icon{
+    font-size:19px;background:var(--sun);color:#5a3a00;width:36px;height:36px;border-radius:50%;
+    display:flex;align-items:center;justify-content:center;flex:0 0 36px;
+  }
+  .ai-dial-text{display:flex;flex-direction:column;gap:2px;}
+  .ai-dial-label{font-weight:800;font-size:13px;}
+  .ai-dial-num{font-size:11.5px;color:var(--ink-soft);}
 
   /* ---------- Section shell ---------- */
   section{padding:56px 0;}
@@ -196,6 +206,13 @@
   .chart-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;}
   .chart-card .updated{font-size:12.5px;color:var(--ink-soft);margin-bottom:18px;}
   .chart-card .updated b{color:var(--coral);}
+  .turnout-waiting{
+    display:none;text-align:center;padding:38px 20px;background:var(--sand-2);
+    border:1px dashed var(--line);border-radius:14px;
+  }
+  .turnout-waiting .tw-icon{font-size:28px;margin-bottom:10px;}
+  .turnout-waiting .tw-text{margin:0;font-size:14px;color:var(--ink-soft);line-height:1.8;}
+  .turnout-waiting .tw-text b{color:var(--ink);font-size:15px;}
   .chart-scroll{overflow-x:auto;padding-bottom:8px;}
   .chart-inner{width:max-content;min-width:100%;}
   .bars{display:flex;align-items:flex-end;gap:18px;height:220px;padding:0 6px;border-bottom:2px solid var(--line);}
@@ -221,6 +238,14 @@
   .diff.down{color:var(--warn);}
 
   /* ---------- Q&A ---------- */
+  .qa-popular{
+    background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:18px 22px;margin-bottom:26px;
+  }
+  .qa-popular-title{font-weight:800;font-size:13.5px;color:var(--sea-dark);margin-bottom:8px;}
+  .qa-popular ul{margin:0;padding-left:1.3em;font-size:13.5px;}
+  .qa-popular li{margin-bottom:4px;}
+  .qa-popular a{color:var(--ink-soft);text-decoration:underline;}
   .qa-cat{margin-bottom:8px;}
   .qa-cat h4{
     color:var(--coral);font-size:14px;font-weight:800;margin:28px 0 10px;letter-spacing:.03em;
@@ -228,6 +253,7 @@
   .qa-cat h4:first-child{margin-top:0;}
   details.qa{
     background:var(--card);border-radius:14px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden;
+    scroll-margin-top:90px;
   }
   details.qa summary{
     list-style:none;cursor:pointer;padding:16px 20px;font-weight:700;font-size:15px;
@@ -243,6 +269,8 @@
   details.qa .a-body{
     padding:0 20px 20px 58px;color:var(--ink-soft);font-size:14.5px;
   }
+  details.qa .a-body p{margin:0 0 10px;}
+  details.qa .a-body p:last-child{margin-bottom:0;}
 
   /* ---------- Violation section ---------- */
   .violation-card{
@@ -275,9 +303,8 @@
     border-radius:50%;background:var(--sea);color:#fff;font-weight:800;font-size:13px;margin-bottom:10px;
   }
   .poll-card h5{margin:0 0 4px;font-size:15px;}
-  .poll-card .addr{font-size:13px;color:var(--ink-soft);margin-bottom:10px;}
-  .poll-card .area{font-size:12px;background:var(--sand-2);border-radius:8px;padding:7px 10px;color:var(--ink-soft);line-height:1.5;}
-  .poll-card a.map{display:inline-block;margin-top:10px;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
+  .poll-card .addr{font-size:13px;color:var(--ink-soft);margin-bottom:8px;}
+  .poll-card a.map{display:inline-block;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
 
   /* ---------- Contact / footer ---------- */
   .contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
@@ -291,9 +318,25 @@
   }
   .c-card h5{margin:0 0 6px;font-size:15px;}
   .c-card p{margin:0;font-size:13.5px;color:var(--ink-soft);}
-  .c-card a.btn{
+  a.btn, .c-card a.btn{
     display:inline-block;margin-top:12px;font-size:13px;font-weight:800;color:#fff;background:var(--sea);
     padding:8px 16px;border-radius:999px;text-decoration:none;
+  }
+
+  .ai-dial-banner{
+    display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+    background:linear-gradient(135deg,var(--sea) 0%,var(--sea-dark) 100%);color:#fff;
+    border-radius:18px;padding:22px 26px;margin-bottom:22px;box-shadow:var(--shadow);
+  }
+  .ai-dial-banner-icon{
+    width:48px;height:48px;border-radius:50%;background:var(--sun);color:#5a3a00;
+    display:flex;align-items:center;justify-content:center;font-size:24px;flex:0 0 48px;
+  }
+  .ai-dial-banner-text{flex:1;min-width:220px;}
+  .ai-dial-banner-text h5{margin:0 0 4px;font-size:16px;}
+  .ai-dial-banner-text p{margin:0;font-size:13px;color:#eaf7fb;line-height:1.7;}
+  .ai-dial-banner button.btn{
+    flex:0 0 auto;background:#fff;color:var(--sea-dark);margin-top:0;cursor:pointer;font-family:inherit;
   }
 
   footer{background:var(--sea-dark);color:#dceef4;padding:34px 0;font-size:13px;}
@@ -304,13 +347,35 @@
     background:#fff4de;border:1px dashed #e8bf6a;color:#7a5b12;font-size:12.5px;
     border-radius:10px;padding:10px 14px;margin:10px 0 0;
   }
+
+  /* ---------- AIダイヤル確認モーダル ---------- */
+  .modal-overlay{
+    display:none;position:fixed;inset:0;background:rgba(15,30,35,.55);
+    z-index:200;align-items:center;justify-content:center;padding:20px;
+  }
+  .modal-overlay.open{display:flex;}
+  .modal-box{
+    background:#fff;border-radius:18px;max-width:380px;width:100%;padding:26px;
+    box-shadow:0 20px 50px rgba(0,0,0,.25);text-align:center;
+  }
+  .modal-icon{font-size:32px;margin-bottom:10px;}
+  .modal-box h3{margin:0 0 12px;font-size:16.5px;color:var(--ink);}
+  .modal-box p{margin:0 0 20px;font-size:13.5px;color:var(--ink-soft);line-height:1.75;text-align:left;}
+  .modal-box p b{color:var(--ink);}
+  .modal-actions{display:flex;gap:10px;}
+  .modal-actions button{
+    flex:1;padding:11px;border-radius:999px;font-weight:800;font-size:13.5px;
+    cursor:pointer;border:2px solid transparent;font-family:inherit;
+  }
+  .modal-cancel{background:#fff;border-color:var(--line);color:var(--ink-soft);}
+  .modal-confirm{background:var(--coral);color:#fff;}
 </style>
 </head>
 <body>
 
 <header class="site">
   <div class="wrap nav-row">
-    <div class="brand">🌺 <span>読谷村 選挙特設サイト</span><span class="badge">2026</span><span class="badge" style="background:var(--coral);color:#fff;">デモ版</span></div>
+    <div class="brand">🌺 <span>読谷村 選挙特設サイト</span><span class="badge">2026</span></div>
     <nav class="tabs">
       <a href="#info">選挙情報</a>
       <a href="#early">期日前投票</a>
@@ -332,7 +397,15 @@
         <span class="big">9月13日（日）</span>
       </div>
     </div>
-    <span class="sample-flag">※本サイトの日程・数値はレイアウト確認用のサンプルです。公開前に正式情報へ差し替えてください。</span>
+    <div class="ai-dial-cta">
+      <button type="button" class="ai-dial-btn js-open-ai-call">
+        <span class="ai-dial-icon">📞</span>
+        <span class="ai-dial-text">
+          <span class="ai-dial-label">選挙のことをAIに電話で聞く</span>
+          <span class="ai-dial-num">読谷村選挙ご案内ダイヤル</span>
+        </span>
+      </button>
+    </div>
   </div>
 </section>
 
@@ -349,28 +422,28 @@
         <span class="tag">沖縄県知事選挙</span>
         <h3>沖縄県知事選挙</h3>
         <dl>
-          <dt>告示日</dt><dd>8月27日（木）<span style="color:#aaa">[仮]</span></dd>
+          <dt>告示日</dt><dd>8月27日（木）</dd>
           <dt>投票日</dt><dd>9月13日（日）</dd>
-          <dt>投票時間</dt><dd>7:00〜20:00（一部繰上げあり）</dd>
+          <dt>投票時間</dt><dd>7:00〜20:00</dd>
           <dt>任期</dt><dd>4年</dd>
           <dt>選出</dt><dd>1名</dd>
           <dt>前回</dt><dd>2022年9月執行</dd>
         </dl>
+        <a class="btn" style="margin-top:14px;" target="_blank" rel="noopener" href="https://www.pref.okinawa.lg.jp/kensei/senkyo/1005009/1023802/1040303/index.html">沖縄県知事選挙 特設サイトへ →</a>
       </div>
       <div class="e-card assembly">
         <span class="tag">読谷村議会議員選挙</span>
         <h3>読谷村議会議員選挙</h3>
         <dl>
-          <dt>告示日</dt><dd>9月8日（火）<span style="color:#aaa">[仮]</span></dd>
+          <dt>告示日</dt><dd>9月8日（火）</dd>
           <dt>投票日</dt><dd>9月13日（日）</dd>
           <dt>投票時間</dt><dd>7:00〜20:00</dd>
           <dt>任期</dt><dd>4年</dd>
-          <dt>定数</dt><dd>18名<span style="color:#aaa">[仮]</span></dd>
+          <dt>定数</dt><dd>19名</dd>
           <dt>前回</dt><dd>2022年9月執行</dd>
         </dl>
       </div>
     </div>
-    <div class="disclaimer">告示日・定数などの数値はサンプルです。正式な日程は読谷村選挙管理委員会の公表情報をご確認ください。</div>
   </div>
 </section>
 
@@ -399,7 +472,8 @@
       </div>
 
       <div class="note-box">
-        💡 <b>9/9〜9/12は両方の選挙の期日前投票が可能な期間</b>です。8/28〜9/8は知事選のみ期日前投票ができます（村議選はまだ告示前）。投票所の場所・受付時間は投票所によって異なる場合があるため、詳細は村の公式ページでご確認ください。
+        💡 <b>9/9〜9/12は両方の選挙の期日前投票が可能な期間</b>です。8/28〜9/8は知事選のみ期日前投票ができます（村議選はまだ告示前）。<br>
+        <b>期日前投票所</b>　場所：読谷村役場 １階　村民ホール　／　投票時間：8時30分から20時まで
       </div>
     </div>
   </div>
@@ -411,54 +485,48 @@
     <div class="sec-head">
       <div class="kicker">Polling Places</div>
       <h2>投票所のご案内</h2>
-      <p>投票日当日の投票所は村内6か所です。お住まいの地域に対応する投票所をご確認ください（期日前投票所は当日投票所と異なります）。</p>
+      <p>投票日当日の投票所は村内6か所です（期日前投票所は当日投票所と異なります）。</p>
     </div>
     <div class="poll-grid">
       <div class="poll-card">
         <div class="num">1</div>
-        <h5>読谷小学校 体育館</h5>
-        <div class="addr">読谷村字高志保1277番地1</div>
-        <div class="area">対象地域：上地・波平・高志保</div>
-        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E8%AA%AD%E8%B0%B7%E5%B0%8F%E5%AD%A6%E6%A0%A1&ll=26.406841866325,127.73198351518&z=17">地図を見る →</a>
+        <h5>波平自治会館 ホール</h5>
+        <div class="addr">沖縄県中頭郡読谷村字波平61番地</div>
+        <a class="map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=沖縄県中頭郡読谷村字波平61番地">地図を見る →</a>
       </div>
       <div class="poll-card">
         <div class="num">2</div>
-        <h5>渡慶次小学校 多目的教室</h5>
-        <div class="addr">読谷村字瀬名波510番地</div>
-        <div class="area">対象地域：渡慶次・儀間・瀬名波・宇座・長浜</div>
-        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E6%B8%A1%E6%85%B6%E6%AC%A1%E5%B0%8F%E5%AD%A6%E6%A0%A1&ll=26.418195282178,127.72873666897&z=18">地図を見る →</a>
+        <h5>読谷村立渡慶次小学校 体育館</h5>
+        <div class="addr">沖縄県中頭郡読谷村字瀬名波510番地</div>
+        <a class="map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=沖縄県中頭郡読谷村字瀬名波510番地">地図を見る →</a>
       </div>
       <div class="poll-card">
         <div class="num">3</div>
-        <h5>古堅中学校 校舎ロビー</h5>
-        <div class="addr">読谷村字伊良皆297番地</div>
-        <div class="area">対象地域：伊良皆・大木・県営比謝団地・比謝365・366・370番地台</div>
-        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E7%AB%8B%E5%8F%A4%E5%A0%85%E4%B8%AD%E5%AD%A6%E6%A0%A1&ll=26.3809514,127.7525614&z=18">地図を見る →</a>
+        <h5>読谷村立古堅中学校</h5>
+        <div class="addr">沖縄県中頭郡読谷村字伊良皆297番地</div>
+        <a class="map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=沖縄県中頭郡読谷村字伊良皆297番地">地図を見る →</a>
       </div>
       <div class="poll-card">
         <div class="num">4</div>
-        <h5>喜名自治会館（喜名公民館）</h5>
-        <div class="addr">読谷村字喜名2207番地</div>
-        <div class="area">対象地域：喜名・座喜味</div>
-        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E5%96%9C%E5%90%8D%E5%85%AC%E6%B0%91%E9%A4%A8&ll=26.3990252,127.7567141&z=18">地図を見る →</a>
+        <h5>喜名自治会館 ホール</h5>
+        <div class="addr">沖縄県中頭郡読谷村字喜名2207番地</div>
+        <a class="map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=沖縄県中頭郡読谷村字喜名2207番地">地図を見る →</a>
       </div>
       <div class="poll-card">
         <div class="num">5</div>
-        <h5>楚辺自治会館 多目的ホール</h5>
-        <div class="addr">読谷村字楚辺1928番地1</div>
-        <div class="area">対象地域：座喜味［古堅小学校区のみ］・楚辺［大添原含む］・都屋</div>
-        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E6%A5%9A%E8%BE%BA%E5%85%AC%E6%B0%91%E9%A4%A8&ll=26.3855965,127.7270071&z=18">地図を見る →</a>
+        <h5>楚辺自治会館 大ホール</h5>
+        <div class="addr">沖縄県中頭郡読谷村字楚辺1928番地1</div>
+        <a class="map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=沖縄県中頭郡読谷村字楚辺1928番地1">地図を見る →</a>
       </div>
       <div class="poll-card">
         <div class="num">6</div>
-        <h5>古堅自治会館（古堅公民館）</h5>
-        <div class="addr">読谷村字古堅75番地3</div>
-        <div class="area">対象地域：渡具知・比謝［県営比謝団地及び比謝365・366・370番地台を除く］・大湾・古堅・比謝矼</div>
-        <a class="map" target="_blank" rel="noopener" href="https://maps.google.co.jp/maps?q=%E8%AA%AD%E8%B0%B7%E6%9D%91%E3%80%80%E5%8F%A4%E5%A0%85%E5%85%AC%E6%B0%91%E9%A4%A8&ll=26.369422,127.750469&z=18">地図を見る →</a>
+        <h5>古堅自治会館 ホール</h5>
+        <div class="addr">沖縄県中頭郡読谷村字古堅75番地3</div>
+        <a class="map" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=沖縄県中頭郡読谷村字古堅75番地3">地図を見る →</a>
       </div>
     </div>
     <div class="note-box">
-      出典：読谷村公式サイト「<a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/gyomu/senkyo/1191.html" target="_blank" rel="noopener">投票所のご案内</a>」（2024年10月10日更新）。最新情報・地域境界の詳細は公式ページでご確認ください。期日前投票所は当日投票所とは別会場です。
+      最新情報は<a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/gyomu/senkyo/1191.html" target="_blank" rel="noopener">読谷村公式サイト</a>でもご確認いただけます。期日前投票所は当日投票所とは別会場です。
     </div>
   </div>
 </section>
@@ -478,8 +546,15 @@
     </div>
 
     <div class="chart-card">
-      <div class="updated">最終更新：<b>9月◯日 18:00時点</b>（サンプル表示）</div>
-      <div class="chart-scroll">
+      <div class="updated" id="updated-line">最終更新：<b>9月◯日 18:00時点</b></div>
+
+      <!-- 期日前投票がまだ始まっていない・数値が未入力の間だけ表示 -->
+      <div class="turnout-waiting" id="turnout-waiting">
+        <div class="tw-icon">🗳️</div>
+        <p class="tw-text">投票率速報はまだありません。<br><b id="tw-date"></b>から順次更新予定です。</p>
+      </div>
+
+      <div class="chart-scroll" id="chart-scroll">
         <div class="chart-inner">
           <div class="bars" id="bars"></div>
           <div class="bar-labels" id="bar-labels"></div>
@@ -489,7 +564,7 @@
       <!-- スマホ表示用：縦積みの横バーリスト（PCでは非表示） -->
       <div class="turnout-mobile" id="turnout-mobile"></div>
 
-      <div class="chart-legend">
+      <div class="chart-legend" id="chart-legend">
         <span><span class="sw" id="legend-cur-sw" style="background:var(--gov)"></span>今回（2026年）累積投票率</span>
         <span><span class="sw" style="background:#cfd8d9"></span>前回（2022年）同時点の累積投票率</span>
       </div>
@@ -504,34 +579,269 @@
     <div class="sec-head">
       <div class="kicker">Q &amp; A</div>
       <h2>選挙に関するQ&amp;A</h2>
-      <p>投票に関してよく寄せられる質問をまとめました。</p>
+      <p>投票に関してよく寄せられる質問をまとめました。投票所や期日前投票所の場所・期間・時間は選挙ごとに異なります。個別の事情によって取扱いが異なる場合がありますので、詳しくは読谷村選挙管理委員会へお問い合わせください。</p>
+    </div>
+
+    <div class="qa-popular">
+      <div class="qa-popular-title">よく見られる質問</div>
+      <ul>
+        <li><a href="#q-ticket">投票所入場券がなくても投票できますか？</a></li>
+        <li><a href="#q-early">投票日に行けない場合はどうすればよいですか？</a></li>
+        <li><a href="#q-move">引っ越しをした場合はどこで投票しますか？</a></li>
+        <li><a href="#q-assistance">自分で文字を書くことができなくても投票できますか？</a></li>
+      </ul>
     </div>
 
     <div class="qa-cat">
       <h4>投票について</h4>
       <details class="qa" open>
-        <summary><span class="q-mark">Q</span>投票日に用事があって行けません。どうすればいいですか？<span class="arrow">▾</span></summary>
-        <div class="a-body">投票日当日に投票できない方は、告示日の翌日から投票日前日まで「期日前投票」を利用できます。村内の指定された期日前投票所で、当日投票と同じように投票できます。</div>
-      </details>
-      <details class="qa">
-        <summary><span class="q-mark">Q</span>投票所には何を持っていけばいいですか？<span class="arrow">▾</span></summary>
-        <div class="a-body">ご自宅に届く「投票所入場整理券（はがき）」をお持ちください。万一お手元に届いていなくても、本人確認ができれば投票は可能です。</div>
-      </details>
-      <details class="qa">
         <summary><span class="q-mark">Q</span>知事選と村議選、同時に投票できますか？<span class="arrow">▾</span></summary>
         <div class="a-body">はい。9月13日の投票日は両方の投票用紙が同じ会場で交付されます。期日前投票期間中は、村議選の告示（9/8予定）以降に両方の投票が可能になります。</div>
+      </details>
+      <details class="qa" id="q-ticket">
+        <summary><span class="q-mark">Q</span>投票所入場券が届いていなくても投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>投票所入場券が届いていない場合でも、読谷村の選挙人名簿に登録され、選挙権があることを確認できれば投票できます。</p>
+          <p>投票所の受付で、入場券が届いていないことを係員にお申し出ください。なお、選挙人名簿に登録されている投票所と異なる投票所では投票できません。投票所が分からない場合は、事前に読谷村選挙管理委員会へお問い合わせください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>投票所入場券を紛失したり、忘れたりした場合も投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>投票できます。投票所の受付で、入場券を紛失または忘れたことを係員にお申し出ください。</p>
+          <p>受付で氏名、住所などを確認し、選挙人名簿に登録されていることを確認したうえで投票していただきます。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>家族の投票所入場券を使って投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>できません。投票は、選挙人本人が行う必要があります。</p>
+          <p>世帯ごとに入場券がまとめて届く場合は、氏名を確認し、ご自身の入場券をお持ちください。誤って家族の入場券を持参した場合は、受付の係員にお申し出ください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>指定された投票所以外でも投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>投票日当日は、投票所入場券などに記載された指定投票所で投票してください。村内の別の投票所で自由に投票することはできません。</p>
+          <p>期日前投票期間中は、指定された期日前投票所で投票できます。開設場所、期間および時間は、選挙ごとの案内をご確認ください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>投票用紙には何を書けばよいですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>選挙の種類によって、候補者の氏名または政党等の名称を記載します。投票用紙をお渡しする際に係員が説明しますので、投票用紙に記載された案内もご確認ください。</p>
+          <p>候補者の氏名など以外の文字や記号を記載すると、無効となる場合があります。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>間違えて記入した場合はどうすればよいですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>投票箱へ入れる前であれば、投票所の係員にお申し出ください。ご自身で投票用紙を破棄せず、そのまま係員へお渡しください。</p>
+          <p>すでに投票箱へ入れた投票用紙を取り出したり、投票し直したりすることはできません。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>投票所に子どもを連れて入れますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>選挙人に同伴する18歳未満の子どもは、投票所に入ることができます。</p>
+          <p>ただし、投票用紙への記入や投票箱への投函は、原則として選挙人本人が行います。投票所内では係員の案内に従ってください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>投票にはどのくらい時間がかかりますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">混雑していなければ、受付から投票まで通常は数分程度です。ただし、投票所が混雑している場合や、複数の選挙が同時に行われる場合は、時間がかかることがあります。</div>
       </details>
     </div>
 
     <div class="qa-cat">
-      <h4>期日前投票について</h4>
+      <h4>期日前投票・不在者投票について</h4>
+      <details class="qa" id="q-early">
+        <summary><span class="q-mark">Q</span>投票日に仕事や予定がある場合はどうすればよいですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>投票日に仕事、旅行、冠婚葬祭などの予定がある場合は、期日前投票を利用できます。</p>
+          <p>期日前投票は、原則として選挙の公示日または告示日の翌日から、投票日の前日まで行われます。場所と時間は選挙ごとに異なる場合がありますので、選挙案内ページをご確認ください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>期日前投票には投票所入場券が必要ですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>投票所入場券をお持ちいただくと受付がスムーズですが、届いていない場合や紛失した場合でも、選挙人名簿への登録を確認できれば投票できます。</p>
+          <p>投票所入場券の裏面などに宣誓書が設けられている場合は、あらかじめ記入しておくと受付時間を短縮できます。</p>
+        </div>
+      </details>
       <details class="qa">
         <summary><span class="q-mark">Q</span>期日前投票の理由は必要ですか？<span class="arrow">▾</span></summary>
         <div class="a-body">宣誓書への記入が必要ですが、仕事や旅行、体調など該当する事由にチェックするだけで手続きできます。詳しい審査などはありません。</div>
       </details>
       <details class="qa">
-        <summary><span class="q-mark">Q</span>村外に住んでいても期日前投票できますか？<span class="arrow">▾</span></summary>
-        <div class="a-body">読谷村の選挙人名簿に登録されている方が対象です。長期出張や進学などで村外に滞在中の方は、不在者投票制度をご利用いただけます。詳細は村選挙管理委員会へお問い合わせください。</div>
+        <summary><span class="q-mark">Q</span>旅行や出張で読谷村以外に滞在している場合も投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>一定の要件を満たす場合は、滞在先の市区町村選挙管理委員会で不在者投票ができます。</p>
+          <p>事前に、読谷村選挙管理委員会へ投票用紙などを請求する必要があります。郵送に日数がかかるため、早めに手続きをしてください。手続きの詳細は読谷村選挙管理委員会へお問い合わせください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>病院や老人ホームに入院・入所している場合は投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>入院・入所している施設が、都道府県選挙管理委員会から不在者投票施設として指定されている場合は、その施設内で不在者投票ができます。</p>
+          <p>投票を希望する場合は、早めに施設の職員へご相談ください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>郵便で投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>身体障害者手帳、戦傷病者手帳または介護保険の被保険者証をお持ちの方で、法令に定める一定の要件に該当する場合は、郵便等による不在者投票を利用できます。</p>
+          <p>利用には、あらかじめ「郵便等投票証明書」の交付を受ける必要があります。対象要件や申請方法については、読谷村選挙管理委員会へお問い合わせください。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa-cat">
+      <h4>選挙権・選挙人名簿・住所変更について</h4>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>18歳になったら、すぐに投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>日本国民で、投票日現在に満18歳以上であることに加え、選挙人名簿に登録されている必要があります。</p>
+          <p>地方選挙では、原則としてその市町村に引き続き3か月以上住所を有していることなどの要件があります。選挙の種類や転入日によって投票できる場所が異なるため、不明な場合はお問い合わせください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>選挙人名簿への登録手続きは必要ですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>本人が登録を申請する必要はありません。住民基本台帳の記録をもとに、登録要件を満たす方を読谷村選挙管理委員会が選挙人名簿へ登録します。</p>
+          <p>ただし、選挙権があっても、選挙人名簿に登録されていなければ投票できません。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>読谷村へ転入した場合、すぐに読谷村で投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>転入後すぐに読谷村の選挙人名簿へ登録されるわけではありません。原則として、住民票が作成された日から引き続き3か月以上、読谷村の住民基本台帳に記録されていることが必要です。</p>
+          <p>国政選挙などでは、以前住んでいた市区町村の選挙人名簿に登録が残っていれば、以前の住所地で投票できる場合があります。</p>
+        </div>
+      </details>
+      <details class="qa" id="q-move">
+        <summary><span class="q-mark">Q</span>読谷村から転出した場合、どこで投票しますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>選挙の種類、転出日、新しい住所地への転入届出日などによって異なります。</p>
+          <p>国政選挙では、読谷村の選挙人名簿に登録が残っている場合、読谷村で投票できることがあります。村長選挙や村議会議員選挙は、読谷村から転出すると投票できません。詳しくはお問い合わせください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>村内で引っ越した場合、投票所は変わりますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>村内で住所を変更した時期によっては、以前の住所の投票所で投票していただく場合があります。</p>
+          <p>投票所入場券に記載された投票所をご確認ください。入場券が届いていない場合は、読谷村選挙管理委員会へお問い合わせください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>外国籍でも投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">現在の公職選挙法に基づく国政選挙および地方選挙の選挙権は、日本国民に認められています。そのため、外国籍の方はこれらの選挙で投票することはできません。</div>
+      </details>
+    </div>
+
+    <div class="qa-cat">
+      <h4>投票のお手伝い・配慮について</h4>
+      <details class="qa" id="q-assistance">
+        <summary><span class="q-mark">Q</span>自分で投票用紙に文字を書くことができなくても投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>病気、けが、障がいなどにより自分で文字を書くことが困難な方は、代理投票を利用できます。</p>
+          <p>投票所の係員2人が補助者となり、そのうち1人がご本人の指示に従って投票用紙に記入し、もう1人が立ち会います。投票の秘密は守られます。ご家族や付き添いの方が代わりに記入することはできません。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>目が不自由でも投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>点字投票を利用できます。投票所の受付で、点字投票を希望することを係員にお申し出ください。</p>
+          <p>また、自分で文字を書くことが困難な場合は、代理投票を利用することもできます。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>投票所で、係員に候補者名を伝えても大丈夫ですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">代理投票を利用する場合は、ご本人が投票したい候補者や政党等を係員へ伝えます。係員には守秘義務があり、投票の秘密は守られます。</div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>車椅子を使用していても投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>投票できます。投票所には車椅子で利用できる記載台などを用意しています。</p>
+          <p>移動や投票用紙への記入でお手伝いが必要な場合は、投票所の係員にお申し出ください。投票所の設備について心配がある場合は、事前に読谷村選挙管理委員会へご相談ください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>コミュニケーションが難しい場合、どうすればよいですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>必要な支援や希望する対応を、投票所の係員へお伝えください。口頭で伝えることが難しい場合は、紙やスマートフォンの画面などで意思を伝えることもできます。</p>
+          <p>あらかじめ支援内容について確認したい場合は、読谷村選挙管理委員会へご相談ください。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa-cat">
+      <h4>選挙運動・政治活動について</h4>
+      <div class="note-box">選挙運動に該当するかどうかは、時期、方法、対象、内容などを総合的に判断する必要があります。個別具体的な行為については、事前に選挙管理委員会へご相談ください。</div>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>選挙運動はいつからできますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>選挙運動ができるのは、立候補の届出が受理されたときから投票日の前日までです。</p>
+          <p>立候補届出前に投票を依頼する行為は、事前運動として禁止されています。また、投票日当日の選挙運動も禁止されています。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>知人に電話で投票をお願いできますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>選挙運動期間中に、電話で投票を依頼することはできます。</p>
+          <p>ただし、投票日当日は選挙運動ができません。また、18歳未満の方は選挙運動をすることができません。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>家を一軒ずつ訪問して投票をお願いできますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">できません。投票を依頼する目的で、住宅、会社、店舗などを個別に訪問する戸別訪問は禁止されています。</div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>SNSで候補者を応援できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>18歳以上の有権者は、選挙運動期間中、ウェブサイトやSNSなどを利用した選挙運動を行うことができます。</p>
+          <p>ただし、電子メールを利用した選挙運動には制限があります。また、他人になりすます行為、虚偽情報の発信、候補者等の名誉を傷つける行為、投票日当日の選挙運動などは禁止されています。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>候補者のSNS投稿を共有してもよいですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>18歳以上の方は、選挙運動期間中であれば、候補者の選挙運動用投稿をSNSで共有できる場合があります。</p>
+          <p>投票日当日は、選挙運動に当たる新たな投稿や共有は控えてください。個別の投稿が選挙運動に当たるかは、その内容などによって判断されます。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>18歳未満でも選挙運動ができますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>18歳未満の方は、選挙運動をすることができません。SNSで特定の候補者への投票を呼びかける行為なども、選挙運動に当たる場合があります。</p>
+          <p>なお、選挙について学ぶことや、政治・政策について一般的な意見を表明することが、直ちに選挙運動になるわけではありません。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="qa-cat">
+      <h4>寄附・差し入れ・あいさつについて</h4>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>候補者の選挙事務所へ飲食物を差し入れてもよいですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>選挙運動に関して飲食物を提供することは、原則として禁止されています。</p>
+          <p>湯茶や通常用いられる程度のお茶菓子など、一部の例外がありますが、差し入れをする前に選挙管理委員会へ確認してください。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>政治家がお祭りや地域行事へ寄附できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>政治家が選挙区内の人や団体へお金や物を贈ることは、原則として禁止されています。地域行事への寄附や差し入れ、祝儀、香典、記念品なども禁止の対象になる場合があります。</p>
+          <p>有権者が政治家に寄附を求めることも禁止されています。</p>
+        </div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>政治家が年賀状や暑中見舞いを送ることはできますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">政治家は、選挙区内の人に対して、答礼のための自筆によるものを除き、年賀状、暑中見舞状などの時候のあいさつ状を出すことが禁止されています。</div>
+      </details>
+      <details class="qa">
+        <summary><span class="q-mark">Q</span>当選祝いを贈ってもよいですか？<span class="arrow">▾</span></summary>
+        <div class="a-body">内容や贈り方によって、公職選挙法上の寄附などに関する規制の対象になる場合があります。具体的な行為を予定している場合は、事前に選挙管理委員会へご相談ください。</div>
       </details>
     </div>
 
@@ -539,8 +849,12 @@
       <h4>開票・結果について</h4>
       <details class="qa">
         <summary><span class="q-mark">Q</span>開票結果はいつ、どこで確認できますか？<span class="arrow">▾</span></summary>
-        <div class="a-body">投票日当日の夜、開票作業終了後に速報が発表されます。村の公式サイトや報道機関の選挙特設ページで確認できます。</div>
+        <div class="a-body">投票日当日の夜、開票作業終了後に速報が発表されます。村の公式サイトなどで確認できます。</div>
       </details>
+    </div>
+
+    <div class="note-box">
+      投票日当日に投票所へ行けない方向けの詳しい手続き（期日前投票・不在者投票・代理投票）は、読谷村公式サイト「<a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/7182.html" target="_blank" rel="noopener">投票日当日に投票所へ行けない方へ</a>」でも確認できます。
     </div>
   </div>
 </section>
@@ -556,7 +870,7 @@
     <div class="violation-card">
       <p style="margin-top:0;font-size:15px;">
         <b>読谷村選挙管理委員会には、違反を取り締まる権限（検挙・捜査）はありません。</b>
-        委員会が行えるのは、候補者や運動員への<b>注意・指導</b>までです。実際の取り締まりや捜査は<b>警察（沖縄県警察）</b>の役割になります。
+        委員会が行えるのは、候補者や運動員への<b>注意・指導</b>までです。実際の取り締まりや捜査は<b>警察（嘉手納警察署）</b>の役割になります。
       </p>
       <div class="split-note">
         <div class="box village">
@@ -570,7 +884,7 @@
           <ul class="plain"><li><b>できないこと：</b>検挙・捜査・罰則の適用</li></ul>
         </div>
         <div class="box police">
-          <h5><span class="icon">🚓</span>警察（沖縄県警察）</h5>
+          <h5><span class="icon">🚓</span>警察（嘉手納警察署）</h5>
           <p>できること：捜査、検挙、公職選挙法違反の取り締まり</p>
           <ul class="plain">
             <li>買収・供応など金銭が絡む違反</li>
@@ -582,7 +896,7 @@
       <p style="font-size:14px;color:var(--ink-soft);">よくある違反の例：戸別訪問、飲食物の提供、買収、投票の依頼を伴う金品授受、虚偽事項の公表、選挙運動期間外の運動（事前運動）など。判断に迷う場合も、まずは下記へご相談ください。</p>
       <div class="contact-strip">
         <div><b>選挙運動に関する相談</b>読谷村選挙管理委員会：098-982-9227</div>
-        <div><b>違反の疑いがある通報</b>沖縄県警察 選挙違反通報窓口：098-000-0000（仮）／緊急時は110番</div>
+        <div><b>違反の疑いがある通報</b>嘉手納警察署：098-956-0110／緊急時は110番</div>
       </div>
     </div>
   </div>
@@ -595,6 +909,16 @@
       <div class="kicker">Contact</div>
       <h2>お問い合わせ・関連リンク</h2>
     </div>
+
+    <div class="ai-dial-banner">
+      <div class="ai-dial-banner-icon">🤖</div>
+      <div class="ai-dial-banner-text">
+        <h5>読谷村選挙ご案内ダイヤル</h5>
+        <p>AIによる電話応対で24時間ご利用いただけます。回答内容が不正確な場合がありますので、重要な内容は下記の読谷村選挙管理委員会へ直接ご確認ください。</p>
+      </div>
+      <button type="button" class="btn js-open-ai-call" style="border:none;">電話をかける</button>
+    </div>
+
     <div class="contact-grid">
       <div class="c-card">
         <div class="ico">📞</div>
@@ -603,9 +927,9 @@
       </div>
       <div class="c-card">
         <div class="ico">🌐</div>
-        <h5>沖縄県選挙管理委員会</h5>
+        <h5>沖縄県知事選挙 特設サイト</h5>
         <p>知事選挙全般に関する情報はこちら</p>
-        <a class="btn" href="#">県選管サイトへ（仮リンク）</a>
+        <a class="btn" target="_blank" rel="noopener" href="https://www.pref.okinawa.lg.jp/kensei/senkyo/1005009/1023802/1040303/index.html">特設サイトへ →</a>
       </div>
       <div class="c-card">
         <div class="ico">🏛️</div>
@@ -618,16 +942,29 @@
 
 <footer>
   <div class="wrap">
-    <div>© 2026 読谷村選挙管理委員会（本サイトはサンプルです）</div>
+    <div>© 2026 読谷村選挙管理委員会</div>
     <div><a href="#info">選挙情報</a> ・ <a href="#early">期日前投票</a> ・ <a href="#polling">投票所案内</a> ・ <a href="#turnout">投票率速報</a> ・ <a href="#qa">Q&amp;A</a></div>
   </div>
 </footer>
 
+<!-- AIダイヤル発信 確認モーダル -->
+<div class="modal-overlay" id="ai-call-modal">
+  <div class="modal-box">
+    <div class="modal-icon">🤖📞</div>
+    <h3>読谷村選挙ご案内ダイヤルにお電話しますか？</h3>
+    <p>このお電話は<b>AIによる自動音声応対</b>です。24時間いつでもご利用いただけますが、回答内容が不正確な場合があります。重要な内容は、読谷村選挙管理委員会（098-982-9227）へ直接ご確認ください。</p>
+    <div class="modal-actions">
+      <button type="button" class="modal-cancel" id="ai-call-cancel">キャンセル</button>
+      <button type="button" class="modal-confirm" id="ai-call-confirm">同意して電話をかける</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
-   編集用データ（サンプル値）
-   実際の運用時は、この中の数値・日付だけを書き換えれば
-   サイト全体（バー表示・グラフ）に自動反映されます。
+   編集用データ
+   この中の数値・日付を書き換えれば、サイト全体（バー表示・グラフ）に
+   自動反映されます。
    ============================================================ */
 
 const ELECTION_DATA = {
@@ -646,16 +983,34 @@ const ELECTION_DATA = {
   voteDay: "2026-09-13"
 };
 
-// 投票率速報：日付ごとの「累積投票率(%)」サンプル値。null は未実施日。
+/* ============================================================
+   ★★★ 投票率速報：ここに毎日の数値を入力してください ★★★
+
+   ・"dates"    … 表示する日付（編集不要）
+   ・"current"  … 今回（2026年）の【累積】投票率(%)。
+                  まだ発表されていない日は必ず null のままにする。
+                  → currentが全部nullの間は「まだ投票率速報はありません」
+                    という案内が自動で表示されます。
+                  → 期日前投票が始まって最初の数値が発表されたら、
+                    該当する日の null を実際の数値（例: 1.5）に
+                    書き換えてください。書き換えると自動でグラフ表示に
+                    切り替わります。
+                  例）8/28の投票率が1.5%だった場合
+                      governor.current の1つ目の null を
+                      1.5 に書き換える
+                        [null, null, ...] → [1.5, null, ...]
+   ・"previous" … 前回（2022年）の同時点の累積投票率(%)。
+                  比較用の実績値なので通常は編集不要。
+   ============================================================ */
 const TURNOUT_DATA = {
   governor: {
     dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
-    current:  [1.2, 2.6, 4.1, 5.9, 7.8, 9.5, 11.0, 12.9, 14.5, 16.0, 17.8, 19.6, 21.9, 24.3, 26.8, null],
+    current:  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     previous: [1.0, 2.3, 3.8, 5.4, 7.1, 8.9, 10.4, 12.1, 13.6, 15.0, 16.5, 18.1, 20.0, 22.1, 24.4, 26.8]
   },
   assembly: {
     dates: ["9/9","9/10","9/11","9/12"],
-    current:  [3.1, 6.9, 10.8, null],
+    current:  [null, null, null, null],
     previous: [2.8, 6.2, 9.9, 13.5]
   }
 };
@@ -762,6 +1117,38 @@ function renderTurnoutMobile(key, themeColor){
 function renderTurnout(key){
   const data = TURNOUT_DATA[key];
   const themeColor = ELECTION_DATA[key].color;
+
+  // "current"（今回の実績）が1件も入力されていない＝まだ期日前投票の
+  // 実績発表が無い状態。その場合はグラフの代わりに案内文を出す。
+  const hasAnyData = data.current.some(v => v !== null);
+
+  const waitingBox = document.getElementById("turnout-waiting");
+  const twDate = document.getElementById("tw-date");
+  const chartScroll = document.getElementById("chart-scroll");
+  const turnoutMobile = document.getElementById("turnout-mobile");
+  const chartLegend = document.getElementById("chart-legend");
+  const summaryRow = document.getElementById("summary-row");
+  const updatedLine = document.getElementById("updated-line");
+
+  if(!hasAnyData){
+    if(waitingBox){
+      waitingBox.style.display = "block";
+      if(twDate) twDate.textContent = fmtDate(ELECTION_DATA[key].earlyStart) + "（期日前投票 初日）";
+    }
+    if(chartScroll) chartScroll.style.display = "none";
+    if(turnoutMobile) turnoutMobile.style.display = "none";
+    if(chartLegend) chartLegend.style.display = "none";
+    if(updatedLine) updatedLine.style.display = "none";
+    if(summaryRow) summaryRow.innerHTML = "";
+    return;
+  }
+
+  if(waitingBox) waitingBox.style.display = "none";
+  if(chartScroll) chartScroll.style.display = "";
+  if(turnoutMobile) turnoutMobile.style.display = ""; // 表示・非表示はCSSのメディアクエリに委ねる
+  if(chartLegend) chartLegend.style.display = "";
+  if(updatedLine) updatedLine.style.display = "";
+
   const barsWrap = document.getElementById("bars");
   const labelsWrap = document.getElementById("bar-labels");
   barsWrap.innerHTML = "";
@@ -916,6 +1303,47 @@ const NAV_MODE = "tabs";
   }catch(err){
     // ナビ初期化に失敗しても他の機能（グラフ等）に影響しないようにする
     if(window.console && console.error) console.error("initNav failed:", err);
+  }
+})();
+
+/* ============================================================
+   AIダイヤル（読谷村選挙ご案内ダイヤル）発信ボタン
+   トップのボタン・お問い合わせの「電話をかける」ボタン、両方から
+   同じ確認モーダルを呼び出す。「同意して電話をかける」を押した
+   ときだけ tel: リンクで発信する。
+   ============================================================ */
+const AI_DIAL_TEL = "050-1785-6183";
+
+(function initAiCallModal(){
+  try{
+    const modal = document.getElementById("ai-call-modal");
+    const cancelBtn = document.getElementById("ai-call-cancel");
+    const confirmBtn = document.getElementById("ai-call-confirm");
+    if(!modal || !cancelBtn || !confirmBtn) return;
+
+    function openModal(){ modal.classList.add("open"); }
+    function closeModal(){ modal.classList.remove("open"); }
+
+    document.querySelectorAll(".js-open-ai-call").forEach(btn=>{
+      btn.addEventListener("click", (e)=>{
+        e.preventDefault();
+        openModal();
+      });
+    });
+
+    cancelBtn.addEventListener("click", closeModal);
+    confirmBtn.addEventListener("click", ()=>{
+      window.location.href = "tel:" + AI_DIAL_TEL;
+      closeModal();
+    });
+    modal.addEventListener("click", (e)=>{
+      if(e.target === modal) closeModal();
+    });
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape") closeModal();
+    });
+  }catch(err){
+    if(window.console && console.error) console.error("initAiCallModal failed:", err);
   }
 })();
 </script>
