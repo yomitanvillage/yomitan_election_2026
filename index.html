@@ -57,6 +57,38 @@
   nav.tabs a:hover{background:rgba(255,255,255,.18);}
   nav.tabs a.active{background:rgba(255,255,255,.28);}
 
+  /* ヘッダー右側：AI電話ボタン＆ハンバーガーメニュー（スマホのみ表示） */
+  .header-actions{display:none;align-items:center;gap:8px;}
+  .header-call-btn{
+    display:flex;align-items:center;gap:6px;height:38px;flex:0 0 auto;
+    background:var(--sun);color:#5a3a00;border:none;border-radius:999px;
+    padding:0 14px;font-size:12.5px;font-weight:800;white-space:nowrap;
+    cursor:pointer;font-family:inherit;transition:.15s;box-shadow:0 2px 8px rgba(0,0,0,.15);
+  }
+  .header-call-btn:hover{filter:brightness(1.06);}
+  .header-call-btn .icon{font-size:15px;}
+  .menu-toggle{
+    width:38px;height:38px;flex:0 0 38px;border-radius:10px;
+    background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;
+  }
+  .menu-toggle-bar{width:18px;height:2px;background:#fff;border-radius:2px;transition:.2s;}
+  .menu-toggle.open .menu-toggle-bar:nth-child(1){transform:translateY(6px) rotate(45deg);}
+  .menu-toggle.open .menu-toggle-bar:nth-child(2){opacity:0;}
+  .menu-toggle.open .menu-toggle-bar:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
+
+  @media(max-width:760px){
+    .header-actions{display:flex;}
+    nav.tabs{
+      display:none;flex:1 1 100%;flex-direction:column;gap:2px;
+      margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);
+    }
+    nav.tabs.nav-open{display:flex;}
+    nav.tabs a{padding:12px 14px;border-radius:10px;}
+    /* スマホではヘッダーのアイコンボタンに集約するため、ヒーロー内の大きいCTAは非表示 */
+    .ai-dial-cta{display:none;}
+  }
+
   /* タブ表示モード（NAV_MODE = "tabs" のとき有効。JS側で切替可能） */
   body.tabs-mode section[data-tab-panel]{display:none;}
   body.tabs-mode section[data-tab-panel].active{display:block;}
@@ -376,7 +408,17 @@
 <header class="site">
   <div class="wrap nav-row">
     <div class="brand">🌺 <span>読谷村 選挙特設サイト</span><span class="badge">2026</span></div>
-    <nav class="tabs">
+    <div class="header-actions">
+      <button type="button" class="header-call-btn js-open-ai-call" aria-label="選挙案内ダイアルに電話する">
+        <span class="icon">📞</span><span>選挙案内ダイアル</span>
+      </button>
+      <button type="button" class="menu-toggle" id="menu-toggle" aria-label="メニューを開く" aria-expanded="false" aria-controls="site-nav">
+        <span class="menu-toggle-bar"></span>
+        <span class="menu-toggle-bar"></span>
+        <span class="menu-toggle-bar"></span>
+      </button>
+    </div>
+    <nav class="tabs" id="site-nav">
       <a href="#info">選挙情報</a>
       <a href="#early">期日前投票</a>
       <a href="#polling">投票所案内</a>
@@ -913,8 +955,8 @@
     <div class="ai-dial-banner">
       <div class="ai-dial-banner-icon">🤖</div>
       <div class="ai-dial-banner-text">
-        <h5>読谷村選挙ご案内ダイヤル</h5>
-        <p>AIによる電話応対で24時間ご利用いただけます。回答内容が不正確な場合がありますので、重要な内容は下記の読谷村選挙管理委員会へ直接ご確認ください。</p>
+        <h5>選挙案内ダイアル</h5>
+        <p>AIが自動音声でご案内するサービスです。投票所や期日前投票の期間など、選挙に関するご質問に24時間いつでもお答えします。より詳しいご相談は、下記の読谷村選挙管理委員会でも承っています。</p>
       </div>
       <button type="button" class="btn js-open-ai-call" style="border:none;">電話をかける</button>
     </div>
@@ -952,7 +994,7 @@
   <div class="modal-box">
     <div class="modal-icon">🤖📞</div>
     <h3>読谷村選挙ご案内ダイヤルにお電話しますか？</h3>
-    <p>このお電話は<b>AIによる自動音声応対</b>です。24時間いつでもご利用いただけますが、回答内容が不正確な場合があります。重要な内容は、読谷村選挙管理委員会（098-982-9227）へ直接ご確認ください。</p>
+    <p>このお電話は<b>AIが自動音声でご案内するサービス</b>です。投票所や期日前投票の期間など、選挙に関するご質問に24時間いつでもお答えします。より詳しいご相談は、読谷村選挙管理委員会（098-982-9227）でも承っています。</p>
     <div class="modal-actions">
       <button type="button" class="modal-cancel" id="ai-call-cancel">キャンセル</button>
       <button type="button" class="modal-confirm" id="ai-call-confirm">同意して電話をかける</button>
@@ -1303,6 +1345,45 @@ const NAV_MODE = "tabs";
   }catch(err){
     // ナビ初期化に失敗しても他の機能（グラフ等）に影響しないようにする
     if(window.console && console.error) console.error("initNav failed:", err);
+  }
+})();
+
+/* ============================================================
+   スマホ用ハンバーガーメニューの開閉
+   ヘッダーの menu-toggle ボタンで nav.tabs を開閉する。
+   リンクをタップしたら自動でメニューを閉じる。
+   ============================================================ */
+(function initMobileMenu(){
+  try{
+    const toggleBtn = document.getElementById("menu-toggle");
+    const nav = document.getElementById("site-nav");
+    if(!toggleBtn || !nav) return;
+
+    function closeMenu(){
+      nav.classList.remove("nav-open");
+      toggleBtn.classList.remove("open");
+      toggleBtn.setAttribute("aria-expanded", "false");
+    }
+    function openMenu(){
+      nav.classList.add("nav-open");
+      toggleBtn.classList.add("open");
+      toggleBtn.setAttribute("aria-expanded", "true");
+    }
+
+    toggleBtn.addEventListener("click", ()=>{
+      if(nav.classList.contains("nav-open")) closeMenu(); else openMenu();
+    });
+
+    nav.querySelectorAll("a").forEach(a=>{
+      a.addEventListener("click", closeMenu);
+    });
+
+    // PCサイズに戻ったときは開いたままにならないよう念のため閉じる
+    window.addEventListener("resize", ()=>{
+      if(window.innerWidth > 760) closeMenu();
+    });
+  }catch(err){
+    if(window.console && console.error) console.error("initMobileMenu failed:", err);
   }
 })();
 
