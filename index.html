@@ -55,7 +55,8 @@
     box-shadow:0 2px 12px rgba(0,0,0,.12);
   }
   .nav-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;min-width:0;}
+  .brand span:first-of-type{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .brand .badge{
     background:var(--sun);color:#5a3a00;border-radius:8px;padding:3px 9px;font-size:12px;font-weight:800;
   }
@@ -78,20 +79,26 @@
   .menu-toggle.open .menu-toggle-bar:nth-child(2){opacity:0;}
   .menu-toggle.open .menu-toggle-bar:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
 
-  /* ヘッダー2段目：選挙案内ダイアルボタン（スマホのみ表示） */
-  .header-call-row{display:none;}
+  /* ヘッダーの選挙案内ダイアルボタン（1段目・スマホのみ表示） */
   .header-call-btn{
-    display:inline-flex;align-items:center;gap:6px;height:38px;
+    display:none;align-items:center;gap:6px;height:38px;
     background:var(--sun);color:#5a3a00;border:none;border-radius:999px;
     padding:0 14px;font-size:12.5px;font-weight:800;white-space:nowrap;
     cursor:pointer;font-family:inherit;transition:.15s;box-shadow:0 2px 8px rgba(0,0,0,.15);
+    flex:0 0 auto;
   }
   .header-call-btn:hover{filter:brightness(1.06);}
   .header-call-btn .icon{font-size:15px;}
 
   @media(max-width:760px){
+    .nav-row{flex-wrap:nowrap;gap:8px;}
     .menu-toggle{display:flex;}
-    .header-call-row{display:block;margin-top:10px;}
+    .brand{flex:1 1 auto;font-size:13px;}
+    .brand .badge{display:none;}
+    .header-call-btn{
+      display:inline-flex;height:34px;padding:0 10px;font-size:11px;gap:4px;
+    }
+    .header-call-btn .icon{font-size:13px;}
     nav.tabs{
       display:none;flex:1 1 100%;flex-direction:column;gap:2px;
       margin-top:12px;padding-top:12px;border-top:1px solid rgba(255,255,255,.2);
@@ -130,10 +137,10 @@
   .hero .datebox .small{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
 
   @media(max-width:760px){
-    .hero-row{flex-wrap:nowrap;gap:6px;}
+    .hero-row{flex-wrap:wrap;gap:8px;}
     .hero .eyebrow{
-      font-size:10.5px;padding:3px 8px;overflow:hidden;text-overflow:ellipsis;
-      flex:1 1 auto;min-width:0;
+      display:block;width:100%;box-sizing:border-box;
+      font-size:11px;padding:5px 10px;white-space:normal;line-height:1.4;
     }
     .hero .datebox{padding:4px 9px;gap:4px;flex:0 0 auto;}
     .hero .datebox .small{font-size:8.5px;}
@@ -433,6 +440,9 @@
 <header class="site">
   <div class="wrap nav-row">
     <div class="brand">🌺 <span>読谷村 選挙特設サイト</span><span class="badge">2026</span></div>
+    <button type="button" class="header-call-btn js-open-ai-call" aria-label="選挙案内ダイアルに電話する">
+      <span class="icon">📞</span><span>選挙案内ダイアル</span>
+    </button>
     <button type="button" class="menu-toggle" id="menu-toggle" aria-label="メニューを開く" aria-expanded="false" aria-controls="site-nav">
       <span class="menu-toggle-bar"></span>
       <span class="menu-toggle-bar"></span>
@@ -447,11 +457,6 @@
       <a href="#violation">選挙違反かも？</a>
       <a href="#contact">お問い合わせ</a>
     </nav>
-  </div>
-  <div class="wrap header-call-row">
-    <button type="button" class="header-call-btn js-open-ai-call" aria-label="選挙案内ダイアルに電話する">
-      <span class="icon">📞</span><span>選挙案内ダイアル</span>
-    </button>
   </div>
 </header>
 
