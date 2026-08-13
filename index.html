@@ -218,6 +218,9 @@
     box-shadow:0 3px 8px rgba(0,0,0,.12);padding:0 3px;
   }
   .tl-bar span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .tl-bar-caption{
+    position:absolute;top:50%;font-size:10.5px;font-weight:800;white-space:nowrap;
+  }
   .tl-voteday{
     position:absolute;top:-4px;bottom:-4px;width:5px;background:var(--sun);border-radius:4px;
   }
@@ -1133,10 +1136,12 @@ function addDays(dateStr, n){
 
     const startOffset = dayDiff(rangeStart, ev.earlyStart);
     const spanDays = dayDiff(ev.earlyStart, ev.earlyEnd) + 1;
+    const barLeftPct = startOffset/totalDays*100;
+    const barWidthPct = spanDays/totalDays*100;
     const bar = document.createElement("div");
     bar.className = "tl-bar";
-    bar.style.left = (startOffset/totalDays*100)+"%";
-    bar.style.width = (spanDays/totalDays*100)+"%";
+    bar.style.left = barLeftPct+"%";
+    bar.style.width = barWidthPct+"%";
     bar.style.background = ev.color;
     const rangeText = fmtDate(ev.earlyStart)+"〜"+fmtDate(ev.earlyEnd);
     const barText = document.createElement("span");
@@ -1149,6 +1154,28 @@ function addDays(dateStr, n){
     voteDayEl.className = "tl-voteday";
     voteDayEl.style.left = (voteOffset/totalDays*100)+"%";
     track.appendChild(voteDayEl);
+
+    // バーが細くて日付テキストが「…」で省略される場合は、
+    // バーの中に収めるのをやめてバーの外（すき間の広い側）に表示し直す。
+    // scrollWidth（本来の文字幅）> clientWidth（実際に見えている幅）なら省略が起きている合図。
+    if(barText.scrollWidth > barText.clientWidth + 1){
+      bar.removeChild(barText);
+      const caption = document.createElement("div");
+      caption.className = "tl-bar-caption";
+      caption.textContent = rangeText;
+      caption.style.color = ev.color;
+      const barRightPct = barLeftPct + barWidthPct;
+      const rightRoom = 100 - barRightPct;
+      const leftRoom = barLeftPct;
+      if(rightRoom >= leftRoom){
+        caption.style.left = `calc(${barRightPct}% + 6px)`;
+        caption.style.transform = "translateY(-50%)";
+      }else{
+        caption.style.left = `calc(${barLeftPct}% - 6px)`;
+        caption.style.transform = "translate(-100%, -50%)";
+      }
+      track.appendChild(caption);
+    }
 
     // バーが細くて文字が入りきらない端末でも必ず期間がわかるよう、
     // ラベル列の下にも同じ期間（例：8/28〜9/12）を常時表示する。
