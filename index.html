@@ -197,12 +197,15 @@
   .timeline-card{
     background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:20px 18px;
   }
-  .tl-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .tl-row{display:flex;align-items:center;gap:10px;margin-bottom:20px;}
   .tl-row:last-child{margin-bottom:0;}
   .tl-label{
-    width:78px;flex:0 0 78px;font-weight:800;font-size:12px;color:var(--ink);line-height:1.3;
+    width:88px;flex:0 0 88px;font-weight:800;font-size:12px;color:var(--ink);line-height:1.3;
   }
   .tl-label .dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;}
+  .tl-label-range{
+    font-weight:700;font-size:10px;color:var(--ink-soft);margin-top:3px;white-space:nowrap;
+  }
   .tl-track{
     position:relative;flex:1;min-width:0;background:#f1ede2;border-radius:10px;height:34px;
   }
@@ -218,21 +221,19 @@
   .tl-voteday{
     position:absolute;top:-4px;bottom:-4px;width:5px;background:var(--sun);border-radius:4px;
   }
+  /* 日付めもり：バーと同じ「offset/totalDays」の割合でJSが left(%) を指定するため、
+     バーの区切りと必ず一致する（space-between等の均等割りは使わない）。 */
   .tl-datelabels{
-    display:flex;margin-left:88px;min-width:0;justify-content:space-between;
-    font-size:9.5px;color:var(--ink-soft);margin-top:6px;
+    position:relative;margin-left:98px;min-width:0;height:14px;
+    font-size:9.5px;color:var(--ink-soft);margin-top:8px;
   }
+  .tl-datelabels span{position:absolute;top:0;white-space:nowrap;}
   .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px;font-size:12px;color:var(--ink-soft);}
   .legend span.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
 
   .note-box{
     margin-top:20px;background:var(--sand-2);border:1px solid var(--line);border-radius:12px;
     padding:14px 18px;font-size:13.5px;color:var(--ink-soft);
-  }
-
-  /* 帯グラフの中の日付テキストは、幅が狭い端末では省略（凡例と下の日付ラベルで補える） */
-  @media(max-width:420px){
-    .tl-bar span{display:none;}
   }
 
   /* ---------- 投票率速報：スマホ用の縦型リスト ---------- */
@@ -529,11 +530,17 @@
     </div>
     <div class="timeline-card">
       <div class="tl-row">
-        <div class="tl-label"><span class="dot" style="background:var(--gov)"></span>沖縄県知事選挙</div>
+        <div class="tl-label">
+          <div class="tl-label-name"><span class="dot" style="background:var(--gov)"></span>沖縄県知事選挙</div>
+          <div class="tl-label-range" id="tl-governor-range"></div>
+        </div>
         <div class="tl-track" id="tl-governor"></div>
       </div>
       <div class="tl-row">
-        <div class="tl-label"><span class="dot" style="background:var(--assembly)"></span>読谷村議会議員選挙</div>
+        <div class="tl-label">
+          <div class="tl-label-name"><span class="dot" style="background:var(--assembly)"></span>読谷村議会議員選挙</div>
+          <div class="tl-label-range" id="tl-assembly-range"></div>
+        </div>
         <div class="tl-track" id="tl-assembly"></div>
       </div>
       <div class="tl-datelabels" id="tl-dates"></div>
@@ -1116,7 +1123,7 @@ function addDays(dateStr, n){
   const rangeEnd = ELECTION_DATA.voteDay;
   const totalDays = dayDiff(rangeStart, rangeEnd) + 1;
 
-  function buildTrack(el, ev){
+  function buildTrack(el, rangeLabelEl, ev){
     const track = document.getElementById(el);
     const grid = document.createElement("div");
     grid.className = "tl-grid";
@@ -1131,8 +1138,9 @@ function addDays(dateStr, n){
     bar.style.left = (startOffset/totalDays*100)+"%";
     bar.style.width = (spanDays/totalDays*100)+"%";
     bar.style.background = ev.color;
+    const rangeText = fmtDate(ev.earlyStart)+"〜"+fmtDate(ev.earlyEnd);
     const barText = document.createElement("span");
-    barText.textContent = fmtDate(ev.earlyStart)+"〜"+fmtDate(ev.earlyEnd);
+    barText.textContent = rangeText;
     bar.appendChild(barText);
     track.appendChild(bar);
 
@@ -1141,18 +1149,36 @@ function addDays(dateStr, n){
     voteDayEl.className = "tl-voteday";
     voteDayEl.style.left = (voteOffset/totalDays*100)+"%";
     track.appendChild(voteDayEl);
+
+    // バーが細くて文字が入りきらない端末でも必ず期間がわかるよう、
+    // ラベル列の下にも同じ期間（例：8/28〜9/12）を常時表示する。
+    const rangeEl = document.getElementById(rangeLabelEl);
+    if(rangeEl) rangeEl.textContent = rangeText;
   }
 
-  buildTrack("tl-governor", ELECTION_DATA.governor);
-  buildTrack("tl-assembly", ELECTION_DATA.assembly);
+  buildTrack("tl-governor", "tl-governor-range", ELECTION_DATA.governor);
+  buildTrack("tl-assembly", "tl-assembly-range", ELECTION_DATA.assembly);
 
+  // 日付めもり：バーと同じ計算式（offset/totalDays*100%）で位置を出すことで、
+  // 上のバーの区切り目と必ず一致させる（均等割り表示は使わない）。
+  // 目盛りは間隔が近いと文字が重なるため、離れている日付のみを表示する
+  // （知事選の終了日9/12は投開票日9/13と近すぎるため省略。バー下の期間表示で確認可）
   const labelsWrap = document.getElementById("tl-dates");
-  [rangeStart, ELECTION_DATA.assembly.earlyStart, ELECTION_DATA.governor.earlyEnd, ELECTION_DATA.voteDay]
-    .forEach(d=>{
-      const s = document.createElement("span");
-      s.textContent = fmtDate(d);
-      labelsWrap.appendChild(s);
-    });
+  const tickDates = [rangeStart, ELECTION_DATA.assembly.earlyStart, ELECTION_DATA.voteDay];
+  tickDates.forEach((d,i)=>{
+    const off = dayDiff(rangeStart, d)/totalDays*100;
+    const s = document.createElement("span");
+    s.textContent = fmtDate(d);
+    s.style.left = off+"%";
+    if(i===0){
+      s.style.transform = "translateX(0)";
+    }else if(i===tickDates.length-1){
+      s.style.transform = "translateX(-100%)";
+    }else{
+      s.style.transform = "translateX(-50%)";
+    }
+    labelsWrap.appendChild(s);
+  });
  }catch(err){
   if(window.console && console.error) console.error("renderTimeline failed:", err);
  }
