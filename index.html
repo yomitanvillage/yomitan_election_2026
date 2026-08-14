@@ -190,6 +190,31 @@
   .sec-head h2{font-size:clamp(22px,3vw,30px);margin:6px 0 8px;color:var(--sea-dark);}
   .sec-head p{color:var(--ink-soft);margin:0;max-width:640px;}
 
+  /* ---------- 新着案内（どのタブでも常に表示） ---------- */
+  #news{padding:20px 0 6px;}
+  .news-card{
+    background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:4px 20px;
+  }
+  .news-card-head{display:flex;align-items:center;gap:8px;padding:14px 2px 8px;}
+  .news-card-head h3{margin:0;font-size:14px;color:var(--sea-dark);}
+  .news-icon{font-size:15px;}
+  .news-list{list-style:none;margin:0;padding:0;}
+  .news-list li{border-top:1px solid var(--line);}
+  .news-list a{
+    display:flex;align-items:center;gap:12px;padding:13px 2px;
+    text-decoration:none;color:var(--ink);transition:.15s;border-radius:8px;
+  }
+  .news-list a:hover{background:var(--sand-2);}
+  .news-date{
+    flex:0 0 auto;background:var(--coral);color:#fff;font-weight:800;font-size:12px;
+    padding:4px 10px;border-radius:999px;white-space:nowrap;
+  }
+  .news-title{flex:1;min-width:0;font-size:14px;font-weight:700;line-height:1.5;}
+  .news-arrow{flex:0 0 auto;color:var(--ink-soft);font-size:18px;}
+  @media(max-width:520px){
+    .news-title{font-size:13px;}
+  }
+
   /* ---------- Cards: election info ---------- */
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
   @media(max-width:760px){.grid-2{grid-template-columns:1fr;}}
@@ -501,6 +526,27 @@
           <span class="ai-dial-num">読谷村選挙ご案内ダイヤル</span>
         </span>
       </button>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 新着案内 ==========
+     タブ切替（data-tab-panel）の対象にはせず、どのタブを見ていても
+     常にトップに表示されるお知らせ欄。日付＋タイトルをタップするとリンク先へ遷移する。
+     項目を追加する場合は <li> をコピーして増やしてください。 -->
+<section id="news">
+  <div class="wrap">
+    <div class="news-card">
+      <div class="news-card-head"><span class="news-icon">📢</span><h3>新着案内</h3></div>
+      <ul class="news-list">
+        <li>
+          <a href="https://www.vill.yomitan.okinawa.jp/pickup/7202.html" target="_blank" rel="noopener">
+            <span class="news-date">7/24</span>
+            <span class="news-title">沖縄県知事選挙・読谷村議会議員選挙の期日前投票事務従事者募集のお知らせ</span>
+            <span class="news-arrow">›</span>
+          </a>
+        </li>
+      </ul>
     </div>
   </div>
 </section>
