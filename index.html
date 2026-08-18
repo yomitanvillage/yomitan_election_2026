@@ -55,7 +55,7 @@
     box-shadow:0 2px 12px rgba(0,0,0,.12);
   }
   .nav-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;min-width:0;order:0;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:17px;min-width:0;order:0;}
   .brand span:first-of-type{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .brand .badge{
     background:var(--sun);color:#5a3a00;border-radius:8px;padding:3px 9px;font-size:12px;font-weight:800;
@@ -93,7 +93,7 @@
     transform-origin:center;
   }
   .header-call-btn:hover{filter:brightness(1.06);}
-  .header-call-btn .icon{font-size:15px;display:inline-block;animation:dialRing 2.2s ease-in-out infinite;}
+  .header-call-btn .icon{font-size:15px;}
   /* リング（拡がる白い輪）とわずかな拡大縮小で「押してほしい」感を出す。
      以前は輪の色がボタン自体の黄色と近く目立ちにくかったため、白系のコントラストに変更。 */
   @keyframes dialPulse{
@@ -101,23 +101,14 @@
     45%{ transform:scale(1.06); box-shadow:0 2px 10px rgba(0,0,0,.2),0 0 0 9px rgba(255,255,255,0); }
     100%{ transform:scale(1); box-shadow:0 2px 8px rgba(0,0,0,.15),0 0 0 0 rgba(255,255,255,0); }
   }
-  /* 電話アイコンが小さく揺れて「着信中」のように見せる */
-  @keyframes dialRing{
-    0%,40%,100%{ transform:rotate(0deg); }
-    45%{ transform:rotate(-16deg); }
-    50%{ transform:rotate(13deg); }
-    55%{ transform:rotate(-9deg); }
-    60%{ transform:rotate(5deg); }
-    65%{ transform:rotate(0deg); }
-  }
   @media(prefers-reduced-motion:reduce){
-    .header-call-btn, .header-call-btn .icon{animation:none;}
+    .header-call-btn{animation:none;}
   }
 
   @media(max-width:760px){
     .nav-row{flex-wrap:nowrap;gap:8px;}
     .menu-toggle{display:flex;order:2;}
-    .brand{flex:1 1 auto;font-size:13px;}
+    .brand{flex:1 1 auto;font-size:14.5px;}
     .brand .badge{display:none;}
     .header-call-btn{
       order:1;height:34px;padding:0 10px;font-size:11px;gap:4px;
@@ -179,10 +170,13 @@
   .hero .datebox .small{font-size:10.5px;color:var(--ink-soft);font-weight:600;}
 
   @media(max-width:760px){
-    .hero-row{flex-wrap:wrap;gap:8px;}
+    /* 見出しバッジと日付ボックスは同じ行に並べる。
+       バッジの文字は省略せず、収まりきらない場合のみ内部で折り返す
+       （幅を100%に固定して2段組みにする方式はやめ、日付ボックスと横並びにする）。 */
+    .hero-row{flex-wrap:wrap;align-items:center;gap:8px;}
     .hero .eyebrow{
-      display:block;width:100%;box-sizing:border-box;
-      font-size:11px;padding:5px 10px;white-space:normal;line-height:1.4;
+      display:inline-block;flex:1 1 auto;min-width:0;box-sizing:border-box;
+      font-size:11px;padding:5px 10px;white-space:normal;line-height:1.4;border-radius:12px;
     }
     .hero .datebox{padding:4px 9px;gap:4px;flex:0 0 auto;}
     .hero .datebox .small{font-size:8.5px;}
@@ -214,10 +208,10 @@
   .sec-head h2{font-size:clamp(22px,3vw,30px);margin:6px 0 8px;color:var(--sea-dark);}
   .sec-head p{color:var(--ink-soft);margin:0;max-width:640px;}
 
-  /* ---------- 新着案内（どのタブでも常に表示） ---------- */
-  #news{padding:20px 0 6px;}
+  /* ---------- 新着案内（選挙情報タブ内にのみ表示） ---------- */
   .news-card{
     background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:4px 20px;
+    margin-bottom:26px;
   }
   .news-card-head{display:flex;align-items:center;gap:8px;padding:14px 2px 8px;}
   .news-card-head h3{margin:0;font-size:14px;color:var(--sea-dark);}
@@ -489,9 +483,7 @@
   .ai-dial-banner-text{flex:1;min-width:220px;}
   .ai-dial-banner-text h5{margin:0 0 4px;font-size:16px;}
   .ai-dial-banner-text p{margin:0;font-size:13px;color:#eaf7fb;line-height:1.7;}
-  .ai-dial-banner button.btn{
-    flex:0 0 auto;background:#fff;color:var(--sea-dark);margin-top:0;cursor:pointer;font-family:inherit;
-  }
+  .ai-dial-banner .header-call-btn{flex:0 0 auto;height:42px;font-size:14px;padding:0 20px;}
 
   footer{background:var(--sea-dark);color:#dceef4;padding:34px 0;font-size:13px;}
   footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;}
@@ -555,11 +547,11 @@
 <section class="hero">
   <div class="wrap">
     <div class="hero-row">
-      <span class="eyebrow">沖縄県知事選挙 × 読谷村議会議員選挙　同日開催</span>
       <div class="datebox">
         <span class="small">投開票日</span>
         <span class="big">9月13日（日）</span>
       </div>
+      <span class="eyebrow">沖縄県知事選挙 × 読谷村議会議員選挙　同日開催</span>
     </div>
     <div class="ai-dial-cta">
       <button type="button" class="ai-dial-btn js-open-ai-call">
@@ -573,12 +565,18 @@
   </div>
 </section>
 
-<!-- ========== 新着案内 ==========
-     タブ切替（data-tab-panel）の対象にはせず、どのタブを見ていても
-     常にトップに表示されるお知らせ欄。日付＋タイトルをタップするとリンク先へ遷移する。
-     項目を追加する場合は <li> をコピーして増やしてください。 -->
-<section id="news">
+<!-- ========== 選挙情報 ========== -->
+<section id="info" data-tab-panel>
   <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Election Info</div>
+      <h2>知事選・村議選の諸情報</h2>
+      <p>2つの選挙が同時に行われます。それぞれの基本情報を確認しましょう。</p>
+    </div>
+
+    <!-- 新着案内：選挙情報タブでのみ表示するお知らせ欄。
+         日付＋タイトルをタップするとリンク先へ遷移する。
+         項目を追加する場合は <li> をコピーして増やしてください。 -->
     <div class="news-card">
       <div class="news-card-head"><span class="news-icon">📢</span><h3>新着案内</h3></div>
       <ul class="news-list">
@@ -591,17 +589,7 @@
         </li>
       </ul>
     </div>
-  </div>
-</section>
 
-<!-- ========== 選挙情報 ========== -->
-<section id="info" data-tab-panel>
-  <div class="wrap">
-    <div class="sec-head">
-      <div class="kicker">Election Info</div>
-      <h2>知事選・村議選の諸情報</h2>
-      <p>2つの選挙が同時に行われます。それぞれの基本情報を確認しましょう。</p>
-    </div>
     <div class="grid-2">
       <div class="e-card governor">
         <span class="tag">沖縄県知事選挙</span>
@@ -1121,7 +1109,9 @@
         <h5>選挙案内ダイアル</h5>
         <p>AIが自動音声でご案内するサービスです。投票所や期日前投票の期間など、選挙に関するご質問に24時間いつでもお答えします。より詳しいご相談は、下記の読谷村選挙管理委員会でも承っています。</p>
       </div>
-      <button type="button" class="btn js-open-ai-call" style="border:none;">電話をかける</button>
+      <button type="button" class="header-call-btn js-open-ai-call">
+        <span class="icon">📞</span><span>電話をかける</span>
+      </button>
     </div>
 
     <div class="contact-grid">
