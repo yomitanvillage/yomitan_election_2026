@@ -55,12 +55,12 @@
     box-shadow:0 2px 12px rgba(0,0,0,.12);
   }
   .nav-row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;min-width:0;}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:700;font-size:15px;min-width:0;order:0;}
   .brand span:first-of-type{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .brand .badge{
     background:var(--sun);color:#5a3a00;border-radius:8px;padding:3px 9px;font-size:12px;font-weight:800;
   }
-  nav.tabs{display:flex;gap:4px;flex-wrap:wrap;}
+  nav.tabs{display:flex;gap:4px;flex-wrap:wrap;order:1;}
   nav.tabs a{
     color:#eaf7fb;text-decoration:none;font-size:13px;font-weight:700;
     padding:8px 12px;border-radius:999px;transition:.2s;white-space:nowrap;
@@ -68,35 +68,46 @@
   nav.tabs a:hover{background:rgba(255,255,255,.18);}
   nav.tabs a.active{background:rgba(255,255,255,.28);}
 
-  /* ヘッダー右側：ハンバーガーメニュー（1段目・スマホのみ表示） */
+  /* ヘッダー右側：ハンバーガーメニュー（スマホのみ表示） */
   .menu-toggle{
     display:none;width:38px;height:38px;flex:0 0 38px;border-radius:10px;
     background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.35);
     flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;
+    order:3;
   }
   .menu-toggle-bar{width:18px;height:2px;background:#fff;border-radius:2px;transition:.2s;}
   .menu-toggle.open .menu-toggle-bar:nth-child(1){transform:translateY(6px) rotate(45deg);}
   .menu-toggle.open .menu-toggle-bar:nth-child(2){opacity:0;}
   .menu-toggle.open .menu-toggle-bar:nth-child(3){transform:translateY(-6px) rotate(-45deg);}
 
-  /* ヘッダーの選挙案内ダイアルボタン（1段目・スマホのみ表示） */
+  /* ヘッダーの選挙案内ダイアルボタン：PC・スマホ問わず常時表示。
+     タブを切り替えても、ページを下までスクロールしても
+     （ヘッダーがsticky固定のため）常にワンタップで電話できる導線にする。
+     やわらかいパルスアニメーションで自然に視線を集める（motion抑制設定時は停止）。 */
   .header-call-btn{
-    display:none;align-items:center;gap:6px;height:38px;
+    display:inline-flex;align-items:center;gap:6px;height:38px;order:2;
     background:var(--sun);color:#5a3a00;border:none;border-radius:999px;
-    padding:0 14px;font-size:12.5px;font-weight:800;white-space:nowrap;
+    padding:0 16px;font-size:13px;font-weight:800;white-space:nowrap;
     cursor:pointer;font-family:inherit;transition:.15s;box-shadow:0 2px 8px rgba(0,0,0,.15);
-    flex:0 0 auto;
+    flex:0 0 auto;animation:dialPulse 2.6s ease-in-out infinite;
   }
   .header-call-btn:hover{filter:brightness(1.06);}
   .header-call-btn .icon{font-size:15px;}
+  @keyframes dialPulse{
+    0%,100%{box-shadow:0 2px 8px rgba(0,0,0,.15),0 0 0 0 rgba(255,181,69,.55);}
+    60%{box-shadow:0 2px 8px rgba(0,0,0,.15),0 0 0 7px rgba(255,181,69,0);}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .header-call-btn{animation:none;}
+  }
 
   @media(max-width:760px){
     .nav-row{flex-wrap:nowrap;gap:8px;}
-    .menu-toggle{display:flex;}
+    .menu-toggle{display:flex;order:2;}
     .brand{flex:1 1 auto;font-size:13px;}
     .brand .badge{display:none;}
     .header-call-btn{
-      display:inline-flex;height:34px;padding:0 10px;font-size:11px;gap:4px;
+      order:1;height:34px;padding:0 10px;font-size:11px;gap:4px;
     }
     .header-call-btn .icon{font-size:13px;}
     /* ハンバーガーメニュー：画面右からスライドインするドロワー形式 */
@@ -280,6 +291,25 @@
   .note-box{
     margin-top:20px;background:var(--sand-2);border:1px solid var(--line);border-radius:12px;
     padding:14px 18px;font-size:13.5px;color:var(--ink-soft);
+  }
+
+  /* ---------- ミニ誘導バナー：Q&Aや選挙違反など長いページの末尾で
+     「読み終えたところで」AIダイアルへ案内する ---------- */
+  .ai-mini-cta{
+    margin-top:24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+    background:linear-gradient(135deg,var(--sea) 0%,var(--sea-dark) 100%);color:#fff;
+    border-radius:14px;padding:14px 20px;
+  }
+  .ai-mini-cta-text{font-size:13.5px;font-weight:700;line-height:1.5;}
+  .ai-mini-cta-btn{
+    flex:0 0 auto;background:var(--sun);color:#5a3a00;border:none;border-radius:999px;
+    padding:9px 20px;font-size:13px;font-weight:800;cursor:pointer;font-family:inherit;
+    white-space:nowrap;transition:.15s;
+  }
+  .ai-mini-cta-btn:hover{filter:brightness(1.06);}
+  @media(max-width:480px){
+    .ai-mini-cta{flex-direction:column;align-items:stretch;text-align:center;}
+    .ai-mini-cta-btn{width:100%;}
   }
 
   /* ---------- 投票率速報：スマホ用の縦型リスト ---------- */
@@ -487,8 +517,8 @@
 <header class="site">
   <div class="wrap nav-row">
     <div class="brand">🌺 <span>読谷村 選挙特設サイト</span><span class="badge">2026</span></div>
-    <button type="button" class="header-call-btn js-open-ai-call" aria-label="選挙案内ダイアルに電話する">
-      <span class="icon">📞</span><span>選挙案内ダイアル</span>
+    <button type="button" class="header-call-btn js-open-ai-call" aria-label="選挙案内ダイアルに電話する（AIが自動音声でご案内）">
+      <span class="icon">📞</span><span>AIに電話で聞く</span>
     </button>
     <button type="button" class="menu-toggle" id="menu-toggle" aria-label="メニューを開く" aria-expanded="false" aria-controls="site-nav">
       <span class="menu-toggle-bar"></span>
@@ -1008,6 +1038,11 @@
     <div class="note-box">
       投票日当日に投票所へ行けない方向けの詳しい手続き（期日前投票・不在者投票・代理投票）は、読谷村公式サイト「<a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/7182.html" target="_blank" rel="noopener">投票日当日に投票所へ行けない方へ</a>」でも確認できます。
     </div>
+
+    <div class="ai-mini-cta">
+      <span class="ai-mini-cta-text">💬 ここに載っていない疑問は、AIダイアルに電話で聞けます（24時間対応）</span>
+      <button type="button" class="ai-mini-cta-btn js-open-ai-call">電話で聞く</button>
+    </div>
   </div>
 </section>
 
@@ -1050,6 +1085,11 @@
         <div><b>選挙運動に関する相談</b>読谷村選挙管理委員会：098-982-9227</div>
         <div><b>違反の疑いがある通報</b>嘉手納警察署：098-956-0110／緊急時は110番</div>
       </div>
+    </div>
+
+    <div class="ai-mini-cta">
+      <span class="ai-mini-cta-text">💬 「これって違反？」の判断に迷ったら、まずはAIダイアルに電話で聞けます</span>
+      <button type="button" class="ai-mini-cta-btn js-open-ai-call">電話で聞く</button>
     </div>
   </div>
 </section>
