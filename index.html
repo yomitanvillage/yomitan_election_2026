@@ -89,16 +89,29 @@
     background:var(--sun);color:#5a3a00;border:none;border-radius:999px;
     padding:0 16px;font-size:13px;font-weight:800;white-space:nowrap;
     cursor:pointer;font-family:inherit;transition:.15s;box-shadow:0 2px 8px rgba(0,0,0,.15);
-    flex:0 0 auto;animation:dialPulse 2.6s ease-in-out infinite;
+    flex:0 0 auto;animation:dialPulse 2.2s ease-in-out infinite;
+    transform-origin:center;
   }
   .header-call-btn:hover{filter:brightness(1.06);}
-  .header-call-btn .icon{font-size:15px;}
+  .header-call-btn .icon{font-size:15px;display:inline-block;animation:dialRing 2.2s ease-in-out infinite;}
+  /* リング（拡がる白い輪）とわずかな拡大縮小で「押してほしい」感を出す。
+     以前は輪の色がボタン自体の黄色と近く目立ちにくかったため、白系のコントラストに変更。 */
   @keyframes dialPulse{
-    0%,100%{box-shadow:0 2px 8px rgba(0,0,0,.15),0 0 0 0 rgba(255,181,69,.55);}
-    60%{box-shadow:0 2px 8px rgba(0,0,0,.15),0 0 0 7px rgba(255,181,69,0);}
+    0%{ transform:scale(1); box-shadow:0 2px 8px rgba(0,0,0,.15),0 0 0 0 rgba(255,255,255,.7); }
+    45%{ transform:scale(1.06); box-shadow:0 2px 10px rgba(0,0,0,.2),0 0 0 9px rgba(255,255,255,0); }
+    100%{ transform:scale(1); box-shadow:0 2px 8px rgba(0,0,0,.15),0 0 0 0 rgba(255,255,255,0); }
+  }
+  /* 電話アイコンが小さく揺れて「着信中」のように見せる */
+  @keyframes dialRing{
+    0%,40%,100%{ transform:rotate(0deg); }
+    45%{ transform:rotate(-16deg); }
+    50%{ transform:rotate(13deg); }
+    55%{ transform:rotate(-9deg); }
+    60%{ transform:rotate(5deg); }
+    65%{ transform:rotate(0deg); }
   }
   @media(prefers-reduced-motion:reduce){
-    .header-call-btn{animation:none;}
+    .header-call-btn, .header-call-btn .icon{animation:none;}
   }
 
   @media(max-width:760px){
