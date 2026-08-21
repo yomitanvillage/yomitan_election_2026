@@ -7,6 +7,9 @@
 
 <!-- Google タグ (gtag.js) -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-YTC86N3275"></script>
+<!-- 掲示場・投票所マップ用（Leaflet + OpenStreetMap。無償・オープンソースで、道路がわかる地図タイルを利用） -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.js"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
@@ -455,6 +458,38 @@
   .poll-card .addr{font-size:13px;color:var(--ink-soft);margin-bottom:8px;}
   .poll-card a.map{display:inline-block;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
 
+  /* ---------- 掲示場・投票所マップ ---------- */
+  .map-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
+  .map-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
+  .map-legend-item{
+    display:inline-flex;align-items:center;gap:8px;border:1.5px solid var(--line);
+    background:#fff;border-radius:999px;padding:7px 14px 7px 10px;cursor:pointer;
+    font-size:13px;font-weight:700;color:var(--ink-soft);transition:.15s;user-select:none;
+  }
+  .map-legend-item .dot{width:12px;height:12px;border-radius:50%;flex:0 0 12px;}
+  .map-legend-item.active{border-color:transparent;color:#fff;}
+  .map-legend-item.active.poster{background:var(--sea-dark);}
+  .map-legend-item.active.early{background:var(--sun);color:#5a3a00;}
+  .map-legend-item.active.polling{background:var(--gov);}
+  .map-legend-item.active .dot{background:#fff;}
+  .map-legend-item.poster:not(.active) .dot{background:var(--sea-dark);}
+  .map-legend-item.early:not(.active) .dot{background:var(--sun);}
+  .map-legend-item.polling:not(.active) .dot{background:var(--gov);}
+  #election-map{
+    width:100%;height:min(72vh,560px);border-radius:14px;overflow:hidden;
+    background:var(--sand-2);
+  }
+  .map-note{margin-top:14px;font-size:12.5px;color:var(--ink-soft);line-height:1.7;}
+  /* Leafletのポップアップをサイトのトーンに合わせて調整 */
+  .leaflet-popup-content{font-family:inherit;font-size:13px;line-height:1.6;}
+  .leaflet-popup-content b{color:var(--ink);}
+  .map-pin-emoji{
+    display:flex;align-items:center;justify-content:center;width:30px;height:30px;
+    border-radius:50% 50% 50% 4px;transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,.3);
+    border:2px solid #fff;
+  }
+  .map-pin-emoji span{display:block;transform:rotate(-45deg);font-size:14px;}
+
   /* ---------- Contact / footer ---------- */
   .contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
   @media(max-width:760px){.contact-grid{grid-template-columns:1fr;}}
@@ -536,6 +571,7 @@
       <a href="#info">選挙情報</a>
       <a href="#early">期日前投票</a>
       <a href="#polling">投票所案内</a>
+      <a href="#map">掲示場マップ</a>
       <a href="#turnout">投票率速報</a>
       <a href="#qa">Q&amp;A</a>
       <a href="#violation">選挙違反かも？</a>
@@ -699,6 +735,28 @@
     </div>
     <div class="note-box">
       最新情報は<a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/gyomu/senkyo/1191.html" target="_blank" rel="noopener">読谷村公式サイト</a>でもご確認いただけます。期日前投票所は当日投票所とは別会場です。
+    </div>
+  </div>
+</section>
+
+<!-- ========== 掲示場・投票所マップ ========== -->
+<section id="map" data-tab-panel>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Map</div>
+      <h2>掲示場・投票所マップ</h2>
+      <p>ポスター掲示場、期日前投票所、投票日当日の投票所を地図上で確認できます。下のボタンで表示・非表示を切り替えられます。</p>
+    </div>
+    <div class="map-card">
+      <div class="map-legend">
+        <div class="map-legend-item poster active" data-layer="poster"><span class="dot"></span>ポスター掲示場（48）</div>
+        <div class="map-legend-item early active" data-layer="early"><span class="dot"></span>期日前投票所</div>
+        <div class="map-legend-item polling active" data-layer="polling"><span class="dot"></span>投票所（当日・6か所）</div>
+      </div>
+      <div id="election-map"></div>
+      <div class="map-note">
+        地図データ：© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors／掲示場データ：読谷村オープンデータ（ポスター掲示場一覧）を基に作成／投票所・期日前投票所の座標は住所から算出した概算位置です。実際の設置場所は現地の表示に従ってください。
+      </div>
     </div>
   </div>
 </section>
@@ -1627,6 +1685,163 @@ const AI_DIAL_TEL = "050-1785-6183";
     });
   }catch(err){
     if(window.console && console.error) console.error("initAiCallModal failed:", err);
+  }
+})();
+
+/* ============================================================
+   掲示場・投票所マップ（Leaflet + OpenStreetMap）
+   ・POSTER_DATA … 読谷村オープンデータ「ポスター掲示場一覧」のCSVをそのまま変換したもの（48件）
+   ・KEY_LOCATIONS … 投票所6か所＋期日前投票所1か所。座標は住所を国土地理院の
+     住所検索APIでジオコーディングした概算値（番地単位で見つからない場合は
+     字＝集落単位の代表点になることがある点に注意）。
+   地図タブは初期状態で display:none のため、Leafletを最初から初期化すると
+   コンテナ幅0pxで壊れて表示される。そこで「#mapタブが最初に開かれた時」に
+   遅延初期化し、以後タブを開くたびに invalidateSize() でサイズを再計算する。
+   ============================================================ */
+const POSTER_DATA = [{"no": "1-1", "addr": "上地34番地2", "lat": 26.404195, "lon": 127.736664, "note": "県道12号線 旧読谷中学校前バス停付近のガードパイプ"}, {"no": "1-2", "addr": "波平215番地１", "lat": 26.405426, "lon": 127.732637, "note": "波平チンマーサー公園前"}, {"no": "1-3", "addr": "波平37番地", "lat": 26.407001, "lon": 127.733745, "note": "県道12号線 読谷村立図書館前バス停近くフェンス"}, {"no": "1-4", "addr": "波平1817番地２", "lat": 26.400671, "lon": 127.724288, "note": "県道６号線タウンプラザかねひで道向かいのガードパイプ"}, {"no": "1-5", "addr": "波平847番地", "lat": 26.405534, "lon": 127.729776, "note": "県道6号線 セブンイレブン付近のガードパイプ"}, {"no": "1-6", "addr": "高志保217番地", "lat": 26.409786, "lon": 127.733594, "note": "高志保公民館近くの花壇付近"}, {"no": "1-7", "addr": "高志保1323番地", "lat": 26.408393, "lon": 127.732179, "note": "県道6号線 高志保三叉路のガードパイプ"}, {"no": "2-1", "addr": "高志保1601番地3", "lat": 26.411964, "lon": 127.734785, "note": "宇座東公園入口"}, {"no": "2-2", "addr": "長浜1409番地1", "lat": 26.415995, "lon": 127.729366, "note": "儀間公民館入り口近くのフェンス"}, {"no": "2-3", "addr": "渡慶次1040番地4", "lat": 26.417569, "lon": 127.725557, "note": "村道渡慶次−波平線 ふれあい雑貨店道向かいのガードレール"}, {"no": "2-4", "addr": "渡慶次255番地1", "lat": 26.421634, "lon": 127.725174, "note": "渡慶次運道公園入り口の花壇"}, {"no": "2-5", "addr": "瀬名波510番地", "lat": 26.418601, "lon": 127.727999, "note": "渡慶次小学校正門前プールのフェンス"}, {"no": "2-6", "addr": "瀬名波633番地4", "lat": 26.419986, "lon": 127.732456, "note": "県道6号線 読谷バスターミナル近くのガードパイプ"}, {"no": "2-7", "addr": "長浜15番地", "lat": 26.421627, "lon": 127.738785, "note": "長浜公民館近くのゲードボール場の擬木フェンス"}, {"no": "2-8", "addr": "長浜715番地2", "lat": 26.419578, "lon": 127.738121, "note": "村道長浜2号線沿いのガードレール"}, {"no": "2-9", "addr": "瀬名波468番地1", "lat": 26.42441, "lon": 127.730516, "note": "県道6号線瀬名波468番地1　かりゆし薬局駐車場付近"}, {"no": "2-10", "addr": "宇座309番地", "lat": 26.425741, "lon": 127.720723, "note": "村道宇座1号線沿い宇座309番地向かいのガードレール"}, {"no": "3-1", "addr": "比謝矼20番地", "lat": 26.371286, "lon": 127.755641, "note": "大湾交差点大型ビジョン下の緑地帯に設置"}, {"no": "3-2", "addr": "大木294番地1", "lat": 26.380572, "lon": 127.746187, "note": "大木公民館のフェンス"}, {"no": "3-3", "addr": "大木322番地3", "lat": 26.382403, "lon": 127.748866, "note": "県道6号線 大木交差点のガードフェンス"}, {"no": "3-4", "addr": "伊良皆358番地3", "lat": 26.381391, "lon": 127.749745, "note": "村道沿いの空き地"}, {"no": "3-5", "addr": "楚辺1049番地5", "lat": 26.383292, "lon": 127.742457, "note": "県道6号線沿い 古堅小学校入り口バス停近くのガードフェンス"}, {"no": "3-6", "addr": "伊良皆579番地1", "lat": 26.386501, "lon": 127.752758, "note": "村道伊良皆西線沿い伊良皆579番地1向かい緑地帯"}, {"no": "3-7", "addr": "伊良皆286番地", "lat": 26.382669, "lon": 127.754305, "note": "県道6号線沿い伊良皆バス停の道向かいのガードパイプ"}, {"no": "3-8", "addr": "", "lat": 26.383026, "lon": 127.755786, "note": "国道58号線伊良皆交差点付近の歩道緑地帯"}, {"no": "4-1", "addr": "喜名2346番地11", "lat": 26.393325, "lon": 127.746071, "note": "村道中央残波線沿い 読谷村地域振興センターの緑地帯"}, {"no": "4-2", "addr": "喜名215番地1", "lat": 26.395194, "lon": 127.755673, "note": "本部採石資材置き場の金網フェンス"}, {"no": "4-3", "addr": "喜名482番地", "lat": 26.399035, "lon": 127.757137, "note": "喜名野外ステージ入り口近く"}, {"no": "4-4", "addr": "喜名307番地", "lat": 26.398199, "lon": 127.75357, "note": "村道親志−喜名線沿い喜名307番地向かいのフェンス"}, {"no": "4-5", "addr": "座喜味2717番地3", "lat": 26.403076, "lon": 127.756208, "note": "村道親志線沿い座喜味2717番地3カーブミラー付近　村道用残地"}, {"no": "4-6", "addr": "座喜味2287番地1", "lat": 26.403122, "lon": 127.752449, "note": "県道12号線沿いのガードパイプ"}, {"no": "4-7", "addr": "座喜味524番地3", "lat": 26.402445, "lon": 127.742279, "note": "県道6号線沿い座喜味公園近くのガードパイプ"}, {"no": "4-8", "addr": "", "lat": 26.40431, "lon": 127.746205, "note": "CoCo動物病院近くの信号のある交差点付近"}, {"no": "4-9", "addr": "座喜味419番地1", "lat": 26.40442, "lon": 127.743863, "note": "座喜味公民館のフェンス"}, {"no": "4-10", "addr": "座喜味2643番地4", "lat": 26.410994, "lon": 127.752456, "note": "シーレイク座喜味入口近くの空き地"}, {"no": "5-1", "addr": "都屋268番地4", "lat": 26.39158, "lon": 127.728751, "note": "県道6号線沿い イオンドラッグ入口近くの緑地帯"}, {"no": "5-2", "addr": "都屋307番地", "lat": 26.391807, "lon": 127.72649, "note": "都屋公民館入り口"}, {"no": "5-3", "addr": "楚辺1928番地1", "lat": 26.385728, "lon": 127.727185, "note": "楚辺公民館入り口近くの植え込み"}, {"no": "5-4", "addr": "楚辺2086番地3", "lat": 26.387838, "lon": 127.730683, "note": "県道6号線沿い 楚辺バス停近くのガードパイプ"}, {"no": "5-5", "addr": "楚辺1272番地2", "lat": 26.385946, "lon": 127.737145, "note": "県道6号線沿い楚辺東公園のガードパイプ"}, {"no": "6-1", "addr": "大湾459番地3", "lat": 26.370759, "lon": 127.753768, "note": "県道16号線の緑地帯"}, {"no": "6-2", "addr": "古堅64番地1", "lat": 26.369593, "lon": 127.750763, "note": "古堅第一公園のフェンス"}, {"no": "6-3", "addr": "古堅60番地1", "lat": 26.368497, "lon": 127.752198, "note": "古堅第二公園のトイレ近く"}, {"no": "6-4", "addr": "比謝229番地1", "lat": 26.378371, "lon": 127.752233, "note": "村道大木−比謝線沿い 県営比謝団地入り口近くのガードレール"}, {"no": "6-5", "addr": "大湾507番地1", "lat": 26.372109, "lon": 127.752442, "note": "村道大湾−古堅線沿い 三叉路のガードレール"}, {"no": "6-6", "addr": "古堅843番地8", "lat": 26.37027, "lon": 127.746781, "note": "県道16号線 古堅給油所向かいの分離帯緑地帯"}, {"no": "6-7", "addr": "渡具知249番地1", "lat": 26.367301, "lon": 127.742412, "note": "村道泊城線沿い 三叉路の緑地帯"}, {"no": "6-8", "addr": "古堅656番地3", "lat": 26.367816, "lon": 127.747191, "note": "村道水釜−大木線沿い 三叉路近くの緑地帯"}];
+
+const KEY_LOCATIONS = {
+  early: [
+    { name:"期日前投票所（読谷村役場 1階 村民ホール）", addr:"沖縄県中頭郡読谷村字座喜味2901番地1", lat:26.396011, lon:127.744781, note:"投票時間：8時30分〜20時" }
+  ],
+  polling: [
+    { name:"第1投票所　波平自治会館 ホール", addr:"沖縄県中頭郡読谷村字波平61番地", lat:26.405766, lon:127.733940 },
+    { name:"第2投票所　読谷村立渡慶次小学校 体育館", addr:"沖縄県中頭郡読谷村字瀬名波510番地", lat:26.418243, lon:127.728844 },
+    { name:"第3投票所　読谷村立古堅中学校", addr:"沖縄県中頭郡読谷村字伊良皆297番地", lat:26.380877, lon:127.752670 },
+    { name:"第4投票所　喜名自治会館 ホール", addr:"沖縄県中頭郡読谷村字喜名2207番地", lat:26.398945, lon:127.756241 },
+    { name:"第5投票所　楚辺自治会館 大ホール", addr:"沖縄県中頭郡読谷村字楚辺1928番地1", lat:26.386057, lon:127.726219 },
+    { name:"第6投票所　古堅自治会館 ホール", addr:"沖縄県中頭郡読谷村字古堅75番地3", lat:26.367462, lon:127.748299 }
+  ]
+};
+
+(function initElectionMap(){
+  try{
+    const mapEl = document.getElementById("election-map");
+    if(!mapEl || typeof window.L === "undefined") return;
+
+    let map = null;
+    let layers = null;
+    let initialized = false;
+
+    function mapsUrl(addr){
+      return "https://www.google.com/maps/search/?api=1&query=" + encodeURIComponent(addr);
+    }
+
+    // ピン・掲示場マーカーは、拡大するほど少し大きく表示されるようにする
+    // （Leafletのマーカーは既定だとズームレベルに関わらず画面上のサイズが固定のため、
+    // 　zoomend イベントに合わせて手動でサイズを再計算する）。
+    const BASE_ZOOM = 13;
+    const BASE_PIN_SIZE = 30;
+    const BASE_POSTER_RADIUS = 6;
+    function zoomScale(zoom){
+      const s = Math.pow(1.18, zoom - BASE_ZOOM);
+      return Math.max(0.75, Math.min(s, 2.6));
+    }
+    function pinIcon(bg, emoji, size){
+      size = size || BASE_PIN_SIZE;
+      const fontSize = Math.round(size * 0.47);
+      return L.divIcon({
+        className:"",
+        html:'<div class="map-pin-emoji" style="background:'+bg+';width:'+size+'px;height:'+size+'px;">'
+             +'<span style="font-size:'+fontSize+'px;">'+emoji+'</span></div>',
+        iconSize:[size, size],
+        iconAnchor:[size/2, size - 3],
+        popupAnchor:[0, -(size - 4)]
+      });
+    }
+
+    function buildMap(){
+      if(initialized) return;
+      initialized = true;
+
+      map = L.map("election-map", { scrollWheelZoom:false }).setView([26.396, 127.740], 13);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom:19,
+        attribution:'&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors'
+      }).addTo(map);
+
+      const posterLayer = L.layerGroup();
+      const earlyLayer = L.layerGroup();
+      const pollingLayer = L.layerGroup();
+
+      // ズーム時にサイズを再計算するため、円マーカーとピンマーカーへの参照を保持しておく
+      const posterMarkers = [];
+      const pinMarkers = [];
+
+      POSTER_DATA.forEach(p=>{
+        const label = "掲示場 " + p.no + (p.addr ? "（字" + p.addr + "）" : "");
+        const cm = L.circleMarker([p.lat, p.lon], {
+          radius:BASE_POSTER_RADIUS, weight:2, color:"#fff", fillColor:"#0e5f76",
+          fillOpacity:0.9
+        })
+        .bindPopup("<b>" + label + "</b><br>" + (p.note || ""))
+        .addTo(posterLayer);
+        posterMarkers.push(cm);
+      });
+
+      KEY_LOCATIONS.early.forEach(loc=>{
+        const mk = L.marker([loc.lat, loc.lon], { icon: pinIcon("#ffb545", "🏛️") })
+          .bindPopup(
+            "<b>" + loc.name + "</b><br>" + loc.addr +
+            (loc.note ? "<br>" + loc.note : "") +
+            '<br><a href="' + mapsUrl(loc.addr) + '" target="_blank" rel="noopener">Googleマップで見る →</a>'
+          )
+          .addTo(earlyLayer);
+        pinMarkers.push({ marker:mk, bg:"#ffb545", emoji:"🏛️" });
+      });
+
+      KEY_LOCATIONS.polling.forEach(loc=>{
+        const mk = L.marker([loc.lat, loc.lon], { icon: pinIcon("#e2483d", "🗳️") })
+          .bindPopup(
+            "<b>" + loc.name + "</b><br>" + loc.addr +
+            '<br><a href="' + mapsUrl(loc.addr) + '" target="_blank" rel="noopener">Googleマップで見る →</a>'
+          )
+          .addTo(pollingLayer);
+        pinMarkers.push({ marker:mk, bg:"#e2483d", emoji:"🗳️" });
+      });
+
+      posterLayer.addTo(map);
+      earlyLayer.addTo(map);
+      pollingLayer.addTo(map);
+
+      layers = { poster:posterLayer, early:earlyLayer, polling:pollingLayer };
+
+      function updateMarkerSizes(){
+        const scale = zoomScale(map.getZoom());
+        posterMarkers.forEach(cm=>{ cm.setRadius(BASE_POSTER_RADIUS * scale); });
+        pinMarkers.forEach(pm=>{
+          pm.marker.setIcon(pinIcon(pm.bg, pm.emoji, BASE_PIN_SIZE * scale));
+        });
+      }
+      map.on("zoomend", updateMarkerSizes);
+
+      document.querySelectorAll(".map-legend-item").forEach(item=>{
+        item.addEventListener("click", ()=>{
+          const key = item.getAttribute("data-layer");
+          const layer = layers[key];
+          if(!layer) return;
+          const isActive = item.classList.toggle("active");
+          if(isActive){ layer.addTo(map); } else { map.removeLayer(layer); }
+        });
+      });
+    }
+
+    function showAndResize(){
+      buildMap();
+      // タブが表示された直後はレイアウト確定前のことがあるため、
+      // 少し待ってからサイズを再計算する（Leafletの定石対応）。
+      setTimeout(()=>{ if(map) map.invalidateSize(); }, 60);
+    }
+
+    document.querySelectorAll('a[href="#map"]').forEach(a=>{
+      a.addEventListener("click", showAndResize);
+    });
+    if(location.hash === "#map"){
+      setTimeout(showAndResize, 60);
+    }
+  }catch(err){
+    if(window.console && console.error) console.error("initElectionMap failed:", err);
   }
 })();
 </script>
