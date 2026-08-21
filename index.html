@@ -479,9 +479,14 @@
   .map-legend-item.poster:not(.active) .dot{background:var(--sea-dark);}
   .map-legend-item.early:not(.active) .dot{background:var(--sun);}
   .map-legend-item.polling:not(.active) .dot{background:var(--gov);}
+  /* position:relative + 明示的なz-index を指定することで、この要素自体が
+     独立したスタッキングコンテキストになる。こうしておかないと、Leaflet内部の
+     パーツ（ズームボタンなどz-index:1000前後）がこの要素の"外側"の
+     スタッキング順に紛れ込み、ドロワーメニュー（z-index:9999）より
+     手前に表示されてしまうことがある。 */
   #election-map{
     width:100%;height:min(72vh,560px);border-radius:14px;overflow:hidden;
-    background:var(--sand-2);
+    background:var(--sand-2);position:relative;z-index:0;isolation:isolate;
   }
   .map-note{margin-top:14px;font-size:12.5px;color:var(--ink-soft);line-height:1.7;}
   /* Leafletのポップアップをサイトのトーンに合わせて調整 */
