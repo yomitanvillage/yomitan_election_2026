@@ -492,12 +492,15 @@
   /* Leafletのポップアップをサイトのトーンに合わせて調整 */
   .leaflet-popup-content{font-family:inherit;font-size:13px;line-height:1.6;}
   .leaflet-popup-content b{color:var(--ink);}
+  /* border-radiusで左下だけ角を残し、-45deg回転させることで
+     尖った部分（角）がちょうど真下を向くようにしている（定番のCSS地図ピンの作り方）。
+     中のspanは逆回転させて、絵文字自体は正立させる。 */
   .map-pin-emoji{
     display:flex;align-items:center;justify-content:center;width:30px;height:30px;
-    border-radius:50% 50% 50% 4px;transform:rotate(45deg);box-shadow:0 2px 6px rgba(0,0,0,.3);
+    border-radius:50% 50% 50% 0;transform:rotate(-45deg);box-shadow:0 2px 6px rgba(0,0,0,.3);
     border:2px solid #fff;
   }
-  .map-pin-emoji span{display:block;transform:rotate(-45deg);font-size:14px;}
+  .map-pin-emoji span{display:block;transform:rotate(45deg);font-size:14px;}
 
   /* ---------- Contact / footer ---------- */
   .contact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
@@ -1715,11 +1718,11 @@ const KEY_LOCATIONS = {
   ],
   polling: [
     { name:"第1投票所　波平自治会館 ホール", addr:"沖縄県中頭郡読谷村字波平61番地", lat:26.405766, lon:127.733940 },
-    { name:"第2投票所　読谷村立渡慶次小学校 体育館", addr:"沖縄県中頭郡読谷村字瀬名波510番地", lat:26.418243, lon:127.728844 },
+    { name:"第2投票所　読谷村立渡慶次小学校 体育館", addr:"沖縄県中頭郡読谷村字瀬名波510番地", lat:26.417736980528197, lon:127.7288251804656 },
     { name:"第3投票所　読谷村立古堅中学校", addr:"沖縄県中頭郡読谷村字伊良皆297番地", lat:26.380877, lon:127.752670 },
-    { name:"第4投票所　喜名自治会館 ホール", addr:"沖縄県中頭郡読谷村字喜名2207番地", lat:26.398945, lon:127.756241 },
-    { name:"第5投票所　楚辺自治会館 大ホール", addr:"沖縄県中頭郡読谷村字楚辺1928番地1", lat:26.386057, lon:127.726219 },
-    { name:"第6投票所　古堅自治会館 ホール", addr:"沖縄県中頭郡読谷村字古堅75番地3", lat:26.367462, lon:127.748299 }
+    { name:"第4投票所　喜名自治会館 ホール", addr:"沖縄県中頭郡読谷村字喜名2207番地", lat:26.39902901891659, lon:127.75671918089957 },
+    { name:"第5投票所　楚辺自治会館 大ホール", addr:"沖縄県中頭郡読谷村字楚辺1928番地1", lat:26.38574006183021, lon:127.72716121183082 },
+    { name:"第6投票所　古堅自治会館 ホール", addr:"沖縄県中頭郡読谷村字古堅75番地3", lat:26.369454003163632, lon:127.7504731897621 }
   ]
 };
 
