@@ -108,6 +108,11 @@
     .header-call-btn{animation:none;}
   }
 
+  /* ドロワーメニューの✕ボタンはスマホのハンバーガーメニュー専用。
+     PC表示ではナビが横並びの通常表示のため、既定では非表示にしておく
+     （下のスマホ用メディアクエリで表示・配置する）。 */
+  .nav-close{display:none;}
+
   @media(max-width:760px){
     .nav-row{flex-wrap:nowrap;gap:8px;}
     .menu-toggle{display:flex;order:2;}
@@ -145,8 +150,6 @@
     }
     .nav-overlay.nav-open{opacity:1;visibility:visible;}
     body.nav-locked{overflow:hidden;}
-    /* スマホではヘッダーのボタンに集約するため、ヒーロー内の大きいCTAは非表示 */
-    .ai-dial-cta{display:none;}
   }
 
   /* タブ表示モード（NAV_MODE = "tabs" のとき有効。JS側で切替可能） */
@@ -189,21 +192,6 @@
     .hero .datebox .small{font-size:8.5px;}
     .hero .datebox .big{font-size:12.5px;}
   }
-
-  .ai-dial-cta{margin-top:14px;}
-  .ai-dial-btn{
-    display:inline-flex;align-items:center;gap:12px;background:#fff;color:var(--sea-dark);
-    border:none;border-radius:14px;padding:9px 18px 9px 9px;cursor:pointer;box-shadow:var(--shadow);
-    font-family:inherit;text-align:left;transition:.15s;
-  }
-  .ai-dial-btn:hover{background:#fffaf0;}
-  .ai-dial-icon{
-    font-size:19px;background:var(--sun);color:#5a3a00;width:36px;height:36px;border-radius:50%;
-    display:flex;align-items:center;justify-content:center;flex:0 0 36px;
-  }
-  .ai-dial-text{display:flex;flex-direction:column;gap:2px;}
-  .ai-dial-label{font-weight:800;font-size:13px;}
-  .ai-dial-num{font-size:11.5px;color:var(--ink-soft);}
 
   /* ---------- Section shell ---------- */
   section{padding:56px 0;}
@@ -450,6 +438,19 @@
   }
   .contact-strip div b{display:block;font-size:12px;color:var(--ink-soft);font-weight:700;margin-bottom:2px;}
 
+  /* ---------- 投票日当日に行けない方へ ---------- */
+  .altv-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:18px;}
+  @media(max-width:760px){.altv-grid{grid-template-columns:1fr;}}
+  .altv-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:22px;}
+  .altv-num{
+    display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;
+    border-radius:50%;background:var(--sea);color:#fff;font-weight:800;font-size:13px;margin-bottom:10px;
+  }
+  .altv-card h5{margin:0 0 6px;font-size:15.5px;color:var(--ink);}
+  .altv-card > p{margin:0 0 10px;font-size:13px;color:var(--coral);font-weight:700;}
+  .altv-detail{margin:0 0 12px;font-size:13.5px;color:var(--ink-soft);line-height:1.75;}
+  .altv-link{display:inline-block;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
+
   /* ---------- Polling places ---------- */
   .poll-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
   @media(max-width:760px){.poll-grid{grid-template-columns:1fr;}}
@@ -556,6 +557,15 @@
   .modal-box h3{margin:0 0 12px;font-size:16.5px;color:var(--ink);}
   .modal-box p{margin:0 0 20px;font-size:13.5px;color:var(--ink-soft);line-height:1.75;text-align:left;}
   .modal-box p b{color:var(--ink);}
+  /* PCでは tel: リンクをクリックしても発信できない端末が多いため、
+     PC表示のときだけ番号を案内する（スマホはそのまま発信できるので非表示のまま）。 */
+  .modal-tel-note{
+    display:none;margin:-6px 0 20px;font-size:14px;font-weight:800;color:var(--sea-dark);
+    background:var(--sand-2);border-radius:10px;padding:10px 14px;text-align:center;
+  }
+  @media(min-width:761px){
+    .modal-tel-note{display:block;}
+  }
   .modal-actions{display:flex;gap:10px;}
   .modal-actions button{
     flex:1;padding:11px;border-radius:999px;font-weight:800;font-size:13.5px;
@@ -582,6 +592,7 @@
       <button type="button" class="nav-close" id="nav-close" aria-label="メニューを閉じる">✕</button>
       <a href="#info">選挙情報</a>
       <a href="#early">期日前投票</a>
+      <a href="#alt-voting">行けない方へ</a>
       <a href="#polling">投票所案内</a>
       <a href="#map">掲示場マップ</a>
       <a href="#turnout">投票率速報</a>
@@ -602,15 +613,6 @@
       </div>
       <span class="eyebrow">沖縄県知事選挙 × 読谷村議会議員選挙　同日開催</span>
     </div>
-    <div class="ai-dial-cta">
-      <button type="button" class="ai-dial-btn js-open-ai-call">
-        <span class="ai-dial-icon">📞</span>
-        <span class="ai-dial-text">
-          <span class="ai-dial-label">選挙のことをAIに電話で聞く</span>
-          <span class="ai-dial-num">読谷村選挙ご案内ダイヤル</span>
-        </span>
-      </button>
-    </div>
   </div>
 </section>
 
@@ -628,7 +630,7 @@
          下の news-empty の行は削除してください（日付＋タイトルをタップするとリンク先へ遷移する）。 -->
     <div class="news-card">
       <div class="news-card-head"><span class="news-icon">📢</span><h3>新着案内</h3></div>
-      <ul class="news-list">
+      <ul class="news-list" id="news-list">
         <li>
           <a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/gyomu/senkyo/7289.html" target="_blank" rel="noopener">
             <span class="news-date">8/25</span>
@@ -710,6 +712,75 @@
         💡 <b>9/9〜9/12は両方の選挙の期日前投票が可能な期間</b>です。8/28〜9/8は知事選のみ期日前投票ができます（村議選はまだ告示前）。<br>
         <b>期日前投票所</b>　場所：読谷村役場 １階　村民ホール　／　投票時間：8時30分から20時まで
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 投票日当日に投票所へ行けない方へ ==========
+     読谷村公式サイト「投票日当日に投票所へ行けない方へ」を基に要約・再構成。
+     https://www.vill.yomitan.okinawa.jp/soshiki/senkan/7182.html -->
+<section id="alt-voting" data-tab-panel>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Alternative Voting</div>
+      <h2>投票日当日に投票所へ行けない方へ</h2>
+      <p>仕事や旅行の予定がある方、体調やご事情で投票所での記入が難しい方も、次のいずれかの方法で投票できます。</p>
+    </div>
+
+    <div class="altv-grid">
+      <div class="altv-card">
+        <div class="altv-num">1</div>
+        <h5>期日前投票</h5>
+        <p>投票日前に、読谷村内で先に投票したい方向け</p>
+        <div class="altv-detail">
+          投票日当日に仕事や旅行、冠婚葬祭などの予定があり投票所へ行けない見込みの方は、投票日より前に投票できます。<br>
+          場所：読谷村役場 1階 村民ホール／時間：8時30分〜20時（期間の詳細は<a href="#early">期日前投票のご案内</a>をご覧ください）<br>
+          投票所入場券裏面の「期日前投票宣誓書」を書いて持参すると受付がスムーズです。入場券が手元になくても、本人確認ができれば投票できます。
+        </div>
+      </div>
+
+      <div class="altv-card">
+        <div class="altv-num">2</div>
+        <h5>滞在先での不在者投票</h5>
+        <p>仕事や旅行などで読谷村外に滞在している方向け</p>
+        <div class="altv-detail">
+          事前に読谷村選挙管理委員会へ投票用紙などを請求（窓口・郵送・オンラインのいずれか）したうえで、滞在先の市区町村の選挙管理委員会で投票します。郵送での請求は日数がかかるため、早めの手続きをおすすめします。マイナンバーカードをお持ちの方は、マイナポータル「ぴったりサービス」からオンライン請求も可能です。
+        </div>
+        <a class="altv-link" href="https://www.soumu.go.jp/main_content/000744330.pdf" target="_blank" rel="noopener">📄 不在者投票の請求書をダウンロードする（PDF）</a>
+      </div>
+
+      <div class="altv-card">
+        <div class="altv-num">3</div>
+        <h5>施設での不在者投票</h5>
+        <p>指定された病院や老人ホームなどに入院・入所している方向け</p>
+        <div class="altv-detail">
+          県選挙管理委員会が指定した病院・老人ホームなどでは、施設内で不在者投票ができる場合があります。希望する場合は、入院・入所先の職員へお申し出ください。施設が対象かどうかは、病院・施設へ直接お問い合わせください。
+        </div>
+      </div>
+
+      <div class="altv-card">
+        <div class="altv-num">4</div>
+        <h5>郵便等による不在者投票</h5>
+        <p>重度の障がいがある方、または要介護5に該当する方向け</p>
+        <div class="altv-detail">
+          対象：身体障害者手帳・戦傷病者手帳をお持ちで一定の重度の障がいがある方、または要介護状態区分が「要介護5」の方。あらかじめ読谷村選挙管理委員会へ申請し「郵便等投票証明書」の交付を受ける必要があります。自分で記入することが難しい方は、事前届出により代理記載人に記入してもらえる場合もあります（手続きに時間がかかるため早めのご相談を）。
+        </div>
+        <a class="altv-link" href="https://www.soumu.go.jp/senkyo/senkyo_s/news/touhyou/yuubin/yuubin01.html" target="_blank" rel="noopener">郵便等による不在者投票の詳しい要件はこちら →</a>
+      </div>
+
+      <div class="altv-card">
+        <div class="altv-num">5</div>
+        <h5>代理投票</h5>
+        <p>障がいやけが、読み書きが難しいなどの事情がある方向け</p>
+        <div class="altv-detail">
+          投票用紙へ自分で文字を記入することが難しい方は、投票所の受付で係員にお申し出いただければ、記入をお手伝いします。投票内容の秘密は守られます。<br>
+          ※代理投票は家族や付き添いの方が本人に代わって投票する制度ではありません。ご本人が投票所へお越しいただく必要があります。
+        </div>
+      </div>
+    </div>
+
+    <div class="note-box">
+      詳しくは読谷村公式サイト「<a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/7182.html" target="_blank" rel="noopener">投票日当日に投票所へ行けない方へ</a>」もご確認ください。ご不明な点は読谷村選挙管理委員会（098-982-9227）へお問い合わせください。
     </div>
   </div>
 </section>
@@ -1226,6 +1297,7 @@
     <div class="modal-icon">🤖📞</div>
     <h3>読谷村選挙ご案内ダイヤルにお電話しますか？</h3>
     <p>このお電話は<b>AIが自動音声でご案内するサービス</b>です。投票所や期日前投票の期間など、選挙に関するご質問に24時間いつでもお答えします。より詳しいご相談は、読谷村選挙管理委員会（098-982-9227）でも承っています。</p>
+    <p class="modal-tel-note" id="ai-call-tel-note"></p>
     <div class="modal-actions">
       <button type="button" class="modal-cancel" id="ai-call-cancel">キャンセル</button>
       <button type="button" class="modal-confirm" id="ai-call-confirm">同意して電話をかける</button>
@@ -1402,6 +1474,64 @@ function addDays(dateStr, n){
  }catch(err){
   if(window.console && console.error) console.error("renderTimeline failed:", err);
  }
+})();
+
+/* ============================================================
+   新着案内：期日前投票の開始を自動でお知らせする
+   ・8/28になったら「沖縄県知事選挙の期日前投票が始まりました」
+   ・9/9になったら「読谷村議会議員選挙の期日前投票が始まりました」
+   を、新着案内リスト（#news-list）の先頭に自動で追加する。
+   日付はELECTION_DATAのearlyStartを見ているので、日程が変わった場合も
+   ここは書き換え不要（ELECTION_DATA側だけ直せばOK）。
+   ============================================================ */
+(function announceEarlyVotingStart(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+
+    function fmtMD(dateStr){
+      const parts = dateStr.split("-");
+      return Number(parts[1]) + "/" + Number(parts[2]);
+    }
+    function todayStr(){
+      const now = new Date();
+      const y = now.getFullYear();
+      const m = String(now.getMonth()+1).padStart(2,"0");
+      const d = String(now.getDate()).padStart(2,"0");
+      return y+"-"+m+"-"+d;
+    }
+    function addAnnouncement(dateStr, title){
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = "#early";
+      const dateSpan = document.createElement("span");
+      dateSpan.className = "news-date";
+      dateSpan.textContent = fmtMD(dateStr);
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "news-title";
+      titleSpan.textContent = title;
+      const arrowSpan = document.createElement("span");
+      arrowSpan.className = "news-arrow";
+      arrowSpan.textContent = "›";
+      a.appendChild(dateSpan);
+      a.appendChild(titleSpan);
+      a.appendChild(arrowSpan);
+      li.appendChild(a);
+      listEl.insertBefore(li, listEl.firstChild);
+    }
+
+    const today = todayStr();
+    // insertBeforeで毎回先頭に追加するため、古い方（知事選）を先に追加してから
+    // 新しい方（村議選）を追加すると、表示は新しい順（村議選が一番上）になる。
+    if(today >= ELECTION_DATA.governor.earlyStart){
+      addAnnouncement(ELECTION_DATA.governor.earlyStart, "沖縄県知事選挙の期日前投票が始まりました");
+    }
+    if(today >= ELECTION_DATA.assembly.earlyStart){
+      addAnnouncement(ELECTION_DATA.assembly.earlyStart, "読谷村議会議員選挙の期日前投票が始まりました");
+    }
+  }catch(err){
+    if(window.console && console.error) console.error("announceEarlyVotingStart failed:", err);
+  }
 })();
 
 // ---- 投票率速報グラフ（スマホ用・縦積みの横バーリスト）描画 ----
@@ -1591,7 +1721,9 @@ const NAV_MODE = "tabs";
 
 (function initNav(){
   try{
-    const navLinks = Array.from(document.querySelectorAll('nav.tabs a, footer a[href^="#"], .news-list a[href^="#"]'));
+    // タブ間を行き来する本文中のリンク（例：新着案内や「行けない方へ」の中の
+    // 「期日前投票のご案内はこちら」等）も、タブ切替の対象に含める。
+    const navLinks = Array.from(document.querySelectorAll('nav.tabs a, footer a[href^="#"], .news-list a[href^="#"], .altv-detail a[href^="#"]'));
     const panels = Array.from(document.querySelectorAll("section[data-tab-panel]"));
 
     function activate(id, opts){
@@ -1693,7 +1825,13 @@ const AI_DIAL_TEL = "050-1785-6183";
     const modal = document.getElementById("ai-call-modal");
     const cancelBtn = document.getElementById("ai-call-cancel");
     const confirmBtn = document.getElementById("ai-call-confirm");
+    const telNote = document.getElementById("ai-call-tel-note");
     if(!modal || !cancelBtn || !confirmBtn) return;
+
+    // PC表示のときだけCSSで表示される注意書き。ここでは常に文言をセットしておく。
+    if(telNote){
+      telNote.textContent = "PCからは自動発信できません。この番号へおかけください：" + AI_DIAL_TEL;
+    }
 
     function openModal(){ modal.classList.add("open"); }
     function closeModal(){ modal.classList.remove("open"); }
