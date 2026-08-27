@@ -281,6 +281,10 @@
   .tl-voteday{
     position:absolute;top:-4px;bottom:-4px;width:5px;background:var(--sun);border-radius:4px;
   }
+  /* 「今日」の位置を示す縦線（期間内のときだけJSで追加される） */
+  .tl-today{
+    position:absolute;top:-6px;bottom:-6px;width:0;border-left:2px dashed var(--coral);z-index:2;
+  }
   /* 日付めもり：バーと同じ「offset/totalDays」の割合でJSが left(%) を指定するため、
      バーの区切りと必ず一致する（space-between等の均等割りは使わない）。 */
   .tl-datelabels{
@@ -288,6 +292,7 @@
     font-size:9.5px;color:var(--ink-soft);margin-top:8px;
   }
   .tl-datelabels span{position:absolute;top:0;white-space:nowrap;}
+  .tl-datelabels span.is-today{color:var(--coral);font-weight:800;}
   .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:20px;font-size:12px;color:var(--ink-soft);}
   .legend span.sw{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:6px;vertical-align:-1px;}
 
@@ -295,6 +300,29 @@
     margin-top:20px;background:var(--sand-2);border:1px solid var(--line);border-radius:12px;
     padding:14px 18px;font-size:13.5px;color:var(--ink-soft);
   }
+
+  /* ---------- 期日前投票所：場所・時間カード ---------- */
+  .early-place-card{
+    background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:20px 22px;margin-top:18px;
+    display:flex;flex-wrap:wrap;gap:18px 28px;align-items:center;justify-content:space-between;
+  }
+  .ep-info{display:flex;gap:26px;flex-wrap:wrap;}
+  .ep-row{display:flex;align-items:flex-start;gap:10px;}
+  .ep-icon{font-size:20px;line-height:1.3;}
+  .ep-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;margin-bottom:2px;}
+  .ep-value{font-size:14.5px;font-weight:800;color:var(--ink);}
+  .ep-map-link{flex:0 0 auto;font-size:12.5px;font-weight:700;color:var(--sea-dark);white-space:nowrap;}
+  @media(max-width:600px){
+    .early-place-card{flex-direction:column;align-items:stretch;}
+    .ep-info{gap:16px;}
+  }
+
+  /* ---------- 持ち物・入場券FAQ ---------- */
+  .ep-items-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:20px 22px;margin-top:18px;}
+  .ep-items-title{font-weight:800;font-size:14px;color:var(--sea-dark);margin-bottom:10px;}
+  .ep-items-list{margin:0 0 16px;padding-left:1.2em;font-size:13.5px;color:var(--ink);line-height:1.9;}
+  .ep-items-card details.qa{box-shadow:none;border:1px solid var(--line);}
+  .ep-items-card details.qa:last-child{margin-bottom:0;}
 
   /* ---------- ミニ誘導バナー：Q&Aや選挙違反など長いページの末尾で
      「読み終えたところで」AIダイアルへ案内する ---------- */
@@ -310,6 +338,7 @@
     white-space:nowrap;transition:.15s;
   }
   .ai-mini-cta-btn:hover{filter:brightness(1.06);}
+  a.ai-mini-cta-btn{display:inline-block;text-decoration:none;}
   @media(max-width:480px){
     .ai-mini-cta{flex-direction:column;align-items:stretch;text-align:center;}
     .ai-mini-cta-btn{width:100%;}
@@ -736,12 +765,59 @@
         <span><span class="sw" style="background:var(--gov)"></span>知事選 期日前投票期間</span>
         <span><span class="sw" style="background:var(--assembly)"></span>村議選 期日前投票期間</span>
         <span><span class="sw" style="background:var(--sun)"></span>投開票日（9/13）</span>
+        <span><span class="sw" style="background:var(--coral)"></span>本日</span>
       </div>
 
       <div class="note-box">
-        💡 <b>9/9〜9/12は両方の選挙の期日前投票が可能な期間</b>です。8/28〜9/8は知事選のみ期日前投票ができます（村議選はまだ告示前）。<br>
-        <b>期日前投票所</b>　場所：読谷村役場 １階　村民ホール　／　投票時間：8時30分から20時まで
+        💡 <b>9/9〜9/12は両方の選挙の期日前投票が可能な期間</b>です。8/28〜9/8は知事選のみ期日前投票ができます（村議選はまだ告示前）。
       </div>
+    </div>
+
+    <div class="early-place-card">
+      <div class="ep-info">
+        <div class="ep-row">
+          <span class="ep-icon">📍</span>
+          <div>
+            <div class="ep-label">期日前投票所</div>
+            <div class="ep-value">読谷村役場 1階 村民ホール</div>
+          </div>
+        </div>
+        <div class="ep-row">
+          <span class="ep-icon">🕒</span>
+          <div>
+            <div class="ep-label">投票時間</div>
+            <div class="ep-value">8時30分〜20時</div>
+          </div>
+        </div>
+      </div>
+      <a class="ep-map-link" target="_blank" rel="noopener" href="https://www.google.com/maps/search/?api=1&query=沖縄県中頭郡読谷村字座喜味2901番地1">地図を見る →</a>
+    </div>
+
+    <div class="ep-items-card">
+      <div class="ep-items-title">持ち物・入場券について</div>
+      <ul class="ep-items-list">
+        <li>投票所入場券（お持ちの場合）。裏面の「期日前投票宣誓書」に記入して持参すると受付がスムーズです。</li>
+        <li>入場券がない場合は、運転免許証やマイナンバーカードなどの本人確認書類があると受付がよりスムーズです。</li>
+      </ul>
+      <details class="qa" id="q-early-ticket-missing">
+        <summary><span class="q-mark">Q</span>入場券が届いていない・見当たらない場合は投票できますか？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>届いていない場合でも、読谷村の選挙人名簿に登録され、選挙権があることを確認できれば投票できます。受付で「入場券が手元にない」旨を係員にお申し出ください。</p>
+          <p>運転免許証やマイナンバーカードなど、お名前・ご住所が確認できるものをお持ちいただくと、本人確認がよりスムーズです。</p>
+        </div>
+      </details>
+      <details class="qa" id="q-early-ticket-forgot">
+        <summary><span class="q-mark">Q</span>入場券を忘れて持ってきてしまった場合は？<span class="arrow">▾</span></summary>
+        <div class="a-body">
+          <p>入場券は本人確認をスムーズにするための案内状で、投票に必須の持ち物ではありません。忘れてしまっても、お名前・ご住所を受付でお伝えいただければ投票できます。</p>
+          <p>運転免許証やマイナンバーカードなどの本人確認書類をお持ちであれば、あわせて提示いただくと確認がより早く済みます。</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="ai-mini-cta turnout-cta" style="background:linear-gradient(135deg,var(--sea) 0%,var(--sea-dark) 100%);">
+      <span class="ai-mini-cta-text">📊 今の期日前投票率（前回との比較）はこちらから確認できます</span>
+      <a class="ai-mini-cta-btn" href="#turnout">投票率速報を見る →</a>
     </div>
   </div>
 </section>
@@ -895,7 +971,7 @@
     <div class="sec-head">
       <div class="kicker">Turnout Report</div>
       <h2>読谷村の期日前投票 投票率速報</h2>
-      <p>読谷村における期日前投票の投票率（読谷村の有権者分のみ）を、毎日、前回（2022年）の同一選挙と比較して掲載します。県全体・他市町村の数値ではありません。数値は読谷村選挙管理委員会からの報告をもとに順次更新されます。</p>
+      <p>読谷村における期日前投票の投票率（読谷村の有権者分のみ）を、毎日、前回（2022年）の同一選挙と比較して掲載します。県全体・他市町村の数値ではありません。<b>その日の投票終了後に集計し、当日中に更新します</b>ので、日中はまだ前日までの数値のままとなります。</p>
     </div>
 
     <div class="switcher">
@@ -909,7 +985,7 @@
       <!-- 期日前投票がまだ始まっていない・数値が未入力の間だけ表示 -->
       <div class="turnout-waiting" id="turnout-waiting">
         <div class="tw-icon">🗳️</div>
-        <p class="tw-text">読谷村の期日前投票率速報はまだありません。<br><b id="tw-date"></b>から順次更新予定です。</p>
+        <p class="tw-text">読谷村の期日前投票率速報はまだありません。<br><b id="tw-date"></b>から、その日の投票終了後に順次更新予定です。</p>
       </div>
 
       <div class="chart-scroll" id="chart-scroll">
@@ -967,7 +1043,7 @@
         <summary><span class="q-mark">Q</span>投票所入場券が届いていなくても投票できますか？<span class="arrow">▾</span></summary>
         <div class="a-body">
           <p>投票所入場券が届いていない場合でも、読谷村の選挙人名簿に登録され、選挙権があることを確認できれば投票できます。</p>
-          <p>投票所の受付で、入場券が届いていないことを係員にお申し出ください。なお、選挙人名簿に登録されている投票所と異なる投票所では投票できません。投票所が分からない場合は、事前に読谷村選挙管理委員会へお問い合わせください。</p>
+          <p>投票所の受付で、入場券が届いていないことを係員にお申し出ください。運転免許証やマイナンバーカードなど、お名前・ご住所が確認できるものをお持ちいただくと、本人確認がよりスムーズです（必須ではありません）。なお、選挙人名簿に登録されている投票所と異なる投票所では投票できません。投票所が分からない場合は、事前に読谷村選挙管理委員会へお問い合わせください。</p>
         </div>
       </details>
       <details class="qa">
@@ -1525,6 +1601,14 @@ function addDays(dateStr, n){
   dt.setUTCDate(dt.getUTCDate()+n);
   return dt.toISOString().slice(0,10);
 }
+// 端末のローカル日付を "YYYY-MM-DD" で返す（今日の位置マーカーなどで使用）
+function todayISO(){
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth()+1).padStart(2,"0");
+  const d = String(now.getDate()).padStart(2,"0");
+  return y+"-"+m+"-"+d;
+}
 
 // ---- 期日前投票タイムライン描画（PC・スマホ共通の横長バー） ----
 // エラーが起きても、他の機能（投票率グラフやナビ）の初期化が止まらないようtry/catchで保護
@@ -1533,6 +1617,14 @@ function addDays(dateStr, n){
   const rangeStart = ELECTION_DATA.governor.earlyStart;
   const rangeEnd = ELECTION_DATA.voteDay;
   const totalDays = dayDiff(rangeStart, rangeEnd) + 1;
+
+  // 「今日」がこの表示期間（期日前投票の初日〜投開票日）に入っているかどうかを判定し、
+  // 入っていればバーの上に縦線で位置を示す。期間外（まだ始まっていない／もう終わった）
+  // ときは表示しない。
+  const today = todayISO();
+  const todayOffsetDays = dayDiff(rangeStart, today);
+  const todayInRange = todayOffsetDays >= 0 && todayOffsetDays <= totalDays - 1;
+  const todayPct = todayInRange ? (todayOffsetDays/totalDays*100) : null;
 
   function buildTrack(el, rangeLabelEl, ev){
     const track = document.getElementById(el);
@@ -1562,6 +1654,14 @@ function addDays(dateStr, n){
     voteDayEl.className = "tl-voteday";
     voteDayEl.style.left = (voteOffset/totalDays*100)+"%";
     track.appendChild(voteDayEl);
+
+    if(todayPct !== null){
+      const todayEl = document.createElement("div");
+      todayEl.className = "tl-today";
+      todayEl.style.left = todayPct+"%";
+      todayEl.setAttribute("aria-hidden", "true");
+      track.appendChild(todayEl);
+    }
 
     // バーが細くて日付テキストが「…」で省略される場合は、
     // バーの中に収めるのをやめてバーの外（すき間の広い側）に表示し直す。
@@ -1600,10 +1700,16 @@ function addDays(dateStr, n){
   // （知事選の終了日9/12は投開票日9/13と近すぎるため省略。バー下の期間表示で確認可）
   const labelsWrap = document.getElementById("tl-dates");
   const tickDates = [rangeStart, ELECTION_DATA.assembly.earlyStart, ELECTION_DATA.voteDay];
+  let todayMatchedExistingTick = false;
   tickDates.forEach((d,i)=>{
     const off = dayDiff(rangeStart, d)/totalDays*100;
     const s = document.createElement("span");
     s.textContent = fmtDate(d);
+    if(todayInRange && d === today){
+      s.textContent += "（本日）";
+      s.classList.add("is-today");
+      todayMatchedExistingTick = true;
+    }
     s.style.left = off+"%";
     if(i===0){
       s.style.transform = "translateX(0)";
@@ -1614,6 +1720,17 @@ function addDays(dateStr, n){
     }
     labelsWrap.appendChild(s);
   });
+
+  // 今日が上記3つの目盛り（初日・両選挙が重なる日・投開票日）のどれとも
+  // 一致しない場合は、専用の「本日」目盛りを追加する。
+  if(todayInRange && !todayMatchedExistingTick && todayPct !== null){
+    const s = document.createElement("span");
+    s.textContent = "本日 " + fmtDate(today);
+    s.classList.add("is-today");
+    s.style.left = todayPct+"%";
+    s.style.transform = "translateX(-50%)";
+    labelsWrap.appendChild(s);
+  }
  }catch(err){
   if(window.console && console.error) console.error("renderTimeline failed:", err);
  }
@@ -1950,7 +2067,7 @@ const NAV_MODE = "tabs";
   try{
     // タブ間を行き来する本文中のリンク（例：新着案内や「行けない方へ」の中の
     // 「期日前投票のご案内はこちら」等）も、タブ切替の対象に含める。
-    const navLinks = Array.from(document.querySelectorAll('nav.tabs a, footer a[href^="#"], .news-list a[href^="#"], .altv-detail a[href^="#"]'));
+    const navLinks = Array.from(document.querySelectorAll('nav.tabs a, footer a[href^="#"], .news-list a[href^="#"], .altv-detail a[href^="#"], .ai-mini-cta a[href^="#"]'));
     const panels = Array.from(document.querySelectorAll("section[data-tab-panel]"));
 
     function activate(id, opts){
