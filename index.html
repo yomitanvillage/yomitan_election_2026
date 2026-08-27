@@ -372,6 +372,9 @@
   .bar-labels{display:flex;gap:18px;padding:0 6px;margin-top:8px;}
   .bar-labels div{flex:0 0 54px;width:54px;text-align:center;font-size:12px;color:var(--ink-soft);}
   .chart-legend{display:flex;gap:20px;margin-top:20px;font-size:13px;color:var(--ink-soft);}
+  .chart-tap-hint{margin:10px 0 0;font-size:12px;color:var(--ink-soft);}
+  .chart-source{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-soft);line-height:1.8;}
+  .chart-source a{color:var(--sea-dark);}
   .summary-row{display:flex;gap:18px;margin-top:26px;flex-wrap:wrap;}
   .summary-pill{
     background:var(--sand-2);border-radius:14px;padding:14px 20px;flex:1;min-width:180px;
@@ -573,6 +576,34 @@
   }
   .modal-cancel{background:#fff;border-color:var(--line);color:var(--ink-soft);}
   .modal-confirm{background:var(--coral);color:#fff;}
+
+  /* ---------- 投票率速報：日別詳細ポップアップ ---------- */
+  .modal-box.turnout-detail-box{max-width:420px;text-align:left;position:relative;padding:30px 22px 20px;}
+  .td-close{
+    position:absolute;top:12px;right:12px;width:30px;height:30px;border-radius:50%;
+    border:none;background:var(--sand-2);color:var(--ink-soft);font-size:14px;cursor:pointer;
+    display:flex;align-items:center;justify-content:center;
+  }
+  .td-date{font-size:16.5px;font-weight:800;color:var(--ink);margin-bottom:2px;}
+  .td-election{font-size:12.5px;color:var(--ink-soft);margin-bottom:16px;}
+  .td-block{background:var(--sand-2);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+  .td-block:last-child{margin-bottom:0;}
+  .td-block-title{font-size:12.5px;font-weight:800;color:var(--sea-dark);margin-bottom:8px;}
+  .td-block.is-prev .td-block-title{color:var(--ink-soft);}
+  .td-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--ink);padding:3px 0;}
+  .td-row .td-label{color:var(--ink-soft);flex:0 0 auto;}
+  .td-row .td-num{font-weight:800;text-align:right;}
+  .td-empty{font-size:13px;color:var(--ink-soft);margin:0;}
+  .td-note{margin:14px 0 0;font-size:11px;color:var(--ink-soft);line-height:1.6;}
+
+  /* バー／モバイル行のタップ可能な見た目・フォーカス */
+  .bar-group.is-tappable{cursor:pointer;}
+  .bar-group.is-tappable:hover .bar{filter:brightness(1.06);}
+  .bar-group.is-tappable:focus-visible{outline:2px solid var(--sea-dark);outline-offset:4px;border-radius:6px;}
+  .tm-row.is-tappable{cursor:pointer;border-radius:10px;transition:background .15s;}
+  .tm-row.is-tappable:hover, .tm-row.is-tappable:focus-visible{background:var(--sand-2);}
+  .tm-row.is-tappable:focus-visible{outline:2px solid var(--sea-dark);outline-offset:2px;}
+  .tm-row-hint{font-size:10.5px;color:var(--ink-soft);text-align:right;margin-top:2px;}
 </style>
 </head>
 <body>
@@ -622,7 +653,6 @@
     <div class="sec-head">
       <div class="kicker">Election Info</div>
       <h2>知事選・村議選の諸情報</h2>
-      <p>2つの選挙が同時に行われます。それぞれの基本情報を確認しましょう。</p>
     </div>
 
     <!-- 新着案内：選挙情報タブでのみ表示するお知らせ欄。
@@ -896,7 +926,14 @@
         <span><span class="sw" id="legend-cur-sw" style="background:var(--gov)"></span>今回（2026年）読谷村の累積投票率</span>
         <span><span class="sw" style="background:#cfd8d9"></span>前回（2022年）同時点の読谷村の累積投票率</span>
       </div>
+      <p class="chart-tap-hint" id="chart-tap-hint">グラフの各日をタップ（クリック）すると、男女別の投票者数・当日合計・累計が見られます。</p>
       <div class="summary-row" id="summary-row"></div>
+      <p class="chart-source">
+        前回（2022年）の実績値の出典：読谷村選挙管理委員会「期日前投票状況（日別）」<br>
+        <a href="https://www.vill.yomitan.okinawa.jp/material/files/group/29/20594683.pdf" target="_blank" rel="noopener">沖縄県知事選挙（PDF）</a>
+        ・
+        <a href="https://www.vill.yomitan.okinawa.jp/material/files/group/29/04411194.pdf" target="_blank" rel="noopener">読谷村議会議員選挙（PDF）</a>
+      </p>
     </div>
   </div>
 </section>
@@ -1305,6 +1342,17 @@
   </div>
 </div>
 
+<!-- 投票率速報：日別詳細（男女別・当日合計・累計）ポップアップ -->
+<div class="modal-overlay" id="turnout-detail-modal">
+  <div class="modal-box turnout-detail-box">
+    <button type="button" class="td-close" id="turnout-detail-close" aria-label="閉じる">✕</button>
+    <div class="td-date" id="td-date"></div>
+    <div class="td-election" id="td-election"></div>
+    <div class="td-groups" id="td-groups"></div>
+    <p class="td-note">男女別の累積投票率は、公表された男女別投票者数と選挙人名簿登録者数（男女別）から当サイトで算出した参考値です。</p>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    編集用データ
@@ -1353,25 +1401,115 @@ const ELECTION_DATA = {
                     知事選：https://www.vill.yomitan.okinawa.jp/material/files/group/29/20594683.pdf
                     村議選：https://www.vill.yomitan.okinawa.jp/material/files/group/29/04411194.pdf
                   比較用の実績値なので通常は編集不要。
+
+   ・"electorsTotal" / "electorsMale" / "electorsFemale"
+                … 今回（2026年）の選挙人名簿登録者数（合計・男・女）。
+                  グラフをタップしたときに出る詳細ポップアップで、男女別の
+                  【累積投票率】を計算するための分母として使います。
+                  男女別の人数が村選管から分かり次第、null を実数に置き換えて
+                  ください（合計だけ分かっていて男女別が未定の間は、その2つは
+                  null のままでOK＝その場合、詳細ポップアップは人数のみ表示され、
+                  男女別の率は「—」になります）。
+   ・"currentDetail" … 今回（2026年）の【その日ごと】の男女別 投票者数（実数）。
+                  村選管から発表される「期日前投票状況（日別）」の「男」「女」の
+                  列をそのまま transcribe してください。当日合計・累計人数・
+                  男女別累積投票率はすべて自動計算されます（手計算は不要）。
+                  まだ発表されていない日は { male: null, female: null } のまま。
+                  例）8/28が「男28人・女25人」だった場合
+                      governor.currentDetail の1つ目を
+                      { male: 28, female: 25 } に書き換える
+                  ※ current（累積投票率）と currentDetail（男女別人数）は、
+                    同じ日別レポートの中の別の列なので、両方あわせて入力して
+                    ください。
+   ・"previousDetail" … 前回（2022年）の同時点（日数ベース）の男女別 投票者数の
+                  実績値。上と同じ読谷村選挙管理委員会のPDFに基づく実数。
+                  比較用の実績値なので通常は編集不要。
    ============================================================ */
 const TURNOUT_DATA = {
-  // 今回（2026年）の読谷村 選挙人名簿登録者数（令和8年8月26日現在）：33,048人
-  // → 投票者数から投票率(%)を計算する際は「投票者数 ÷ 33,048 × 100」を使用してください
   governor: {
     dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
     current:  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     // 2022年は8/26開始（16日間）。日数ベースで対応：8/26→0.30% … 9/10(最終日)→31.52%
-    previous: [0.30, 0.63, 1.09, 1.56, 2.04, 2.23, 2.58, 2.97, 3.20, 3.36, 3.85, 4.46, 8.82, 15.67, 24.16, 31.52]
+    previous: [0.30, 0.63, 1.09, 1.56, 2.04, 2.23, 2.58, 2.97, 3.20, 3.36, 3.85, 4.46, 8.82, 15.67, 24.16, 31.52],
+    // 選挙人名簿登録者数（令和8年8月26日現在）：合計33,048人／男15,863人／女17,185人
+    electorsTotal: 33048,
+    electorsMale: 15863,
+    electorsFemale: 17185,
+    // 選挙人名簿登録者数（2022年8月24日基準日）：合計32,798人／男15,912人／女16,886人
+    prevElectorsTotal: 32798,
+    prevElectorsMale: 15912,
+    prevElectorsFemale: 16886,
+    currentDetail: [
+      {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
+      {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
+      {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
+      {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null}
+    ],
+    // 2022年 知事選 期日前投票状況（日別）PDFより（8/26〜9/10、16日分）
+    previousDetail: [
+      {male:53, female:44}, {male:63, female:48}, {male:78, female:71}, {male:82, female:72},
+      {male:74, female:83}, {male:31, female:34}, {male:67, female:47}, {male:61, female:67},
+      {male:37, female:36}, {male:33, female:21}, {male:77, female:85}, {male:90, female:109},
+      {male:649, female:781}, {male:963, female:1282}, {male:1143, female:1643}, {male:1072, female:1342}
+    ]
   },
   assembly: {
     dates: ["9/9","9/10","9/11","9/12"],
     current:  [null, null, null, null],
     // 2022年は9/7開始（4日間、告示が9/6のため）。9/7→4.96% … 9/10(最終日)→29.50%
-    previous: [4.96, 12.50, 21.57, 29.50]
+    previous: [4.96, 12.50, 21.57, 29.50],
+    // 選挙人名簿登録者数（2026年）：村選管から判明次第、下記3つを実数に置き換えてください
+    electorsTotal: null,
+    electorsMale: null,
+    electorsFemale: null,
+    // 選挙人名簿登録者数（2022年9月5日基準日）：合計32,769人／男15,900人／女16,869人
+    prevElectorsTotal: 32769,
+    prevElectorsMale: 15900,
+    prevElectorsFemale: 16869,
+    currentDetail: [
+      {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null}
+    ],
+    // 2022年 村議選 期日前投票状況（日別）PDFより（9/7〜9/10、4日分）
+    previousDetail: [
+      {male:754, female:870}, {male:1089, female:1383}, {male:1231, female:1740}, {male:1154, female:1445}
+    ]
   }
 };
 
 /* ============================================================ */
+
+// ---- 投票率速報の日別詳細（男女別・当日合計・累計）を計算 ----
+// currentDetail / previousDetail（{male, female}の実数配列）から、
+// 当日合計・男女別累計人数・男女別累積投票率を自動計算する。
+// まだ発表されていない日（male/femaleがnull）に到達したら、それ以降は
+// すべて「未発表」として null を返す（未来の日を先に発表することは無いため）。
+function computeSeriesDetail(key, seriesName){
+  const data = TURNOUT_DATA[key];
+  const raw = seriesName === "current" ? data.currentDetail : data.previousDetail;
+  const electorsMale = seriesName === "current" ? data.electorsMale : data.prevElectorsMale;
+  const electorsFemale = seriesName === "current" ? data.electorsFemale : data.prevElectorsFemale;
+  const combinedRates = seriesName === "current" ? data.current : data.previous;
+  let cumMale = 0, cumFemale = 0, stopped = false;
+  return (raw || []).map((row, i)=>{
+    if(stopped || !row || row.male === null || row.female === null){
+      stopped = true;
+      return null;
+    }
+    cumMale += row.male;
+    cumFemale += row.female;
+    return {
+      male: row.male,
+      female: row.female,
+      dailyTotal: row.male + row.female,
+      cumulativeMale: cumMale,
+      cumulativeFemale: cumFemale,
+      cumulativeTotal: cumMale + cumFemale,
+      maleRate: electorsMale ? (cumMale / electorsMale * 100) : null,
+      femaleRate: electorsFemale ? (cumFemale / electorsFemale * 100) : null,
+      combinedRate: (combinedRates && combinedRates[i] !== undefined) ? combinedRates[i] : null
+    };
+  });
+}
 
 function fmtDate(d){
   const dt = new Date(d+"T00:00:00");
@@ -1565,7 +1703,16 @@ function renderTurnoutMobile(key, themeColor){
         <div class="tm-tag">前回</div>
         <div class="tm-track"><div class="tm-fill" style="width:${prev!==null?(prev/max*100):0}%;background:#cfd8d9"></div></div>
         <div class="tm-val">${prev!==null?prev+"%":"—"}</div>
-      </div>`;
+      </div>
+      <div class="tm-row-hint">タップで男女別・当日合計・累計を見る ›</div>`;
+    row.classList.add("is-tappable");
+    row.tabIndex = 0;
+    row.setAttribute("role", "button");
+    row.setAttribute("aria-label", d + "の詳細（男女別・当日合計・累計）を見る");
+    row.addEventListener("click", ()=>openTurnoutDetail(key, i));
+    row.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openTurnoutDetail(key, i); }
+    });
     wrap.appendChild(row);
   });
 }
@@ -1584,6 +1731,8 @@ function renderTurnout(key){
   const chartScroll = document.getElementById("chart-scroll");
   const turnoutMobile = document.getElementById("turnout-mobile");
   const chartLegend = document.getElementById("chart-legend");
+  const chartTapHint = document.getElementById("chart-tap-hint");
+  const chartSource = document.querySelector(".chart-source");
   const summaryRow = document.getElementById("summary-row");
   const updatedLine = document.getElementById("updated-line");
 
@@ -1595,6 +1744,8 @@ function renderTurnout(key){
     if(chartScroll) chartScroll.style.display = "none";
     if(turnoutMobile) turnoutMobile.style.display = "none";
     if(chartLegend) chartLegend.style.display = "none";
+    if(chartTapHint) chartTapHint.style.display = "none";
+    if(chartSource) chartSource.style.display = "none";
     if(updatedLine) updatedLine.style.display = "none";
     if(summaryRow) summaryRow.innerHTML = "";
     return;
@@ -1604,6 +1755,8 @@ function renderTurnout(key){
   if(chartScroll) chartScroll.style.display = "";
   if(turnoutMobile) turnoutMobile.style.display = ""; // 表示・非表示はCSSのメディアクエリに委ねる
   if(chartLegend) chartLegend.style.display = "";
+  if(chartTapHint) chartTapHint.style.display = "";
+  if(chartSource) chartSource.style.display = "";
   if(updatedLine) updatedLine.style.display = "";
 
   const barsWrap = document.getElementById("bars");
@@ -1645,6 +1798,14 @@ function renderTurnout(key){
 
     group.appendChild(prevBar);
     group.appendChild(curBar);
+    group.classList.add("is-tappable");
+    group.tabIndex = 0;
+    group.setAttribute("role", "button");
+    group.setAttribute("aria-label", d + "の詳細（男女別・当日合計・累計）を見る");
+    group.addEventListener("click", ()=>openTurnoutDetail(key, i));
+    group.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openTurnoutDetail(key, i); }
+    });
     barsWrap.appendChild(group);
 
     const lbl = document.createElement("div");
@@ -1674,6 +1835,67 @@ function renderTurnout(key){
     summary.appendChild(div);
   });
 }
+
+// ---- 投票率速報：日別詳細（男女別・当日合計・累計）ポップアップ ----
+function fmtRate(v){
+  return v !== null ? v.toFixed(2) + "%" : "—";
+}
+function buildTurnoutDetailBlock(title, detail, isPrev){
+  if(!detail){
+    return `<div class="td-block${isPrev ? " is-prev" : ""}">
+      <div class="td-block-title">${title}</div>
+      <p class="td-empty">まだ数値は公表されていません。</p>
+    </div>`;
+  }
+  return `<div class="td-block${isPrev ? " is-prev" : ""}">
+    <div class="td-block-title">${title}</div>
+    <div class="td-row"><span class="td-label">男性</span><span class="td-num">${detail.male}人${detail.maleRate!==null ? "（累積 "+fmtRate(detail.maleRate)+"）" : ""}</span></div>
+    <div class="td-row"><span class="td-label">女性</span><span class="td-num">${detail.female}人${detail.femaleRate!==null ? "（累積 "+fmtRate(detail.femaleRate)+"）" : ""}</span></div>
+    <div class="td-row"><span class="td-label">当日合計</span><span class="td-num">${detail.dailyTotal}人</span></div>
+    <div class="td-row"><span class="td-label">累計投票者数</span><span class="td-num">${detail.cumulativeTotal}人</span></div>
+    <div class="td-row"><span class="td-label">累積投票率</span><span class="td-num">${detail.combinedRate!==null ? detail.combinedRate+"%" : "—"}</span></div>
+  </div>`;
+}
+function openTurnoutDetail(key, i){
+  try{
+    const data = TURNOUT_DATA[key];
+    const modal = document.getElementById("turnout-detail-modal");
+    const dateEl = document.getElementById("td-date");
+    const electionEl = document.getElementById("td-election");
+    const groupsEl = document.getElementById("td-groups");
+    if(!modal || !dateEl || !electionEl || !groupsEl) return;
+
+    const curSeries = computeSeriesDetail(key, "current");
+    const prevSeries = computeSeriesDetail(key, "previous");
+
+    dateEl.textContent = data.dates[i] + "（期日前投票 " + (i+1) + "日目）";
+    electionEl.textContent = ELECTION_DATA[key].label + "｜読谷村";
+    groupsEl.innerHTML =
+      buildTurnoutDetailBlock("今回（2026年）", curSeries[i], false) +
+      buildTurnoutDetailBlock("前回（2022年）同時点", prevSeries[i], true);
+
+    modal.classList.add("open");
+  }catch(err){
+    if(window.console && console.error) console.error("openTurnoutDetail failed:", err);
+  }
+}
+(function initTurnoutDetailModal(){
+  try{
+    const modal = document.getElementById("turnout-detail-modal");
+    const closeBtn = document.getElementById("turnout-detail-close");
+    if(!modal || !closeBtn) return;
+    function closeModal(){ modal.classList.remove("open"); }
+    closeBtn.addEventListener("click", closeModal);
+    modal.addEventListener("click", (e)=>{
+      if(e.target === modal) closeModal();
+    });
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape") closeModal();
+    });
+  }catch(err){
+    if(window.console && console.error) console.error("initTurnoutDetailModal failed:", err);
+  }
+})();
 
 // グラフ描画でエラーが起きても、ナビ等の初期化が止まらないようtry/catchで保護
 try{
