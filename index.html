@@ -592,8 +592,8 @@
       <button type="button" class="nav-close" id="nav-close" aria-label="メニューを閉じる">✕</button>
       <a href="#info">選挙情報</a>
       <a href="#early">期日前投票</a>
-      <a href="#alt-voting">当日行けない方へ</a>
       <a href="#polling">投票所案内</a>
+      <a href="#alt-voting">当日行けない方へ</a>
       <a href="#map">掲示場マップ</a>
       <a href="#turnout">投票率速報</a>
       <a href="#qa">Q&amp;A</a>
@@ -864,8 +864,8 @@
   <div class="wrap">
     <div class="sec-head">
       <div class="kicker">Turnout Report</div>
-      <h2>期日前投票 投票率速報</h2>
-      <p>期日前投票期間中、毎日の投票率を前回（2022年）の同一選挙と比較して掲載します。数値は投票所からの報告をもとに順次更新されます。</p>
+      <h2>読谷村の期日前投票 投票率速報</h2>
+      <p>読谷村における期日前投票の投票率（読谷村の有権者分のみ）を、毎日、前回（2022年）の同一選挙と比較して掲載します。県全体・他市町村の数値ではありません。数値は読谷村選挙管理委員会からの報告をもとに順次更新されます。</p>
     </div>
 
     <div class="switcher">
@@ -879,7 +879,7 @@
       <!-- 期日前投票がまだ始まっていない・数値が未入力の間だけ表示 -->
       <div class="turnout-waiting" id="turnout-waiting">
         <div class="tw-icon">🗳️</div>
-        <p class="tw-text">投票率速報はまだありません。<br><b id="tw-date"></b>から順次更新予定です。</p>
+        <p class="tw-text">読谷村の期日前投票率速報はまだありません。<br><b id="tw-date"></b>から順次更新予定です。</p>
       </div>
 
       <div class="chart-scroll" id="chart-scroll">
@@ -893,8 +893,8 @@
       <div class="turnout-mobile" id="turnout-mobile"></div>
 
       <div class="chart-legend" id="chart-legend">
-        <span><span class="sw" id="legend-cur-sw" style="background:var(--gov)"></span>今回（2026年）累積投票率</span>
-        <span><span class="sw" style="background:#cfd8d9"></span>前回（2022年）同時点の累積投票率</span>
+        <span><span class="sw" id="legend-cur-sw" style="background:var(--gov)"></span>今回（2026年）読谷村の累積投票率</span>
+        <span><span class="sw" style="background:#cfd8d9"></span>前回（2022年）同時点の読谷村の累積投票率</span>
       </div>
       <div class="summary-row" id="summary-row"></div>
     </div>
@@ -1330,9 +1330,12 @@ const ELECTION_DATA = {
 
 /* ============================================================
    ★★★ 投票率速報：ここに毎日の数値を入力してください ★★★
+   ※ ここで扱う数値は、すべて「読谷村における」期日前投票率です（県全体・他市町村の
+     数値ではありません）。governor（知事選）についても、読谷村の有権者分のみを対象と
+     した投票率を入力してください。
 
    ・"dates"    … 表示する日付（編集不要）
-   ・"current"  … 今回（2026年）の【累積】投票率(%)。
+   ・"current"  … 今回（2026年）の読谷村における【累積】投票率(%)。
                   まだ発表されていない日は必ず null のままにする。
                   → currentが全部nullの間は「まだ投票率速報はありません」
                     という案内が自動で表示されます。
@@ -1659,8 +1662,8 @@ function renderTurnout(key){
 
   summary.innerHTML = "";
   const pills = [
-    {label:"現在の累積投票率", num: latestCur!==null ? latestCur+"%" : "—"},
-    {label:"前回同時点の投票率", num: latestPrev!==null ? latestPrev+"%" : "—"},
+    {label:"読谷村の現在の累積投票率", num: latestCur!==null ? latestCur+"%" : "—"},
+    {label:"読谷村の前回同時点の投票率", num: latestPrev!==null ? latestPrev+"%" : "—"},
     {label:"前回との差", num: diff!==null ? (diff>=0?"+":"")+diff.toFixed(1)+"pt" : "—",
      cls: diff!==null ? (diff>=0?"up":"down") : ""}
   ];
