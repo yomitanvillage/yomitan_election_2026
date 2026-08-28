@@ -397,6 +397,8 @@
   .chart-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;}
   .chart-card .updated{font-size:12.5px;color:var(--ink-soft);margin-bottom:18px;}
   .chart-card .updated b{color:var(--coral);}
+  .chart-card .electors-line{font-size:12px;color:var(--ink-soft);margin:-12px 0 18px;}
+  .chart-card .electors-line b{color:var(--ink);}
   .turnout-waiting{
     display:none;text-align:center;padding:38px 20px;background:var(--sand-2);
     border:1px dashed var(--line);border-radius:14px;
@@ -1041,6 +1043,8 @@
     <div class="chart-card">
       <!-- 中身はJSが自動生成します（TURNOUT_DATAのcurrentに数値が入っている最新日を表示）。手入力は不要です。 -->
       <div class="updated" id="updated-line"></div>
+      <!-- 中身はJSが自動生成します（TURNOUT_DATAのelectorsTotal/electorsMale/electorsFemaleから表示）。 -->
+      <div class="electors-line" id="electors-line"></div>
 
       <!-- 期日前投票がまだ始まっていない・数値が未入力の間だけ表示 -->
       <div class="turnout-waiting" id="turnout-waiting">
@@ -1613,6 +1617,8 @@ const TURNOUT_DATA = {
     electorsTotal: 33048,
     electorsMale: 15863,
     electorsFemale: 17185,
+    // 上の登録者数の基準日（投票率速報ページに表示される文言に使用）
+    electorsAsOf: "8月26日",
     // 選挙人名簿登録者数（2022年8月24日基準日）：合計32,798人／男15,912人／女16,886人
     prevElectorsTotal: 32798,
     prevElectorsMale: 15912,
@@ -1642,10 +1648,11 @@ const TURNOUT_DATA = {
     updatedTime: null,
     // 2022年は9/7開始（4日間、告示が9/6のため）。9/7→4.96% … 9/10(最終日)→29.50%
     previous: [4.96, 12.50, 21.57, 29.50],
-    // 選挙人名簿登録者数（2026年）：村選管から判明次第、下記3つを実数に置き換えてください
+    // 選挙人名簿登録者数（2026年）：村選管から判明次第、下記3つ（＋基準日）を実数に置き換えてください
     electorsTotal: null,
     electorsMale: null,
     electorsFemale: null,
+    electorsAsOf: null,
     // 選挙人名簿登録者数（2022年9月5日基準日）：合計32,769人／男15,900人／女16,869人
     prevElectorsTotal: 32769,
     prevElectorsMale: 15900,
@@ -2049,6 +2056,7 @@ function renderTurnout(key){
   const chartSource = document.querySelector(".chart-source");
   const summaryRow = document.getElementById("summary-row");
   const updatedLine = document.getElementById("updated-line");
+  const electorsLine = document.getElementById("electors-line");
 
   if(!hasAnyData){
     if(waitingBox){
@@ -2063,6 +2071,7 @@ function renderTurnout(key){
     if(chartTapHint) chartTapHint.style.display = "none";
     if(chartSource) chartSource.style.display = "none";
     if(updatedLine) updatedLine.style.display = "none";
+    if(electorsLine) electorsLine.style.display = "none";
     if(summaryRow) summaryRow.innerHTML = "";
     return;
   }
@@ -2093,6 +2102,24 @@ function renderTurnout(key){
         : "最終更新：<b>" + updatedDateLabel + "分</b>（投票終了後に集計）";
     }else{
       updatedLine.innerHTML = "";
+    }
+  }
+
+  // 選挙人名簿登録者数（男女別累積投票率の計算にも使っている値）を、
+  // 投票率速報ページ上にも表示する。男女別が未入力（null）の場合は
+  // 合計だけを表示し、合計すら未入力（例：村議選が告示前）の間は
+  // 行ごと非表示にする。
+  if(electorsLine){
+    if(data.electorsTotal){
+      const asOfText = data.electorsAsOf ? "（登録基準日　" + data.electorsAsOf + "）" : "";
+      const breakdown = (data.electorsMale && data.electorsFemale)
+        ? "男" + data.electorsMale.toLocaleString("ja-JP") + "人／女" + data.electorsFemale.toLocaleString("ja-JP") + "人"
+        : "";
+      electorsLine.style.display = "";
+      electorsLine.innerHTML = "選挙人名簿登録者数" + asOfText + "：<b>" + data.electorsTotal.toLocaleString("ja-JP") + "人</b>" + (breakdown ? "（" + breakdown + "）" : "");
+    }else{
+      electorsLine.style.display = "none";
+      electorsLine.innerHTML = "";
     }
   }
 
