@@ -425,6 +425,17 @@
   .tt-table tbody tr:last-child td{border-bottom:none;}
   .tt-table tbody tr.is-empty td{color:var(--ink-soft);}
   .tt-table tbody tr.is-latest td{background:#fff6e6;font-weight:800;}
+  /* 「当日合計」「日別累計」は列見出しの中で最も横幅を取るため、
+     狭い画面では短縮表示（tt-short）に切り替えて横スクロールを避ける。
+     日付列の曜日（(金)など）も、狭い画面では省いて幅を詰める。 */
+  .tt-table .tt-short{display:none;}
+  @media(max-width:600px){
+    .tt-table{font-size:11px;}
+    .tt-table th, .tt-table td{padding:7px 5px;}
+    .tt-table .tt-full{display:none;}
+    .tt-table .tt-short{display:inline;}
+    .tt-table .tt-weekday{display:none;}
+  }
   .summary-row{display:flex;gap:18px;margin-top:26px;flex-wrap:wrap;}
   .summary-pill{
     background:var(--sand-2);border-radius:14px;padding:14px 20px;flex:1;min-width:180px;
@@ -1010,7 +1021,8 @@
     </div>
 
     <div class="chart-card">
-      <div class="updated" id="updated-line">最終更新：<b>8月28日 20:30時点</b></div>
+      <!-- 中身はJSが自動生成します（TURNOUT_DATAのcurrentに数値が入っている最新日を表示）。手入力は不要です。 -->
+      <div class="updated" id="updated-line"></div>
 
       <!-- 期日前投票がまだ始まっていない・数値が未入力の間だけ表示 -->
       <div class="turnout-waiting" id="turnout-waiting">
@@ -1039,7 +1051,12 @@
           <div class="tt-title" id="tt-title-current">今回（2026年）</div>
           <div class="tt-scroll">
             <table class="tt-table">
-              <thead><tr><th>期日</th><th>男</th><th>女</th><th>当日合計</th><th>日別累計</th><th>投票率</th></tr></thead>
+              <thead><tr>
+                <th>期日</th><th>男</th><th>女</th>
+                <th><span class="tt-full">当日合計</span><span class="tt-short">当日</span></th>
+                <th><span class="tt-full">日別累計</span><span class="tt-short">累計</span></th>
+                <th>投票率</th>
+              </tr></thead>
               <tbody id="tt-body-current"></tbody>
             </table>
           </div>
@@ -1048,7 +1065,12 @@
           <div class="tt-title" id="tt-title-previous">前回（2022年）同時点</div>
           <div class="tt-scroll">
             <table class="tt-table">
-              <thead><tr><th>期日</th><th>男</th><th>女</th><th>当日合計</th><th>日別累計</th><th>投票率</th></tr></thead>
+              <thead><tr>
+                <th>期日</th><th>男</th><th>女</th>
+                <th><span class="tt-full">当日合計</span><span class="tt-short">当日</span></th>
+                <th><span class="tt-full">日別累計</span><span class="tt-short">累計</span></th>
+                <th>投票率</th>
+              </tr></thead>
               <tbody id="tt-body-previous"></tbody>
             </table>
           </div>
@@ -1987,10 +2009,23 @@ function renderTurnout(key){
     return;
   }
 
+  // "current" の中で最後に数値が入っている日（＝最新の発表日）のインデックス。
+  // 「最終更新」表示・サマリー・自動スクロールのすべてでこれを使い回す。
+  const lastCurIdx = [...data.current].reverse().findIndex(v=>v!==null);
+  const idx = lastCurIdx===-1 ? -1 : data.current.length-1-lastCurIdx;
+
   if(waitingBox) waitingBox.style.display = "none";
   if(viewToggle) viewToggle.style.display = "";
   if(chartSource) chartSource.style.display = "";
-  if(updatedLine) updatedLine.style.display = "";
+  if(updatedLine){
+    updatedLine.style.display = "";
+    // 「最終更新」は手入力せず、実際にcurrentへ数値が入っている最新日から自動生成する。
+    // 具体的な時刻（18:00など）は書かない。投票時間は20:00までのため、その日の
+    // 投票終了後に集計・反映される、という説明文（chart-tap-hintの上）と矛盾しないようにするため。
+    updatedLine.innerHTML = idx >= 0
+      ? "最終更新：<b>" + data.dates[idx] + " 分を反映</b>（投票終了後に集計）"
+      : "";
+  }
 
   const barsWrap = document.getElementById("bars");
   const labelsWrap = document.getElementById("bar-labels");
@@ -2046,10 +2081,8 @@ function renderTurnout(key){
     labelsWrap.appendChild(lbl);
   });
 
-  // サマリー
+  // サマリー（idxは関数の前段で計算済みのものを使い回す）
   const summary = document.getElementById("summary-row");
-  const lastCurIdx = [...data.current].reverse().findIndex(v=>v!==null);
-  const idx = lastCurIdx===-1 ? -1 : data.current.length-1-lastCurIdx;
   const latestCur = idx>=0 ? data.current[idx] : null;
   const latestPrev = idx>=0 ? data.previous[idx] : null;
   const diff = (latestCur!==null && latestPrev!==null) ? (latestCur-latestPrev) : null;
@@ -2085,11 +2118,21 @@ function renderTurnoutTable(key, latestIdx){
     const titleCur = document.getElementById("tt-title-current");
     const titlePrev = document.getElementById("tt-title-previous");
 
+    // 「人」の単位は付けない（前回の出典PDFも単位なしの数字＋カンマ区切りのため、
+    // それに合わせるのと同時に、狭い画面でも横スクロールなしで収まるようにする）。
+    // 列見出し（男・女・当日・累計）を見れば単位は自明なので、省いても分かりやすさは保てる。
+    function cell(v){
+      return v !== null && v !== undefined ? v.toLocaleString("ja-JP") : "—";
+    }
+    // 日付ラベルの曜日部分「(金)」などをspanで囲み、狭い画面ではCSSで非表示にして幅を詰める。
+    function formatDateCell(dateLabel){
+      const m = dateLabel.match(/^(.*?)(\([^)]+\))$/);
+      return m ? m[1] + '<span class="tt-weekday">' + m[2] + '</span>' : dateLabel;
+    }
     function buildRow(dateLabel, r, isLatest){
-      const cell = (v, unit) => v !== null && v !== undefined ? v + unit : "—";
       const rateCell = r && r.combinedRate !== null ? r.combinedRate + "%" : "—";
       const rowCls = !r ? "is-empty" : (isLatest ? "is-latest" : "");
-      return `<tr class="${rowCls}"><td>${dateLabel}</td><td>${r ? cell(r.male, "人") : "—"}</td><td>${r ? cell(r.female, "人") : "—"}</td><td>${r ? cell(r.dailyTotal, "人") : "—"}</td><td>${r ? cell(r.cumulativeTotal, "人") : "—"}</td><td>${rateCell}</td></tr>`;
+      return `<tr class="${rowCls}"><td>${formatDateCell(dateLabel)}</td><td>${r ? cell(r.male) : "—"}</td><td>${r ? cell(r.female) : "—"}</td><td>${r ? cell(r.dailyTotal) : "—"}</td><td>${r ? cell(r.cumulativeTotal) : "—"}</td><td>${rateCell}</td></tr>`;
     }
 
     if(curBody){
