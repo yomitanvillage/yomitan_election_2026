@@ -2023,7 +2023,7 @@ function renderTurnout(key){
     // 具体的な時刻（18:00など）は書かない。投票時間は20:00までのため、その日の
     // 投票終了後に集計・反映される、という説明文（chart-tap-hintの上）と矛盾しないようにするため。
     updatedLine.innerHTML = idx >= 0
-      ? "最終更新：<b>" + data.dates[idx] + " 20:30</b>（投票終了後に集計）"
+      ? "最終更新：<b>" + data.dates[idx] + "分</b>（投票終了後に集計）"
       : "";
   }
 
