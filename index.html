@@ -228,6 +228,15 @@
   @media(max-width:520px){
     .news-title{font-size:13px;}
   }
+  /* 新着案内：最新3件より後ろはアコーディオンにたたむ（JSが自動生成） */
+  .news-more summary{
+    list-style:none;cursor:pointer;padding:12px 2px;font-size:13px;font-weight:700;
+    color:var(--sea-dark);display:flex;align-items:center;gap:6px;border-top:1px solid var(--line);
+  }
+  .news-more summary::-webkit-details-marker{display:none;}
+  .news-more summary::before{content:"▸";font-size:11px;transition:transform .15s;display:inline-block;}
+  .news-more[open] summary::before{transform:rotate(90deg);}
+  .news-more .news-list{margin-top:0;}
 
   /* ---------- Cards: election info ---------- */
   .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:22px;}
@@ -348,7 +357,16 @@
   .turnout-mobile{display:none;}
   .tm-row{padding:10px 2px;border-bottom:1px solid var(--line);}
   .tm-row:last-child{border-bottom:none;}
+  /* 一番新しく発表された日の行だけ目立たせる（黄色系のアクセント＋バッジ） */
+  .tm-row.is-latest{
+    background:#fff6e6;border-left:3px solid var(--sun);border-radius:8px;
+    padding:10px 10px 10px 9px;margin:2px 0;
+  }
   .tm-date{font-size:12.5px;font-weight:800;color:var(--ink);margin-bottom:8px;}
+  .tm-latest-badge{
+    display:inline-block;margin-left:6px;font-size:10px;font-weight:800;color:#5a3a00;
+    background:var(--sun);padding:2px 8px;border-radius:999px;vertical-align:1px;
+  }
   .tm-line{display:flex;align-items:center;gap:8px;margin-bottom:6px;}
   .tm-line:last-child{margin-bottom:0;}
   .tm-tag{flex:0 0 32px;font-size:10.5px;font-weight:700;color:var(--ink-soft);}
@@ -1584,6 +1602,11 @@ const TURNOUT_DATA = {
   governor: {
     dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
     current:  [0.31, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    // "最終更新"に表示する時刻。currentを更新するたびに、実際に集計・掲載した
+    // 時刻（例:"20:45"）に書き換えてください。日付はcurrentの最新日から自動で
+    // 表示されるので、ここは時刻（"HH:MM"）だけを入力すればOKです。
+    // 時刻が分からない・未入力のうちはnullのままでOK（時刻なしで表示されます）。
+    updatedTime: "20:30",
     // 2022年は8/26開始（16日間）。日数ベースで対応：8/26→0.30% … 9/10(最終日)→31.52%
     previous: [0.30, 0.63, 1.09, 1.56, 2.04, 2.23, 2.58, 2.97, 3.20, 3.36, 3.85, 4.46, 8.82, 15.67, 24.16, 31.52],
     // 選挙人名簿登録者数（令和8年8月26日現在）：合計33,048人／男15,863人／女17,185人
@@ -1615,6 +1638,8 @@ const TURNOUT_DATA = {
   assembly: {
     dates: ["9/9","9/10","9/11","9/12"],
     current:  [null, null, null, null],
+    // "最終更新"に表示する時刻（"HH:MM"）。governorと同じ使い方です。
+    updatedTime: null,
     // 2022年は9/7開始（4日間、告示が9/6のため）。9/7→4.96% … 9/10(最終日)→29.50%
     previous: [4.96, 12.50, 21.57, 29.50],
     // 選挙人名簿登録者数（2026年）：村選管から判明次第、下記3つを実数に置き換えてください
@@ -1925,8 +1950,40 @@ function todayISO(){
   }
 })();
 
+/* ============================================================
+   新着案内：最新3件だけ常に表示し、それより古いものはアコーディオンに
+   たたむ。上の2つのannounce*関数がすべての自動お知らせを挿入し終えた
+   「あと」に実行する必要があるため、このタイミングに置いている。
+   ============================================================ */
+(function collapseExtraNewsItems(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+    const VISIBLE_COUNT = 3;
+    const items = Array.from(listEl.children).filter(el => el.tagName === "LI");
+    if(items.length <= VISIBLE_COUNT) return;
+
+    const extraItems = items.slice(VISIBLE_COUNT);
+
+    const details = document.createElement("details");
+    details.className = "news-more";
+    const summary = document.createElement("summary");
+    summary.textContent = "過去の新着案内をもっと見る（" + extraItems.length + "件）";
+    details.appendChild(summary);
+
+    const extraList = document.createElement("ul");
+    extraList.className = "news-list";
+    extraItems.forEach(li => extraList.appendChild(li)); // listElから移動（removeされる）
+    details.appendChild(extraList);
+
+    listEl.insertAdjacentElement("afterend", details);
+  }catch(err){
+    if(window.console && console.error) console.error("collapseExtraNewsItems failed:", err);
+  }
+})();
+
 // ---- 投票率速報グラフ（スマホ用・縦積みの横バーリスト）描画 ----
-function renderTurnoutMobile(key, themeColor){
+function renderTurnoutMobile(key, themeColor, latestIdx){
   const data = TURNOUT_DATA[key];
   const wrap = document.getElementById("turnout-mobile");
   if(!wrap) return;
@@ -1938,10 +1995,11 @@ function renderTurnoutMobile(key, themeColor){
   data.dates.forEach((d, i)=>{
     const cur = data.current[i];
     const prev = data.previous[i];
+    const isLatest = i === latestIdx;
     const row = document.createElement("div");
-    row.className = "tm-row";
+    row.className = "tm-row" + (isLatest ? " is-latest" : "");
     row.innerHTML = `
-      <div class="tm-date">${d}</div>
+      <div class="tm-date">${d}${isLatest ? '<span class="tm-latest-badge">最新</span>' : ""}</div>
       <div class="tm-line">
         <div class="tm-tag">今回</div>
         <div class="tm-track"><div class="tm-fill" style="width:${cur!==null?(cur/max*100):0}%;background:${themeColor}"></div></div>
@@ -1956,7 +2014,7 @@ function renderTurnoutMobile(key, themeColor){
     row.classList.add("is-tappable");
     row.tabIndex = 0;
     row.setAttribute("role", "button");
-    row.setAttribute("aria-label", d + "の詳細（男女別・当日合計・累計）を見る");
+    row.setAttribute("aria-label", d + "の詳細（男女別・当日合計・累計）を見る" + (isLatest ? "（最新）" : ""));
     row.addEventListener("click", ()=>openTurnoutDetail(key, i));
     row.addEventListener("keydown", (e)=>{
       if(e.key === "Enter" || e.key === " "){ e.preventDefault(); openTurnoutDetail(key, i); }
@@ -2019,12 +2077,23 @@ function renderTurnout(key){
   if(chartSource) chartSource.style.display = "";
   if(updatedLine){
     updatedLine.style.display = "";
-    // 「最終更新」は手入力せず、実際にcurrentへ数値が入っている最新日から自動生成する。
-    // 具体的な時刻（18:00など）は書かない。投票時間は20:00までのため、その日の
-    // 投票終了後に集計・反映される、という説明文（chart-tap-hintの上）と矛盾しないようにするため。
-    updatedLine.innerHTML = idx >= 0
-      ? "最終更新：<b>" + data.dates[idx] + "分</b>（投票終了後に集計）"
-      : "";
+    // 「最終更新」の日付は手入力せず、実際にcurrentへ数値が入っている最新日から
+    // 自動生成する（staffがdatesやcurrentを書き換えれば自動で追従する）。
+    // 時刻部分は自動では分からないため、data.updatedTime（"HH:MM"）に手入力
+    // された値があればそれを表示し、無ければ時刻を省略する（実際には集計・
+    // 掲載していない時刻を勝手に表示してしまうことを防ぐため）。
+    // date.dates[idx] は "8/28" のようなスラッシュ表記。これをそのまま「分」に
+    // つなげると「8/28分」となり「28分」の部分が時刻と紛らわしくなるため、
+    // 「8月28日」のように月日を漢字表記にしてから使う。
+    const updatedDateParts = idx >= 0 ? data.dates[idx].split("/") : null;
+    const updatedDateLabel = updatedDateParts ? updatedDateParts[0] + "月" + updatedDateParts[1] + "日" : "";
+    if(idx >= 0){
+      updatedLine.innerHTML = data.updatedTime
+        ? "最終更新：<b>" + updatedDateLabel + " " + data.updatedTime + "時点</b>（投票終了後に集計）"
+        : "最終更新：<b>" + updatedDateLabel + "分</b>（投票終了後に集計）";
+    }else{
+      updatedLine.innerHTML = "";
+    }
   }
 
   const barsWrap = document.getElementById("bars");
@@ -2035,7 +2104,7 @@ function renderTurnout(key){
   const legendSw = document.getElementById("legend-cur-sw");
   if(legendSw) legendSw.style.background = themeColor;
 
-  renderTurnoutMobile(key, themeColor);
+  renderTurnoutMobile(key, themeColor, idx);
 
   const allVals = data.current.concat(data.previous).filter(v=>v!==null);
   const max = Math.max(...allVals, 10);
