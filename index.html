@@ -404,6 +404,27 @@
   .chart-tap-hint{margin:10px 0 0;font-size:12px;color:var(--ink-soft);}
   .chart-source{margin:18px 0 0;padding-top:14px;border-top:1px solid var(--line);font-size:11.5px;color:var(--ink-soft);line-height:1.8;}
   .chart-source a{color:var(--sea-dark);}
+
+  /* ---------- 投票率速報：グラフ／表 の表示切替 ---------- */
+  .view-toggle{display:flex;gap:8px;margin-bottom:18px;}
+  .view-toggle button{
+    border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-weight:700;
+    padding:7px 16px;border-radius:999px;cursor:pointer;font-size:12.5px;font-family:inherit;transition:.15s;
+  }
+  .view-toggle button.active{background:var(--sea-dark);border-color:var(--sea-dark);color:#fff;}
+  .turnout-table-wrap{display:none;}
+  .tt-block{margin-bottom:24px;}
+  .tt-block:last-child{margin-bottom:0;}
+  .tt-title{font-weight:800;font-size:13.5px;color:var(--sea-dark);margin-bottom:8px;}
+  .tt-block.is-prev .tt-title{color:var(--ink-soft);}
+  .tt-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;}
+  .tt-table{width:100%;border-collapse:collapse;font-size:12.5px;white-space:nowrap;}
+  .tt-table th, .tt-table td{padding:8px 12px;text-align:right;border-bottom:1px solid var(--line);}
+  .tt-table th:first-child, .tt-table td:first-child{text-align:left;font-weight:700;color:var(--ink);}
+  .tt-table thead th{background:var(--sand-2);color:var(--ink-soft);font-weight:700;font-size:11.5px;}
+  .tt-table tbody tr:last-child td{border-bottom:none;}
+  .tt-table tbody tr.is-empty td{color:var(--ink-soft);}
+  .tt-table tbody tr.is-latest td{background:#fff6e6;font-weight:800;}
   .summary-row{display:flex;gap:18px;margin-top:26px;flex-wrap:wrap;}
   .summary-pill{
     background:var(--sand-2);border-radius:14px;padding:14px 20px;flex:1;min-width:180px;
@@ -615,10 +636,19 @@
   }
   .td-date{font-size:16.5px;font-weight:800;color:var(--ink);margin-bottom:2px;}
   .td-election{font-size:12.5px;color:var(--ink-soft);margin-bottom:16px;}
-  .td-block{background:var(--sand-2);border-radius:12px;padding:14px 16px;margin-bottom:10px;}
+  .td-block{background:var(--sand-2);border-radius:12px;padding:14px 16px;margin-bottom:10px;border-left:4px solid transparent;}
   .td-block:last-child{margin-bottom:0;}
-  .td-block-title{font-size:12.5px;font-weight:800;color:var(--sea-dark);margin-bottom:8px;}
-  .td-block.is-prev .td-block-title{color:var(--ink-soft);}
+  /* 「今回」は白背景＋選挙テーマカラーの太いアクセント線で目立たせ、
+     「前回」は控えめな配色にすることで一目で区別できるようにする。 */
+  .td-block:not(.is-prev){
+    background:#fff;box-shadow:var(--shadow);border-left-color:var(--td-accent, var(--sea-dark));
+  }
+  .td-block:not(.is-prev) .td-block-title{
+    color:var(--td-accent, var(--sea-dark));font-size:13.5px;display:flex;align-items:center;gap:6px;
+  }
+  .td-block:not(.is-prev) .td-block-title::before{content:"●";font-size:9px;}
+  .td-block.is-prev{opacity:.82;}
+  .td-block.is-prev .td-block-title{color:var(--ink-soft);font-size:12px;}
   .td-row{display:flex;justify-content:space-between;gap:12px;font-size:13px;color:var(--ink);padding:3px 0;}
   .td-row .td-label{color:var(--ink-soft);flex:0 0 auto;}
   .td-row .td-num{font-weight:800;text-align:right;}
@@ -980,12 +1010,17 @@
     </div>
 
     <div class="chart-card">
-      <div class="updated" id="updated-line">最終更新：<b>9月◯日 18:00時点</b></div>
+      <div class="updated" id="updated-line">最終更新：<b>8月28日 20:30時点</b></div>
 
       <!-- 期日前投票がまだ始まっていない・数値が未入力の間だけ表示 -->
       <div class="turnout-waiting" id="turnout-waiting">
         <div class="tw-icon">🗳️</div>
         <p class="tw-text">読谷村の期日前投票率速報はまだありません。<br><b id="tw-date"></b>から、その日の投票終了後に順次更新予定です。</p>
+      </div>
+
+      <div class="view-toggle" id="view-toggle">
+        <button type="button" class="active" data-view="chart">グラフで見る</button>
+        <button type="button" data-view="table">表で見る</button>
       </div>
 
       <div class="chart-scroll" id="chart-scroll">
@@ -997,6 +1032,28 @@
 
       <!-- スマホ表示用：縦積みの横バーリスト（PCでは非表示） -->
       <div class="turnout-mobile" id="turnout-mobile"></div>
+
+      <!-- 「表で見る」に切り替えたときだけ表示。前回の出典PDFと同じ列構成の一覧表。 -->
+      <div class="turnout-table-wrap" id="turnout-table-wrap">
+        <div class="tt-block">
+          <div class="tt-title" id="tt-title-current">今回（2026年）</div>
+          <div class="tt-scroll">
+            <table class="tt-table">
+              <thead><tr><th>期日</th><th>男</th><th>女</th><th>当日合計</th><th>日別累計</th><th>投票率</th></tr></thead>
+              <tbody id="tt-body-current"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="tt-block is-prev">
+          <div class="tt-title" id="tt-title-previous">前回（2022年）同時点</div>
+          <div class="tt-scroll">
+            <table class="tt-table">
+              <thead><tr><th>期日</th><th>男</th><th>女</th><th>当日合計</th><th>日別累計</th><th>投票率</th></tr></thead>
+              <tbody id="tt-body-previous"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
 
       <div class="chart-legend" id="chart-legend">
         <span><span class="sw" id="legend-cur-sw" style="background:var(--gov)"></span>今回（2026年）読谷村の累積投票率</span>
@@ -1504,7 +1561,7 @@ const ELECTION_DATA = {
 const TURNOUT_DATA = {
   governor: {
     dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
-    current:  [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    current:  [0.31, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
     // 2022年は8/26開始（16日間）。日数ベースで対応：8/26→0.30% … 9/10(最終日)→31.52%
     previous: [0.30, 0.63, 1.09, 1.56, 2.04, 2.23, 2.58, 2.97, 3.20, 3.36, 3.85, 4.46, 8.82, 15.67, 24.16, 31.52],
     // 選挙人名簿登録者数（令和8年8月26日現在）：合計33,048人／男15,863人／女17,185人
@@ -1516,7 +1573,7 @@ const TURNOUT_DATA = {
     prevElectorsMale: 15912,
     prevElectorsFemale: 16886,
     currentDetail: [
-      {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
+      {male:67, female:35}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null}
@@ -1527,7 +1584,11 @@ const TURNOUT_DATA = {
       {male:74, female:83}, {male:31, female:34}, {male:67, female:47}, {male:61, female:67},
       {male:37, female:36}, {male:33, female:21}, {male:77, female:85}, {male:90, female:109},
       {male:649, female:781}, {male:963, female:1282}, {male:1143, female:1643}, {male:1072, female:1342}
-    ]
+    ],
+    // 「表で見る」表示用：前回（2022年）の実際の暦日（PDFに記載の日付・曜日そのまま）。
+    // ※上のprevious/previousDetailは「経過日数ベース」でdatesの並びに揃えているため、
+    //   実際の2022年の日付とは2日ずれている（2022年は8/26開始、2026年は8/28開始のため）。
+    previousDates: ["8/26(金)","8/27(土)","8/28(日)","8/29(月)","8/30(火)","8/31(水)","9/1(木)","9/2(金)","9/3(土)","9/4(日)","9/5(月)","9/6(火)","9/7(水)","9/8(木)","9/9(金)","9/10(土)"]
   },
   assembly: {
     dates: ["9/9","9/10","9/11","9/12"],
@@ -1548,7 +1609,9 @@ const TURNOUT_DATA = {
     // 2022年 村議選 期日前投票状況（日別）PDFより（9/7〜9/10、4日分）
     previousDetail: [
       {male:754, female:870}, {male:1089, female:1383}, {male:1231, female:1740}, {male:1154, female:1445}
-    ]
+    ],
+    // 「表で見る」表示用：前回（2022年）の実際の暦日（PDFに記載の日付・曜日そのまま）
+    previousDates: ["9/7(水)","9/8(木)","9/9(金)","9/10(土)"]
   }
 };
 
@@ -1794,6 +1857,52 @@ function todayISO(){
   }
 })();
 
+/* ============================================================
+   新着案内：投票率速報の掲載開始を自動でお知らせする
+   ・TURNOUT_DATA[key].current に1件でも数値が入力された時点で、
+     「◯◯選挙の投票率速報を開始しました」を新着案内リストの先頭に追加する。
+   ・日付は「最初に数値が入った日」（dates配列のインデックス基準）を表示する。
+   ・governor/assemblyそれぞれ独立して判定するため、
+     知事選だけ先に始まっている間は知事選の案内だけが表示される。
+   ============================================================ */
+(function announceTurnoutReportStart(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+
+    function addAnnouncement(dateLabel, title){
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.href = "#turnout";
+      const dateSpan = document.createElement("span");
+      dateSpan.className = "news-date";
+      dateSpan.textContent = dateLabel;
+      const titleSpan = document.createElement("span");
+      titleSpan.className = "news-title";
+      titleSpan.textContent = title;
+      const arrowSpan = document.createElement("span");
+      arrowSpan.className = "news-arrow";
+      arrowSpan.textContent = "›";
+      a.appendChild(dateSpan);
+      a.appendChild(titleSpan);
+      a.appendChild(arrowSpan);
+      li.appendChild(a);
+      listEl.insertBefore(li, listEl.firstChild);
+    }
+
+    ["governor", "assembly"].forEach(key=>{
+      const data = TURNOUT_DATA[key];
+      if(!data) return;
+      const firstIdx = data.current.findIndex(v => v !== null);
+      if(firstIdx !== -1){
+        addAnnouncement(data.dates[firstIdx], ELECTION_DATA[key].label + "の期日前投票 投票率速報を開始しました");
+      }
+    });
+  }catch(err){
+    if(window.console && console.error) console.error("announceTurnoutReportStart failed:", err);
+  }
+})();
+
 // ---- 投票率速報グラフ（スマホ用・縦積みの横バーリスト）描画 ----
 function renderTurnoutMobile(key, themeColor){
   const data = TURNOUT_DATA[key];
@@ -1834,8 +1943,14 @@ function renderTurnoutMobile(key, themeColor){
   });
 }
 
+// 現在グラフに表示中の選挙キー（"governor" or "assembly"）。
+// ナビでこのタブへジャンプしたときに、どちらのグラフを最新日までスクロールすれば
+// よいか判断するために使う。
+let currentTurnoutKey = "governor";
+
 // ---- 投票率速報グラフ（PC用・横棒グラフ）描画 ----
 function renderTurnout(key){
+  currentTurnoutKey = key;
   const data = TURNOUT_DATA[key];
   const themeColor = ELECTION_DATA[key].color;
 
@@ -1843,6 +1958,8 @@ function renderTurnout(key){
   // 実績発表が無い状態。その場合はグラフの代わりに案内文を出す。
   const hasAnyData = data.current.some(v => v !== null);
 
+  const viewToggle = document.getElementById("view-toggle");
+  const tableWrap = document.getElementById("turnout-table-wrap");
   const waitingBox = document.getElementById("turnout-waiting");
   const twDate = document.getElementById("tw-date");
   const chartScroll = document.getElementById("chart-scroll");
@@ -1858,6 +1975,8 @@ function renderTurnout(key){
       waitingBox.style.display = "block";
       if(twDate) twDate.textContent = fmtDate(ELECTION_DATA[key].earlyStart) + "（期日前投票 初日）";
     }
+    if(viewToggle) viewToggle.style.display = "none";
+    if(tableWrap) tableWrap.style.display = "none";
     if(chartScroll) chartScroll.style.display = "none";
     if(turnoutMobile) turnoutMobile.style.display = "none";
     if(chartLegend) chartLegend.style.display = "none";
@@ -1869,10 +1988,7 @@ function renderTurnout(key){
   }
 
   if(waitingBox) waitingBox.style.display = "none";
-  if(chartScroll) chartScroll.style.display = "";
-  if(turnoutMobile) turnoutMobile.style.display = ""; // 表示・非表示はCSSのメディアクエリに委ねる
-  if(chartLegend) chartLegend.style.display = "";
-  if(chartTapHint) chartTapHint.style.display = "";
+  if(viewToggle) viewToggle.style.display = "";
   if(chartSource) chartSource.style.display = "";
   if(updatedLine) updatedLine.style.display = "";
 
@@ -1951,20 +2067,98 @@ function renderTurnout(key){
     div.innerHTML = `<div class="label">${p.label}</div><div class="num ${p.cls?('diff '+p.cls):''}">${p.num}</div>`;
     summary.appendChild(div);
   });
+
+  renderTurnoutTable(key, idx);
+  applyTurnoutView();
+  scrollToLatestBar(idx);
+}
+
+// ---- 投票率速報：「表で見る」用のテーブル描画 ----
+// 前回の出典PDF（期日｜男｜女｜当日合計｜日別累計｜投票率）と同じ列構成で一覧表示する。
+function renderTurnoutTable(key, latestIdx){
+  try{
+    const data = TURNOUT_DATA[key];
+    const curSeries = computeSeriesDetail(key, "current");
+    const prevSeries = computeSeriesDetail(key, "previous");
+    const curBody = document.getElementById("tt-body-current");
+    const prevBody = document.getElementById("tt-body-previous");
+    const titleCur = document.getElementById("tt-title-current");
+    const titlePrev = document.getElementById("tt-title-previous");
+
+    function buildRow(dateLabel, r, isLatest){
+      const cell = (v, unit) => v !== null && v !== undefined ? v + unit : "—";
+      const rateCell = r && r.combinedRate !== null ? r.combinedRate + "%" : "—";
+      const rowCls = !r ? "is-empty" : (isLatest ? "is-latest" : "");
+      return `<tr class="${rowCls}"><td>${dateLabel}</td><td>${r ? cell(r.male, "人") : "—"}</td><td>${r ? cell(r.female, "人") : "—"}</td><td>${r ? cell(r.dailyTotal, "人") : "—"}</td><td>${r ? cell(r.cumulativeTotal, "人") : "—"}</td><td>${rateCell}</td></tr>`;
+    }
+
+    if(curBody){
+      curBody.innerHTML = data.dates.map((d, i) => buildRow(d, curSeries[i], i === latestIdx)).join("");
+    }
+    if(prevBody){
+      const prevDates = data.previousDates || data.dates;
+      prevBody.innerHTML = prevDates.map((d, i) => buildRow(d, prevSeries[i], false)).join("");
+    }
+    if(titleCur) titleCur.textContent = "今回（2026年）" + ELECTION_DATA[key].label;
+    if(titlePrev) titlePrev.textContent = "前回（2022年）" + ELECTION_DATA[key].label;
+  }catch(err){
+    if(window.console && console.error) console.error("renderTurnoutTable failed:", err);
+  }
+}
+
+// ---- 投票率速報：グラフ／表 の表示切替を実際のDOM表示に反映する ----
+let turnoutViewMode = "chart"; // "chart" | "table" — election切替をまたいで状態を保持する
+function applyTurnoutView(){
+  const chartScroll = document.getElementById("chart-scroll");
+  const turnoutMobile = document.getElementById("turnout-mobile");
+  const chartLegend = document.getElementById("chart-legend");
+  const chartTapHint = document.getElementById("chart-tap-hint");
+  const tableWrap = document.getElementById("turnout-table-wrap");
+  const isTable = turnoutViewMode === "table";
+  if(chartScroll) chartScroll.style.display = isTable ? "none" : "";
+  if(turnoutMobile) turnoutMobile.style.display = isTable ? "none" : ""; // 表示・非表示はCSSのメディアクエリにも委ねる
+  if(chartLegend) chartLegend.style.display = isTable ? "none" : "";
+  if(chartTapHint) chartTapHint.style.display = isTable ? "none" : "";
+  if(tableWrap) tableWrap.style.display = isTable ? "block" : "none";
+  document.querySelectorAll("#view-toggle button").forEach(b=>{
+    b.classList.toggle("active", b.dataset.view === turnoutViewMode);
+  });
+}
+
+// ---- 投票率速報：最新（＝一番新しく発表された）日のバーへ自動でスクロールする ----
+// 日数が増えてグラフが横に長くなっても、タブを開いた瞬間に最新日が見えるようにする。
+function scrollToLatestBar(latestIdx){
+  try{
+    if(latestIdx === undefined || latestIdx < 0) return;
+    const raf = (typeof window !== "undefined" && window.requestAnimationFrame) ? window.requestAnimationFrame : function(cb){ setTimeout(cb, 0); };
+    raf(()=>{
+      const group = document.querySelectorAll("#bars .bar-group")[latestIdx];
+      if(group && group.scrollIntoView){
+        group.scrollIntoView({behavior:"smooth", inline:"center", block:"nearest"});
+      }
+      const mobileRow = document.querySelectorAll("#turnout-mobile .tm-row")[latestIdx];
+      if(mobileRow && mobileRow.scrollIntoView){
+        mobileRow.scrollIntoView({behavior:"smooth", block:"nearest"});
+      }
+    });
+  }catch(err){
+    if(window.console && console.error) console.error("scrollToLatestBar failed:", err);
+  }
 }
 
 // ---- 投票率速報：日別詳細（男女別・当日合計・累計）ポップアップ ----
 function fmtRate(v){
   return v !== null ? v.toFixed(2) + "%" : "—";
 }
-function buildTurnoutDetailBlock(title, detail, isPrev){
+function buildTurnoutDetailBlock(title, detail, isPrev, accentColor){
+  const accentStyle = (!isPrev && accentColor) ? ` style="--td-accent:${accentColor}"` : "";
   if(!detail){
-    return `<div class="td-block${isPrev ? " is-prev" : ""}">
+    return `<div class="td-block${isPrev ? " is-prev" : ""}"${accentStyle}>
       <div class="td-block-title">${title}</div>
       <p class="td-empty">まだ数値は公表されていません。</p>
     </div>`;
   }
-  return `<div class="td-block${isPrev ? " is-prev" : ""}">
+  return `<div class="td-block${isPrev ? " is-prev" : ""}"${accentStyle}>
     <div class="td-block-title">${title}</div>
     <div class="td-row"><span class="td-label">男性</span><span class="td-num">${detail.male}人${detail.maleRate!==null ? "（累積 "+fmtRate(detail.maleRate)+"）" : ""}</span></div>
     <div class="td-row"><span class="td-label">女性</span><span class="td-num">${detail.female}人${detail.femaleRate!==null ? "（累積 "+fmtRate(detail.femaleRate)+"）" : ""}</span></div>
@@ -1984,12 +2178,13 @@ function openTurnoutDetail(key, i){
 
     const curSeries = computeSeriesDetail(key, "current");
     const prevSeries = computeSeriesDetail(key, "previous");
+    const accentColor = ELECTION_DATA[key].color;
 
     dateEl.textContent = data.dates[i] + "（期日前投票 " + (i+1) + "日目）";
     electionEl.textContent = ELECTION_DATA[key].label + "｜読谷村";
     groupsEl.innerHTML =
-      buildTurnoutDetailBlock("今回（2026年）", curSeries[i], false) +
-      buildTurnoutDetailBlock("前回（2022年）同時点", prevSeries[i], true);
+      buildTurnoutDetailBlock("今回（2026年）", curSeries[i], false, accentColor) +
+      buildTurnoutDetailBlock("前回（2022年）同時点", prevSeries[i], true, accentColor);
 
     modal.classList.add("open");
   }catch(err){
@@ -2023,6 +2218,13 @@ try{
       document.querySelectorAll(".switcher button").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
       renderTurnout(btn.dataset.target);
+    });
+  });
+
+  document.querySelectorAll("#view-toggle button").forEach(btn=>{
+    btn.addEventListener("click", ()=>{
+      turnoutViewMode = btn.dataset.view;
+      applyTurnoutView();
     });
   });
 }catch(err){
@@ -2077,6 +2279,21 @@ const NAV_MODE = "tabs";
       navLinks.forEach(a=>a.classList.toggle("active", a.getAttribute("href")==="#"+target));
       if(!opts || !opts.skipScroll){
         try{ window.scrollTo({top:0, behavior:"instant"}); }catch(err){ window.scrollTo(0,0); }
+      }
+      // 投票率速報タブへ来たときは、そのグラフの最新日がすぐ見えるようにする
+      // （renderTurnout自体はページ読込時に一度だけ動くため、非表示だった間は
+      //   スクロール計算が効かない。タブを開いた瞬間に改めて計算し直す）。
+      if(target === "turnout" && typeof TURNOUT_DATA !== "undefined" && typeof currentTurnoutKey !== "undefined"){
+        try{
+          const data = TURNOUT_DATA[currentTurnoutKey];
+          if(data){
+            const lastIdx = [...data.current].reverse().findIndex(v=>v!==null);
+            const latestIdx = lastIdx===-1 ? -1 : data.current.length-1-lastIdx;
+            if(typeof scrollToLatestBar === "function") scrollToLatestBar(latestIdx);
+          }
+        }catch(err){
+          if(window.console && console.error) console.error("turnout tab scroll failed:", err);
+        }
       }
     }
 
