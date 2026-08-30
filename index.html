@@ -1605,12 +1605,12 @@ const ELECTION_DATA = {
 const TURNOUT_DATA = {
   governor: {
     dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
-    current:  [0.31, 0.69, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    current:  [0.31, 0.69, 1.10, null, null, null, null, null, null, null, null, null, null, null, null, null],
     // "最終更新"に表示する時刻。currentを更新するたびに、実際に集計・掲載した
     // 時刻（例:"20:45"）に書き換えてください。日付はcurrentの最新日から自動で
     // 表示されるので、ここは時刻（"HH:MM"）だけを入力すればOKです。
     // 時刻が分からない・未入力のうちはnullのままでOK（時刻なしで表示されます）。
-    updatedTime: "20:15",
+    updatedTime: "20:15", // 8/30分
     // 2022年は8/26開始（16日間）。日数ベースで対応：8/26→0.30% … 9/10(最終日)→31.52%
     previous: [0.30, 0.63, 1.09, 1.56, 2.04, 2.23, 2.58, 2.97, 3.20, 3.36, 3.85, 4.46, 8.82, 15.67, 24.16, 31.52],
     // 選挙人名簿登録者数（令和8年8月26日現在）：合計33,048人／男15,863人／女17,185人
@@ -1624,7 +1624,7 @@ const TURNOUT_DATA = {
     prevElectorsMale: 15912,
     prevElectorsFemale: 16886,
     currentDetail: [
-      {male:67, female:35}, {male:80, female:45}, {male:null, female:null}, {male:null, female:null},
+      {male:67, female:35}, {male:80, female:45}, {male:80, female:57}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null}
@@ -1676,6 +1676,13 @@ const TURNOUT_DATA = {
 // 当日合計・男女別累計人数・男女別累積投票率を自動計算する。
 // まだ発表されていない日（male/femaleがnull）に到達したら、それ以降は
 // すべて「未発表」として null を返す（未来の日を先に発表することは無いため）。
+// 投票率(%)の計算はすべて「小数点第2位まで・第3位で四捨五入」に統一する。
+// Number.EPSILONを足してから100倍・四捨五入・100で割ることで、
+// 二進浮動小数点特有の誤差（例：67.005が67.00499999...になる等）による
+// 丸め崩れをできるだけ避ける。
+function round2(v){
+  return (v === null || v === undefined) ? null : Math.round((v + Number.EPSILON) * 100) / 100;
+}
 function computeSeriesDetail(key, seriesName){
   const data = TURNOUT_DATA[key];
   const raw = seriesName === "current" ? data.currentDetail : data.previousDetail;
@@ -1697,8 +1704,8 @@ function computeSeriesDetail(key, seriesName){
       cumulativeMale: cumMale,
       cumulativeFemale: cumFemale,
       cumulativeTotal: cumMale + cumFemale,
-      maleRate: electorsMale ? (cumMale / electorsMale * 100) : null,
-      femaleRate: electorsFemale ? (cumFemale / electorsFemale * 100) : null,
+      maleRate: electorsMale ? round2(cumMale / electorsMale * 100) : null,
+      femaleRate: electorsFemale ? round2(cumFemale / electorsFemale * 100) : null,
       combinedRate: (combinedRates && combinedRates[i] !== undefined) ? combinedRates[i] : null
     };
   });
@@ -2010,12 +2017,12 @@ function renderTurnoutMobile(key, themeColor, latestIdx){
       <div class="tm-line">
         <div class="tm-tag">今回</div>
         <div class="tm-track"><div class="tm-fill" style="width:${cur!==null?(cur/max*100):0}%;background:${themeColor}"></div></div>
-        <div class="tm-val">${cur!==null?cur+"%":"—"}</div>
+        <div class="tm-val">${fmtPct(cur)}</div>
       </div>
       <div class="tm-line">
         <div class="tm-tag">前回</div>
         <div class="tm-track"><div class="tm-fill" style="width:${prev!==null?(prev/max*100):0}%;background:#cfd8d9"></div></div>
-        <div class="tm-val">${prev!==null?prev+"%":"—"}</div>
+        <div class="tm-val">${fmtPct(prev)}</div>
       </div>
       <div class="tm-row-hint">タップで男女別・当日合計・累計を見る ›</div>`;
     row.classList.add("is-tappable");
@@ -2147,7 +2154,7 @@ function renderTurnout(key){
     prevBar.className = "bar prev";
     prevBar.style.height = (prev!==null ? (prev/max*100) : 0)+"%";
     if(prev!==null){
-      const v = document.createElement("span"); v.className="val"; v.textContent=prev+"%";
+      const v = document.createElement("span"); v.className="val"; v.textContent=fmtPct(prev);
       prevBar.appendChild(v);
     }
 
@@ -2156,7 +2163,7 @@ function renderTurnout(key){
     curBar.style.height = (cur!==null ? (cur/max*100) : 0)+"%";
     curBar.style.background = `linear-gradient(180deg, ${themeColor} 0%, var(--sea-dark) 100%)`;
     if(cur!==null){
-      const v = document.createElement("span"); v.className="val"; v.style.color=themeColor; v.textContent=cur+"%";
+      const v = document.createElement("span"); v.className="val"; v.style.color=themeColor; v.textContent=fmtPct(cur);
       curBar.appendChild(v);
     }
 
@@ -2185,8 +2192,8 @@ function renderTurnout(key){
 
   summary.innerHTML = "";
   const pills = [
-    {label:"読谷村の現在の累積投票率", num: latestCur!==null ? latestCur+"%" : "—"},
-    {label:"読谷村の前回同時点の投票率", num: latestPrev!==null ? latestPrev+"%" : "—"},
+    {label:"読谷村の現在の累積投票率", num: fmtPct(latestCur)},
+    {label:"読谷村の前回同時点の投票率", num: fmtPct(latestPrev)},
     {label:"前回との差", num: diff!==null ? (diff>=0?"+":"")+diff.toFixed(1)+"pt" : "—",
      cls: diff!==null ? (diff>=0?"up":"down") : ""}
   ];
@@ -2226,7 +2233,7 @@ function renderTurnoutTable(key, latestIdx){
       return m ? m[1] + '<span class="tt-weekday">' + m[2] + '</span>' : dateLabel;
     }
     function buildRow(dateLabel, r, isLatest){
-      const rateCell = r && r.combinedRate !== null ? r.combinedRate + "%" : "—";
+      const rateCell = fmtPct(r ? r.combinedRate : null);
       const rowCls = !r ? "is-empty" : (isLatest ? "is-latest" : "");
       return `<tr class="${rowCls}"><td>${formatDateCell(dateLabel)}</td><td>${r ? cell(r.male) : "—"}</td><td>${r ? cell(r.female) : "—"}</td><td>${r ? cell(r.dailyTotal) : "—"}</td><td>${r ? cell(r.cumulativeTotal) : "—"}</td><td>${rateCell}</td></tr>`;
     }
@@ -2286,8 +2293,11 @@ function scrollToLatestBar(latestIdx){
 }
 
 // ---- 投票率速報：日別詳細（男女別・当日合計・累計）ポップアップ ----
-function fmtRate(v){
-  return v !== null ? v.toFixed(2) + "%" : "—";
+// 投票率(%)の表示は、常に「小数点第2位まで・第3位で四捨五入」で統一する。
+// v.toFixed(2)はJSの仕様上「最も近い値（同着なら大きい方）」に丸めるため、
+// 実質的に四捨五入と同じ結果になる（0.30 → "0.30%" のようにゼロ埋めもされる）。
+function fmtPct(v){
+  return (v === null || v === undefined) ? "—" : v.toFixed(2) + "%";
 }
 function buildTurnoutDetailBlock(title, detail, isPrev, accentColor){
   const accentStyle = (!isPrev && accentColor) ? ` style="--td-accent:${accentColor}"` : "";
@@ -2299,11 +2309,11 @@ function buildTurnoutDetailBlock(title, detail, isPrev, accentColor){
   }
   return `<div class="td-block${isPrev ? " is-prev" : ""}"${accentStyle}>
     <div class="td-block-title">${title}</div>
-    <div class="td-row"><span class="td-label">男性</span><span class="td-num">${detail.male}人${detail.maleRate!==null ? "（累積 "+fmtRate(detail.maleRate)+"）" : ""}</span></div>
-    <div class="td-row"><span class="td-label">女性</span><span class="td-num">${detail.female}人${detail.femaleRate!==null ? "（累積 "+fmtRate(detail.femaleRate)+"）" : ""}</span></div>
+    <div class="td-row"><span class="td-label">男性</span><span class="td-num">${detail.male}人${detail.maleRate!==null ? "（累積 "+fmtPct(detail.maleRate)+"）" : ""}</span></div>
+    <div class="td-row"><span class="td-label">女性</span><span class="td-num">${detail.female}人${detail.femaleRate!==null ? "（累積 "+fmtPct(detail.femaleRate)+"）" : ""}</span></div>
     <div class="td-row"><span class="td-label">当日合計</span><span class="td-num">${detail.dailyTotal}人</span></div>
     <div class="td-row"><span class="td-label">累計投票者数</span><span class="td-num">${detail.cumulativeTotal}人</span></div>
-    <div class="td-row"><span class="td-label">累積投票率</span><span class="td-num">${detail.combinedRate!==null ? detail.combinedRate+"%" : "—"}</span></div>
+    <div class="td-row"><span class="td-label">累積投票率</span><span class="td-num">${fmtPct(detail.combinedRate)}</span></div>
   </div>`;
 }
 function openTurnoutDetail(key, i){
