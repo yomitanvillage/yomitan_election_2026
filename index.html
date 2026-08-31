@@ -1605,12 +1605,12 @@ const ELECTION_DATA = {
 const TURNOUT_DATA = {
   governor: {
     dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
-    current:  [0.31, 0.69, 1.10, null, null, null, null, null, null, null, null, null, null, null, null, null],
+    current:  [0.31, 0.69, 1.10, 1.57, null, null, null, null, null, null, null, null, null, null, null, null],
     // "最終更新"に表示する時刻。currentを更新するたびに、実際に集計・掲載した
     // 時刻（例:"20:45"）に書き換えてください。日付はcurrentの最新日から自動で
     // 表示されるので、ここは時刻（"HH:MM"）だけを入力すればOKです。
     // 時刻が分からない・未入力のうちはnullのままでOK（時刻なしで表示されます）。
-    updatedTime: "20:15", // 8/30分
+    updatedTime: "20:22", // 8/31分
     // 2022年は8/26開始（16日間）。日数ベースで対応：8/26→0.30% … 9/10(最終日)→31.52%
     previous: [0.30, 0.63, 1.09, 1.56, 2.04, 2.23, 2.58, 2.97, 3.20, 3.36, 3.85, 4.46, 8.82, 15.67, 24.16, 31.52],
     // 選挙人名簿登録者数（令和8年8月26日現在）：合計33,048人／男15,863人／女17,185人
@@ -1624,7 +1624,7 @@ const TURNOUT_DATA = {
     prevElectorsMale: 15912,
     prevElectorsFemale: 16886,
     currentDetail: [
-      {male:67, female:35}, {male:80, female:45}, {male:80, female:57}, {male:null, female:null},
+      {male:67, female:35}, {male:80, female:45}, {male:80, female:57}, {male:80, female:74},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null}
