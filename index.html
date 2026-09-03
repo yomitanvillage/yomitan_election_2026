@@ -380,20 +380,21 @@
   }
   /* 上のCSS @media と同じ切替をJS側でも二重に保証（body.is-mobile-view） */
   body.is-mobile-view .chart-scroll{display:none;}
-  body.is-mobile-view .turnout-mobile{display:block;}
-  body.is-desktop-view .turnout-mobile{display:none;}
+  body.is-mobile-view .turnout-mobile, body.is-mobile-view .hr-trend-mobile{display:block;}
+  body.is-desktop-view .turnout-mobile, body.is-desktop-view .hr-trend-mobile{display:none;}
 
   /* ---------- Turnout chart ---------- */
-  .switcher{display:flex;gap:8px;margin-bottom:22px;}
-  .switcher button{
+  /* .hourly-switch/.results-switch は各ページの選挙切替に使用。見た目は.switcherと共通。 */
+  .switcher, .hourly-switch, .results-switch{display:flex;gap:8px;margin-bottom:22px;}
+  .switcher button, .hourly-switch button, .results-switch button{
     border:2px solid var(--sea);background:#fff;color:var(--sea-dark);font-weight:800;
     padding:9px 18px;border-radius:999px;cursor:pointer;font-size:14px;transition:.15s;
   }
-  .switcher button.active{background:var(--sea);color:#fff;}
-  .switcher button[data-target="governor"]{border-color:var(--gov);color:var(--gov);}
-  .switcher button[data-target="governor"].active{background:var(--gov);color:#fff;}
-  .switcher button[data-target="assembly"]{border-color:var(--assembly);color:var(--assembly);}
-  .switcher button[data-target="assembly"].active{background:var(--assembly);color:#fff;}
+  .switcher button.active, .hourly-switch button.active, .results-switch button.active{background:var(--sea);color:#fff;}
+  .switcher button[data-target="governor"], .hourly-switch button[data-target="governor"], .results-switch button[data-target="governor"]{border-color:var(--gov);color:var(--gov);}
+  .switcher button[data-target="governor"].active, .hourly-switch button[data-target="governor"].active, .results-switch button[data-target="governor"].active{background:var(--gov);color:#fff;}
+  .switcher button[data-target="assembly"], .hourly-switch button[data-target="assembly"], .results-switch button[data-target="assembly"]{border-color:var(--assembly);color:var(--assembly);}
+  .switcher button[data-target="assembly"].active, .hourly-switch button[data-target="assembly"].active, .results-switch button[data-target="assembly"].active{background:var(--assembly);color:#fff;}
   .chart-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:28px;}
   .chart-card .updated{font-size:12.5px;color:var(--ink-soft);margin-bottom:18px;}
   .chart-card .updated b{color:var(--coral);}
@@ -464,6 +465,81 @@
   .summary-pill .num{font-size:26px;font-weight:800;color:var(--sea-dark);}
   .diff.up{color:var(--good);}
   .diff.down{color:var(--warn);}
+
+  /* ---------- 投票日 時間別投票状況 ---------- */
+  .hr-block-title{font-weight:800;font-size:13.5px;color:var(--sea-dark);margin:26px 0 10px;}
+  .hr-block-title:first-child{margin-top:0;}
+  .hr-station-current{margin:0 0 10px;font-size:12.5px;color:var(--ink-soft);font-weight:700;}
+  .hour-chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 12px;}
+  .hour-chip{
+    border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-weight:700;
+    padding:6px 14px;border-radius:999px;cursor:pointer;font-size:12.5px;font-family:inherit;transition:.15s;
+  }
+  .hour-chip.has-data{border-color:var(--sea);color:var(--sea-dark);}
+  .hour-chip.active{background:var(--sea-dark);border-color:var(--sea-dark);color:#fff;}
+  .hr-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 8px;}
+  .hr-summary-card{background:var(--sand-2);border-radius:14px;padding:14px 10px;text-align:center;}
+  .hr-summary-card .label{font-size:11px;color:var(--ink-soft);font-weight:700;}
+  .hr-summary-card .value{font-size:22px;font-weight:800;color:var(--sea-dark);margin-top:2px;}
+  .hr-trend-table-wrap{display:none;}
+  .tt-table tbody tr.is-total td{background:#fff6e6;font-weight:800;border-top:2px solid var(--sea-dark);}
+  .bar-labels div.is-latest{color:var(--coral);font-weight:800;}
+  /* 投票所別内訳の1列目（投票所名＋場所名）だけは折り返しを許可し、
+     横スクロールが発生しないようにする（数値列はnowrapのまま揃える） */
+  #hr-table td:first-child, #hr-table th:first-child{white-space:normal;}
+  .hr-station-name{display:block;font-weight:700;color:var(--ink);}
+  .hr-station-place{display:block;font-size:10.5px;font-weight:400;color:var(--ink-soft);margin-top:1px;}
+  @media(max-width:600px){
+    .hr-summary{grid-template-columns:1fr 1fr 1fr;gap:6px;}
+    .hr-summary-card{padding:10px 4px;}
+    .hr-summary-card .label{font-size:10px;}
+    .hr-summary-card .value{font-size:17px;}
+  }
+
+  /* ---------- 開票速報 ---------- */
+  #rs-final-stats.hr-summary{grid-template-columns:repeat(3,1fr);margin-bottom:18px;}
+  @media(max-width:600px){
+    #rs-final-stats.hr-summary{grid-template-columns:1fr 1fr;}
+  }
+  .rs-progress{margin:0 0 20px;}
+  .rs-progress-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px;}
+  .rs-progress-title{font-size:13px;font-weight:800;color:var(--ink);}
+  .rs-progress-value{font-size:26px;font-weight:800;color:var(--sea-dark);}
+  .rs-progress-track{background:#f1ede2;border-radius:10px;height:20px;overflow:hidden;}
+  .rs-progress-fill{height:100%;border-radius:10px;background:linear-gradient(90deg,var(--sea) 0%,var(--sea-dark) 100%);transition:width .4s ease;}
+  .rs-progress-note{margin-top:6px;font-size:11px;color:var(--ink-soft);}
+  .rs-toolbar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin:0 0 16px;}
+  .rs-sort-toggle{display:flex;align-items:center;gap:8px;flex-wrap:wrap;}
+  .rs-sort-label{font-size:12px;color:var(--ink-soft);font-weight:700;}
+  .rs-sort-toggle button{
+    border:1.5px solid var(--line);background:#fff;color:var(--ink-soft);font-weight:700;
+    padding:7px 14px;border-radius:999px;cursor:pointer;font-size:12.5px;font-family:inherit;transition:.15s;
+  }
+  .rs-sort-toggle button.active{background:var(--sea-dark);border-color:var(--sea-dark);color:#fff;}
+  .rs-current-label{margin:0 0 10px;font-size:12.5px;color:var(--ink-soft);font-weight:700;}
+  .rs-leaderboard{display:flex;flex-direction:column;gap:10px;}
+  .rs-row{
+    display:flex;align-items:center;gap:12px;padding:12px 14px;
+    border:1px solid var(--line);border-radius:14px;background:#fff;
+  }
+  .rs-badge{
+    flex:0 0 52px;text-align:center;font-size:12px;font-weight:800;color:var(--sea-dark);
+    background:var(--sand-2);border-radius:10px;padding:6px 4px;line-height:1.3;
+  }
+  .rs-info{flex:1;min-width:0;}
+  .rs-name{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:6px;}
+  .rs-track{background:#f1ede2;border-radius:6px;height:16px;overflow:hidden;}
+  .rs-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--sea) 0%,var(--sea-dark) 100%);transition:width .4s ease;}
+  .rs-votes{flex:0 0 auto;text-align:right;font-size:17px;font-weight:800;color:var(--ink);white-space:nowrap;}
+  .rs-votes-unit{font-size:11px;font-weight:700;color:var(--ink-soft);margin-left:2px;}
+  .rs-seat-divider{
+    display:flex;align-items:center;gap:10px;margin:2px 0;font-size:11.5px;color:var(--ink-soft);font-weight:700;
+  }
+  .rs-seat-divider::before, .rs-seat-divider::after{content:"";flex:1;border-top:1px dashed var(--line);}
+  .rs-trend-table-wrap{display:none;}
+
+  /* 公開前の機能を隠すための汎用クラス（PUBLISH_HOURLY_RESULTS等と併用） */
+  .is-feature-hidden{display:none !important;}
 
   /* ---------- Q&A ---------- */
   .qa-popular{
@@ -717,6 +793,8 @@
       <a href="#alt-voting">当日行けない方へ</a>
       <a href="#map">掲示場マップ</a>
       <a href="#turnout">投票率速報</a>
+      <a href="#hourly" class="is-feature-hidden" data-hourly-nav>当日投票状況</a>
+      <a href="#results" class="is-feature-hidden" data-results-nav>開票速報</a>
       <a href="#qa">Q&amp;A</a>
       <a href="#violation">選挙違反かも？</a>
       <a href="#contact">お問い合わせ</a>
@@ -1111,6 +1189,147 @@
         ・
         <a href="https://www.vill.yomitan.okinawa.jp/material/files/group/29/04411194.pdf" target="_blank" rel="noopener">読谷村議会議員選挙（PDF）</a>
       </p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 投票日 時間別投票状況 ==========
+     公開・非表示は PUBLISH_HOURLY_RESULTS（JS側）で切り替えます。
+     公開前でも URL に ?preview=hourly を付けるとテスト表示できます。 -->
+<section id="hourly" data-tab-panel class="is-feature-hidden" data-hourly-section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Election Day / Hourly Turnout</div>
+      <h2>投票日 時間別投票状況（投票所別）</h2>
+      <p>9月13日（日）投票日当日、読谷村内の各投票所（第1〜第6投票所）における投票者数の累計を、8時から20時まで1時間ごとに公表します。数値は投票終了後、順次更新します。</p>
+    </div>
+
+    <div class="hourly-switch">
+      <button type="button" class="active" data-target="governor">沖縄県知事選挙</button>
+      <button type="button" data-target="assembly">読谷村議会議員選挙</button>
+    </div>
+
+    <div class="chart-card">
+      <div class="updated" id="hourly-updated-line"></div>
+
+      <div class="turnout-waiting" id="hourly-waiting">
+        <div class="tw-icon">🗳️</div>
+        <p class="tw-text">投票日の時間別投票状況はまだ公表されていません。<br>9月13日、投票所ごとの集計が整い次第、1時間ごとに更新します。</p>
+      </div>
+
+      <div id="hr-body">
+        <!-- 現在時点（最新）の男女別・合計人数を一目で見せるサマリー -->
+        <div class="hr-summary" id="hr-summary"></div>
+
+        <!-- 読谷村全体（6投票所合計）の時刻別推移：グラフ／表を切替 -->
+        <div class="hr-block-title">読谷村全体の投票者数の推移（6投票所合計）</div>
+        <div class="view-toggle" id="hr-view-toggle">
+          <button type="button" class="active" data-view="chart">グラフで見る</button>
+          <button type="button" data-view="table">表で見る</button>
+        </div>
+
+        <div class="chart-scroll" id="hr-chart-scroll">
+          <div class="chart-inner">
+            <div class="bars" id="hr-bars"></div>
+            <div class="bar-labels" id="hr-bar-labels"></div>
+          </div>
+        </div>
+        <!-- スマホ表示用：縦積みの横バーリスト（PCでは非表示。投票率速報のturnout-mobileと同じ考え方） -->
+        <div class="hr-trend-mobile" id="hr-trend-mobile"></div>
+        <p class="chart-tap-hint" id="hr-chart-tap-hint">グラフの各時刻をタップ（クリック）すると、下の「投票所別の内訳」がその時刻に切り替わります。</p>
+
+        <div class="tt-scroll hr-trend-table-wrap" id="hr-trend-table-wrap">
+          <table class="tt-table">
+            <thead><tr><th>時刻</th><th>男</th><th>女</th><th>計</th></tr></thead>
+            <tbody id="hr-trend-table-body"></tbody>
+          </table>
+        </div>
+
+        <!-- 投票所ごとの内訳：時刻チップで見たい時刻を選ぶ -->
+        <div class="hr-block-title hr-station-block">投票所別の内訳</div>
+        <div class="hour-chips" id="hour-chips"></div>
+        <p class="hr-station-current" id="hr-station-current"></p>
+
+        <div class="tt-scroll">
+          <table class="tt-table" id="hr-table">
+            <thead><tr><th>投票所</th><th>男</th><th>女</th><th>計</th></tr></thead>
+            <tbody id="hr-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="chart-source">数値は各投票所における投票者数の累計（実数）です。選挙人名簿登録者数に対する投票率は、投票終了後の確定値でお知らせします。</p>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 開票速報 ==========
+     公開・非表示は PUBLISH_RESULTS（JS側）で切り替えます。
+     公開前でも URL に ?preview=results を付けるとテスト表示できます。 -->
+<section id="results" data-tab-panel class="is-feature-hidden" data-results-section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Election Night / Vote Count</div>
+      <h2>開票速報</h2>
+      <p>投票日9月13日（日）の開票状況を、21時から30分ごとに更新します。掲載する得票数は開票途中の速報値です。<b>当選人の決定は、読谷村選挙管理委員会の公式発表を必ずご確認ください。</b></p>
+    </div>
+
+    <div class="results-switch">
+      <button type="button" class="active" data-target="governor">沖縄県知事選挙</button>
+      <button type="button" data-target="assembly">読谷村議会議員選挙</button>
+    </div>
+
+    <div class="chart-card">
+      <div class="turnout-waiting" id="results-waiting">
+        <div class="tw-icon">🗳️</div>
+        <p class="tw-text">開票速報はまだ公表されていません。<br>9月13日 21:00から、30分ごとに更新予定です。</p>
+      </div>
+
+      <div class="turnout-waiting" id="results-no-candidates">
+        <div class="tw-icon">🗳️</div>
+        <p class="tw-text">この選挙の候補者は、まだ確定していません。<br>告示後、候補者が決まり次第この欄に追加します。</p>
+      </div>
+
+      <div id="rs-body">
+        <div class="rs-progress" id="rs-progress">
+          <div class="rs-progress-head">
+            <span class="rs-progress-title">開票率</span>
+            <span class="rs-progress-value" id="rs-progress-value">—</span>
+          </div>
+          <div class="rs-progress-track"><div class="rs-progress-fill" id="rs-progress-fill" style="width:0%"></div></div>
+          <div class="rs-progress-note" id="rs-progress-note"></div>
+        </div>
+
+        <div class="hr-summary" id="rs-final-stats"></div>
+
+        <div class="updated" id="results-updated-line"></div>
+
+        <div class="rs-toolbar">
+          <div class="rs-sort-toggle" id="rs-sort-toggle">
+            <span class="rs-sort-label">並び順</span>
+            <button type="button" class="active" data-sort="order">届出順</button>
+            <button type="button" data-sort="votes">得票数順</button>
+          </div>
+          <div class="view-toggle" id="rs-view-toggle">
+            <button type="button" class="active" data-view="chart">得票数で見る</button>
+            <button type="button" data-view="table">表で見る</button>
+          </div>
+        </div>
+
+        <div class="hour-chips" id="rs-chips"></div>
+        <p class="rs-current-label" id="rs-current-label"></p>
+
+        <div class="rs-leaderboard" id="rs-leaderboard"></div>
+
+        <div class="tt-scroll rs-trend-table-wrap" id="rs-trend-table-wrap">
+          <table class="tt-table">
+            <thead><tr id="rs-trend-table-head"></tr></thead>
+            <tbody id="rs-trend-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="chart-source">得票数は届出順に基づく速報の集計です。表示中の得票数・順位は開票途中の速報値であり、最終確定するものではありません。正式な当選の決定は、読谷村選挙管理委員会の発表をご確認ください。</p>
     </div>
   </div>
 </section>
@@ -1537,6 +1756,50 @@
    自動反映されます。
    ============================================================ */
 
+/* ============================================================
+   投票日「時間別投票状況」ページの公開・非表示
+   ・PUBLISH_HOURLY_RESULTS が false の間は、ナビの「当日投票状況」も
+     ページ本体も一般の閲覧者には表示されません（is-feature-hiddenで非表示）。
+   ・投票日当日、公開するタイミングでこの値を true に書き換えてください。
+   ・公開前でも、関係者だけがテスト表示で確認したい場合は、
+     サイトURLの末尾に  ?preview=hourly  を付けてアクセスすると、
+     このフラグに関係なく表示されます（例：.../index.html?preview=hourly）。
+   ・注意：これは「一般の閲覧者に見せない」ための表示切替であり、
+     ファイル自体を非公開にするものではありません。実際の数値は、
+     発表してよいタイミングになってから HOURLY_DATA に入力してください
+     （投票率速報の日別更新と同じ考え方です）。
+   ============================================================ */
+const PUBLISH_HOURLY_RESULTS = false;
+
+function isHourlyPreview(){
+  try{
+    return new URLSearchParams(window.location.search).get("preview") === "hourly";
+  }catch(err){
+    return false;
+  }
+}
+function hourlyResultsVisible(){
+  return PUBLISH_HOURLY_RESULTS || isHourlyPreview();
+}
+
+/* ============================================================
+   「開票速報」ページの公開・非表示（考え方は上のPUBLISH_HOURLY_RESULTSと同じ）
+   ・投票日21時の開票開始タイミングでPUBLISH_RESULTSをtrueに書き換えてください。
+   ・公開前のテスト表示は  ?preview=results  を付けてアクセスしてください。
+   ============================================================ */
+const PUBLISH_RESULTS = false;
+
+function isResultsPreview(){
+  try{
+    return new URLSearchParams(window.location.search).get("preview") === "results";
+  }catch(err){
+    return false;
+  }
+}
+function resultsVisible(){
+  return PUBLISH_RESULTS || isResultsPreview();
+}
+
 const ELECTION_DATA = {
   governor: {
     label: "沖縄県知事選挙",
@@ -1605,12 +1868,12 @@ const ELECTION_DATA = {
 const TURNOUT_DATA = {
   governor: {
     dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
-    current:  [0.31, 0.69, 1.10, 1.57, 2.07, 2.61, null, null, null, null, null, null, null, null, null, null],
+    current:  [0.31, 0.69, 1.10, 1.57, 2.07, 2.61, 3.05, null, null, null, null, null, null, null, null, null],
     // "最終更新"に表示する時刻。currentを更新するたびに、実際に集計・掲載した
     // 時刻（例:"20:45"）に書き換えてください。日付はcurrentの最新日から自動で
     // 表示されるので、ここは時刻（"HH:MM"）だけを入力すればOKです。
     // 時刻が分からない・未入力のうちはnullのままでOK（時刻なしで表示されます）。
-    updatedTime: "20:15", // 9/2分
+    updatedTime: "20:10", // 9/3分
     // 2022年は8/26開始（16日間）。日数ベースで対応：8/26→0.30% … 9/10(最終日)→31.52%
     previous: [0.30, 0.63, 1.09, 1.56, 2.04, 2.23, 2.58, 2.97, 3.20, 3.36, 3.85, 4.46, 8.82, 15.67, 24.16, 31.52],
     // 選挙人名簿登録者数（令和8年8月26日現在）：合計33,048人／男15,863人／女17,185人
@@ -1625,7 +1888,7 @@ const TURNOUT_DATA = {
     prevElectorsFemale: 16886,
     currentDetail: [
       {male:67, female:35}, {male:80, female:45}, {male:80, female:57}, {male:80, female:74},
-      {male:85, female:82}, {male:87, female:92}, {male:null, female:null}, {male:null, female:null},
+      {male:85, female:82}, {male:87, female:92}, {male:78, female:67}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null}
     ],
@@ -1666,6 +1929,124 @@ const TURNOUT_DATA = {
     ],
     // 「表で見る」表示用：前回（2022年）の実際の暦日（PDFに記載の日付・曜日そのまま）
     previousDates: ["9/7(水)","9/8(木)","9/9(金)","9/10(土)"]
+  }
+};
+
+/* ============================================================
+   ★★★ 投票日 時間別投票状況：ここに時間ごとの数値を入力してください ★★★
+   ・"stations" … 投票所名（編集不要）
+   ・"times"    … 集計時刻（8:00〜20:00の1時間ごと。編集不要）
+   ・"data[時刻のインデックス]" … その時刻「現在」の、各投票所ごとの
+     【累計】投票者数（男・女）を、投票所の並び順（第1〜第6）どおりに入力。
+     まだ発表されていない時刻は emptyHourlyRow() のままにしておくと、
+     「まだ発表されていません」として扱われます。
+     例）10:00現在の第1投票所が男120人・女98人だった場合、
+        governor.data[2]（8:00が0番目なので10:00は2番目）の
+        1つ目（第1投票所）を { male: 120, female: 98 } に書き換える
+   ・エクセルで数値をいただいた場合は、その内容をこの形に変換して反映します。
+   ============================================================ */
+// 場所名は「投票所のご案内」（#polling）に掲載の名称と揃えています。
+const HOURLY_STATIONS = [
+  {name:"第1投票所", place:"波平自治会館ホール"},
+  {name:"第2投票所", place:"読谷村立渡慶次小学校 体育館"},
+  {name:"第3投票所", place:"読谷村立古堅中学校"},
+  {name:"第4投票所", place:"喜名自治会館ホール"},
+  {name:"第5投票所", place:"楚辺自治会館 大ホール"},
+  {name:"第6投票所", place:"古堅自治会館ホール"}
+];
+const HOURLY_TIMES = ["8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"];
+
+function emptyHourlyRow(){
+  return HOURLY_STATIONS.map(()=>({male:null, female:null}));
+}
+
+const HOURLY_DATA = {
+  governor: {
+    stations: HOURLY_STATIONS,
+    times: HOURLY_TIMES,
+    // data[0]=8:00, data[1]=9:00, … data[12]=20:00
+    data: [
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow()
+    ]
+  },
+  assembly: {
+    stations: HOURLY_STATIONS,
+    times: HOURLY_TIMES,
+    data: [
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow()
+    ]
+  }
+};
+
+/* ============================================================
+   ★★★ 開票速報：ここに30分ごとの得票数を入力してください ★★★
+   ・"candidates" … 立候補者。{order:届出番号, name:氏名} を届出順に並べたもの。
+     村議選は告示（9/8予定）で候補者が確定次第、同じ形で追加してください。
+   ・"seats"       … 改選定数（知事選=1、村議選=19）。編集不要。
+   ・"finalTurnoutRateDay" … 投票日（9/13）当日分の投票率（確定値・%）。
+     期日前投票と当日投票とでは分母となる有効投票者数の考え方が異なるため、
+     投票率は分けて管理します。期日前投票の投票率は投票率速報（TURNOUT_DATA）
+     側の最終日の数値をそのまま使うので、ここには当日分だけを入力してください。
+     20時の投票終了後、判明次第 null を実数（例: 52.24）に置き換えてください。
+   ・"finalTotalVotes" … 総投票者数（確定値・有効票＋無効票）。20時の投票終了後、
+     判明次第 null を実数に置き換えてください。「開票率」の表示（validVotesの
+     累計 ÷ この値）に使います。
+   ・"times"       … 開票の発表時刻（21:00から30分おき）。開票が長引く場合は
+     RESULTS_TIMES にそのまま時刻を追記し、下のvalidVotes / data も同じ数だけ
+     行を追加してください。
+   ・"validVotes"  … その時刻「現在」の【累計】有効投票数（村全体）。
+     まだ発表されていない時刻は null のままにする。
+   ・"data[時刻index]" … その時刻現在の、候補者ごとの【累計】得票数。
+     candidatesと同じ並び順（届出順）の配列。まだ発表されていない時刻は
+     emptyResultsRow(候補者数) のままにする。
+   ============================================================ */
+const RESULTS_TIMES = ["21:00","21:30","22:00","22:30","23:00","23:30","0:00","0:30","1:00"];
+
+function emptyResultsRow(count){
+  return new Array(count).fill(null);
+}
+
+const RESULTS_DATA = {
+  governor: {
+    // 届出順（令和8年8月27日告示・くじ引き順）
+    candidates: [
+      {order:1, name:"古謝げんた"},
+      {order:2, name:"カネシマシュン"},
+      {order:3, name:"すえよしまさひろ"},
+      {order:4, name:"玉城デニー"},
+      {order:5, name:"ヒガタカシ"},
+      {order:6, name:"屋良朝助"}
+    ],
+    seats: 1,
+    finalTurnoutRateDay: null,
+    finalTotalVotes: null,
+    times: RESULTS_TIMES,
+    validVotes: [null, null, null, null, null, null, null, null, null],
+    data: [
+      emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6),
+      emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6),
+      emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6)
+    ]
+  },
+  assembly: {
+    // 告示後、候補者が確定次第 {order, name} を追加してください（現時点では未定）
+    candidates: [],
+    seats: 19,
+    finalTurnoutRateDay: null,
+    finalTotalVotes: null,
+    times: RESULTS_TIMES,
+    validVotes: [null, null, null, null, null, null, null, null, null],
+    data: [
+      emptyResultsRow(0), emptyResultsRow(0), emptyResultsRow(0),
+      emptyResultsRow(0), emptyResultsRow(0), emptyResultsRow(0),
+      emptyResultsRow(0), emptyResultsRow(0), emptyResultsRow(0)
+    ]
   }
 };
 
@@ -2381,6 +2762,601 @@ try{
 }
 
 /* ============================================================
+   投票日「時間別投票状況」ページの表示切替・描画
+   ============================================================ */
+(function initHourlyVisibility(){
+  try{
+    if(hourlyResultsVisible()){
+      const navA = document.querySelector("[data-hourly-nav]");
+      const sec = document.getElementById("hourly");
+      if(navA) navA.classList.remove("is-feature-hidden");
+      if(sec) sec.classList.remove("is-feature-hidden");
+    }
+  }catch(err){
+    if(window.console && console.error) console.error("initHourlyVisibility failed:", err);
+  }
+})();
+
+let currentHourlyKey = "governor";
+let currentHourlyTimeIndex = -1; // -1 = 最新の発表済み時刻を自動表示（投票所別内訳で使用）
+let hourlyViewMode = "chart"; // "chart" | "table" — 全体推移（合計）の表示切替。election切替をまたいで保持
+
+function cellHR(v){
+  return (v !== null && v !== undefined) ? v.toLocaleString("ja-JP") : "—";
+}
+
+function computeHourlyTotals(key, timeIdx){
+  const data = HOURLY_DATA[key];
+  if(!data || !data.data[timeIdx]) return null;
+  const rows = data.data[timeIdx];
+  const hasAny = rows.some(r=>r.male!==null || r.female!==null);
+  if(!hasAny) return null;
+  let totalMale = 0, totalFemale = 0;
+  const stationRows = rows.map(r=>{
+    const m = (r.male===null || r.male===undefined) ? null : r.male;
+    const f = (r.female===null || r.female===undefined) ? null : r.female;
+    if(m!==null) totalMale += m;
+    if(f!==null) totalFemale += f;
+    const t = (m!==null && f!==null) ? m + f : null;
+    return {male:m, female:f, total:t};
+  });
+  return {stationRows, totalMale, totalFemale, grandTotal: totalMale + totalFemale};
+}
+
+function latestHourlyIndex(key){
+  const data = HOURLY_DATA[key];
+  if(!data) return -1;
+  for(let i = data.data.length - 1; i >= 0; i--){
+    if(data.data[i].some(r=>r.male!==null || r.female!==null)) return i;
+  }
+  return -1;
+}
+
+// 投票所別内訳（時刻チップ＋その時刻の投票所別テーブル）を描画
+function renderHourStationBreakdown(key){
+  const data = HOURLY_DATA[key];
+  const latestIdx = latestHourlyIndex(key);
+  if(currentHourlyTimeIndex === -1 || currentHourlyTimeIndex >= data.times.length){
+    currentHourlyTimeIndex = latestIdx;
+  }
+  const idx = currentHourlyTimeIndex >= 0 ? currentHourlyTimeIndex : 0;
+  currentHourlyTimeIndex = idx;
+
+  // 時刻チップ（まだ発表されていない時刻はボタン自体を表示しない）
+  const chipsEl = document.getElementById("hour-chips");
+  if(chipsEl){
+    chipsEl.innerHTML = "";
+    data.times.forEach((label, i)=>{
+      const totals = computeHourlyTotals(key, i);
+      if(!totals) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "hour-chip has-data" + (i===idx ? " active" : "");
+      btn.textContent = label;
+      btn.addEventListener("click", ()=>{
+        currentHourlyTimeIndex = i;
+        renderHourStationBreakdown(key);
+      });
+      chipsEl.appendChild(btn);
+    });
+  }
+
+  const stationTitle = document.getElementById("hr-station-current");
+  const tbody = document.getElementById("hr-table-body");
+  const totals = computeHourlyTotals(key, idx);
+  const label = data.times[idx];
+
+  if(stationTitle){
+    stationTitle.textContent = label + "現在の投票所別内訳" + (idx===latestIdx ? "（最新）" : "");
+  }
+  if(tbody){
+    if(!totals){
+      tbody.innerHTML = '<tr class="is-empty"><td colspan="4">' + label + '現在の数値はまだ発表されていません。</td></tr>';
+    }else{
+      let html = data.stations.map((st, i)=>{
+        const r = totals.stationRows[i];
+        const nameCell = '<span class="hr-station-name">' + st.name + '</span><span class="hr-station-place">' + st.place + '</span>';
+        return '<tr><td>' + nameCell + '</td><td>' + cellHR(r.male) + '</td><td>' + cellHR(r.female) + '</td><td>' + cellHR(r.total) + '</td></tr>';
+      }).join("");
+      html += '<tr class="is-total"><td>合計</td><td>' + cellHR(totals.totalMale) + '</td><td>' + cellHR(totals.totalFemale) + '</td><td>' + cellHR(totals.grandTotal) + '</td></tr>';
+      tbody.innerHTML = html;
+    }
+  }
+}
+
+// スマホ表示用：読谷村全体の時刻別推移を縦積みの横バーリストで見せる
+// （投票率速報の turnout-mobile と同じ考え方。横長の棒グラフはスマホでは
+//   横スクロールが必要になり見づらいため、PC=棒グラフ／スマホ=縦リストで出し分ける）
+function renderHourlyTrendMobile(key, themeColor, latestIdx, totalsByHour, max){
+  const data = HOURLY_DATA[key];
+  const wrap = document.getElementById("hr-trend-mobile");
+  if(!wrap) return;
+  wrap.innerHTML = "";
+
+  data.times.forEach((label, i)=>{
+    const totals = totalsByHour[i];
+    const isLatest = i === latestIdx;
+    const row = document.createElement("div");
+    row.className = "tm-row is-tappable" + (isLatest ? " is-latest" : "");
+    row.innerHTML = `
+      <div class="tm-date">${label}${isLatest ? '<span class="tm-latest-badge">最新</span>' : ""}</div>
+      <div class="tm-line">
+        <div class="tm-tag">計</div>
+        <div class="tm-track"><div class="tm-fill" style="width:${totals ? (totals.grandTotal/max*100) : 0}%;background:${themeColor}"></div></div>
+        <div class="tm-val">${totals ? totals.grandTotal.toLocaleString("ja-JP")+"人" : "—"}</div>
+      </div>
+      <div class="tm-row-hint">タップで投票所別の内訳を見る ›</div>`;
+    row.tabIndex = 0;
+    row.setAttribute("role", "button");
+    row.setAttribute("aria-label", label + "時点の投票所別内訳を見る" + (isLatest ? "（最新）" : ""));
+    row.addEventListener("click", ()=>selectHourlyTime(key, i));
+    row.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); selectHourlyTime(key, i); }
+    });
+    wrap.appendChild(row);
+  });
+}
+
+// 読谷村全体（6投票所合計）の時刻別推移：グラフ（棒グラフ／スマホ用リスト）と表の両方を作る
+function renderHourlyTrend(key){
+  const data = HOURLY_DATA[key];
+  const themeColor = ELECTION_DATA[key].color;
+  const latestIdx = latestHourlyIndex(key);
+
+  const barsWrap = document.getElementById("hr-bars");
+  const labelsWrap = document.getElementById("hr-bar-labels");
+  const trendBody = document.getElementById("hr-trend-table-body");
+  if(!barsWrap || !labelsWrap || !trendBody) return;
+  barsWrap.innerHTML = "";
+  labelsWrap.innerHTML = "";
+  trendBody.innerHTML = "";
+
+  const totalsByHour = data.times.map((_, i)=>computeHourlyTotals(key, i));
+  const grandTotals = totalsByHour.map(t=>t ? t.grandTotal : null).filter(v=>v!==null);
+  const max = Math.max(...grandTotals, 10);
+
+  data.times.forEach((label, i)=>{
+    const totals = totalsByHour[i];
+    const isLatest = i === latestIdx;
+
+    const group = document.createElement("div");
+    group.className = "bar-group is-tappable";
+    group.tabIndex = 0;
+    group.setAttribute("role", "button");
+    group.setAttribute("aria-label", label + "時点の投票所別内訳を見る");
+
+    const bar = document.createElement("div");
+    bar.className = "bar cur";
+    bar.style.height = (totals ? (totals.grandTotal/max*100) : 0) + "%";
+    bar.style.background = `linear-gradient(180deg, ${themeColor} 0%, var(--sea-dark) 100%)`;
+    if(totals){
+      const v = document.createElement("span");
+      v.className = "val";
+      v.style.color = themeColor;
+      v.textContent = totals.grandTotal.toLocaleString("ja-JP");
+      bar.appendChild(v);
+    }
+    group.appendChild(bar);
+    group.addEventListener("click", ()=>selectHourlyTime(key, i));
+    group.addEventListener("keydown", (e)=>{
+      if(e.key === "Enter" || e.key === " "){ e.preventDefault(); selectHourlyTime(key, i); }
+    });
+    barsWrap.appendChild(group);
+
+    const lbl = document.createElement("div");
+    lbl.textContent = label;
+    if(isLatest) lbl.classList.add("is-latest");
+    labelsWrap.appendChild(lbl);
+
+    const row = document.createElement("tr");
+    row.className = !totals ? "is-empty" : (isLatest ? "is-latest" : "");
+    row.innerHTML = "<td>" + label + "</td><td>" + (totals?cellHR(totals.totalMale):"—") + "</td><td>" + (totals?cellHR(totals.totalFemale):"—") + "</td><td>" + (totals?cellHR(totals.grandTotal):"—") + "</td>";
+    trendBody.appendChild(row);
+  });
+
+  renderHourlyTrendMobile(key, themeColor, latestIdx, totalsByHour, max);
+}
+
+// グラフ（棒）または表の行をタップしたときに、投票所別内訳をその時刻へ切り替えて見せる
+function selectHourlyTime(key, i){
+  currentHourlyTimeIndex = i;
+  renderHourStationBreakdown(key);
+  const chipsEl = document.getElementById("hour-chips");
+  if(chipsEl && chipsEl.scrollIntoView){
+    try{ chipsEl.scrollIntoView({behavior:"smooth", block:"center"}); }catch(err){ chipsEl.scrollIntoView(); }
+  }
+}
+
+// ---- 全体推移：グラフ／表 の表示切替を実際のDOM表示に反映する ----
+function applyHourlyView(){
+  const chartScroll = document.getElementById("hr-chart-scroll");
+  const trendMobile = document.getElementById("hr-trend-mobile");
+  const tapHint = document.getElementById("hr-chart-tap-hint");
+  const trendTableWrap = document.getElementById("hr-trend-table-wrap");
+  const isTable = hourlyViewMode === "table";
+  // chartScroll/trendMobileは""（空文字）にすることで、CSSのbody.is-mobile-view /
+  // is-desktop-view の出し分け（PC=棒グラフ／スマホ=縦リスト）にそのまま委ねる。
+  if(chartScroll) chartScroll.style.display = isTable ? "none" : "";
+  if(trendMobile) trendMobile.style.display = isTable ? "none" : "";
+  if(tapHint) tapHint.style.display = isTable ? "none" : "";
+  if(trendTableWrap) trendTableWrap.style.display = isTable ? "block" : "none";
+  document.querySelectorAll("#hr-view-toggle button").forEach(b=>{
+    b.classList.toggle("active", b.dataset.view === hourlyViewMode);
+  });
+}
+
+function renderHourly(key){
+  currentHourlyKey = key;
+  const data = HOURLY_DATA[key];
+  if(!data) return;
+
+  const latestIdx = latestHourlyIndex(key);
+  const waitingEl = document.getElementById("hourly-waiting");
+  const bodyEl = document.getElementById("hr-body");
+  const updatedLineEl = document.getElementById("hourly-updated-line");
+
+  if(latestIdx === -1){
+    if(waitingEl) waitingEl.style.display = "block";
+    if(bodyEl) bodyEl.style.display = "none";
+    if(updatedLineEl) updatedLineEl.innerHTML = "";
+    return;
+  }
+  if(waitingEl) waitingEl.style.display = "none";
+  if(bodyEl) bodyEl.style.display = "";
+
+  const latestLabel = data.times[latestIdx];
+  if(updatedLineEl){
+    updatedLineEl.innerHTML = "最終更新：<b>" + latestLabel + "時点</b>（読谷村全体・6投票所の合計）";
+  }
+
+  const latestTotals = computeHourlyTotals(key, latestIdx);
+  const summaryEl = document.getElementById("hr-summary");
+  if(summaryEl && latestTotals){
+    summaryEl.innerHTML =
+      '<div class="hr-summary-card"><div class="label">男（' + latestLabel + '現在）</div><div class="value">' + latestTotals.totalMale.toLocaleString("ja-JP") + '人</div></div>' +
+      '<div class="hr-summary-card"><div class="label">女（' + latestLabel + '現在）</div><div class="value">' + latestTotals.totalFemale.toLocaleString("ja-JP") + '人</div></div>' +
+      '<div class="hr-summary-card"><div class="label">合計（' + latestLabel + '現在）</div><div class="value">' + latestTotals.grandTotal.toLocaleString("ja-JP") + '人</div></div>';
+  }
+
+  renderHourlyTrend(key);
+  applyHourlyView();
+  renderHourStationBreakdown(key);
+}
+
+try{
+  if(typeof HOURLY_DATA !== "undefined"){
+    renderHourly("governor");
+
+    document.querySelectorAll(".hourly-switch button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll(".hourly-switch button").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        currentHourlyTimeIndex = -1; // 選挙を切り替えたら最新時刻の表示に戻す
+        renderHourly(btn.dataset.target);
+      });
+    });
+
+    document.querySelectorAll("#hr-view-toggle button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        hourlyViewMode = btn.dataset.view;
+        applyHourlyView();
+      });
+    });
+  }
+}catch(err){
+  if(window.console && console.error) console.error("renderHourly init failed:", err);
+}
+
+/* ============================================================
+   「開票速報」ページの表示切替・描画
+   ============================================================ */
+(function initResultsVisibility(){
+  try{
+    if(resultsVisible()){
+      const navA = document.querySelector("[data-results-nav]");
+      const sec = document.getElementById("results");
+      if(navA) navA.classList.remove("is-feature-hidden");
+      if(sec) sec.classList.remove("is-feature-hidden");
+    }
+  }catch(err){
+    if(window.console && console.error) console.error("initResultsVisibility failed:", err);
+  }
+})();
+
+let currentResultsKey = "governor";
+let currentResultsTimeIndex = -1; // -1 = 最新の発表済み時刻を自動表示
+let resultsSortMode = "order";    // "order"（届出順） | "votes"（得票数順）
+let resultsViewMode = "chart";    // "chart"（得票数リーダーボード） | "table"（全時刻の表）
+
+function fmtVotes(v){
+  return (v !== null && v !== undefined) ? v.toLocaleString("ja-JP") : "—";
+}
+
+function latestResultsIndex(key){
+  const data = RESULTS_DATA[key];
+  if(!data) return -1;
+  for(let i = data.validVotes.length - 1; i >= 0; i--){
+    if(data.validVotes[i] !== null) return i;
+  }
+  return -1;
+}
+
+// 開票率（＝有効投票数の累計 ÷ 総投票者数の確定値）を進捗バーで表示
+function renderResultsProgress(key){
+  const data = RESULTS_DATA[key];
+  const valueEl = document.getElementById("rs-progress-value");
+  const fillEl = document.getElementById("rs-progress-fill");
+  const noteEl = document.getElementById("rs-progress-note");
+  if(!valueEl || !fillEl || !noteEl) return;
+
+  const latestIdx = latestResultsIndex(key);
+  const validNow = latestIdx >= 0 ? data.validVotes[latestIdx] : null;
+  const total = data.finalTotalVotes;
+
+  if(validNow === null || total === null || total === undefined || !total){
+    valueEl.textContent = "—";
+    fillEl.style.width = "0%";
+    noteEl.textContent = total ? "" : "総投票者数（確定値）が判明したら表示されます。";
+    return;
+  }
+
+  const pct = Math.max(0, Math.min(100, round2(validNow / total * 100)));
+  valueEl.textContent = pct.toFixed(1) + "%";
+  fillEl.style.width = pct + "%";
+  noteEl.textContent = "有効投票数 " + validNow.toLocaleString("ja-JP") + "人 ／ 総投票者数（確定） " + total.toLocaleString("ja-JP") + "人";
+}
+
+// 投票率速報（TURNOUT_DATA）側の最終日の数値から、期日前投票の【確定】投票率を取り出す。
+// 期日前投票と当日投票とでは分母となる有効投票者数の考え方が異なるため、
+// 投票率はここで合算せず、別々の値として扱う（合計は表示上の参考としてのみ足し合わせる）。
+function finalEarlyTurnoutRate(key){
+  try{
+    const data = TURNOUT_DATA[key];
+    if(!data) return null;
+    const lastIdx = [...data.current].reverse().findIndex(v=>v!==null);
+    if(lastIdx === -1) return null;
+    return data.current[data.current.length - 1 - lastIdx];
+  }catch(err){
+    return null;
+  }
+}
+
+function renderResultsFinalStats(key){
+  const data = RESULTS_DATA[key];
+  const el = document.getElementById("rs-final-stats");
+  if(!el) return;
+  const latestIdx = latestResultsIndex(key);
+  const validNow = latestIdx >= 0 ? data.validVotes[latestIdx] : null;
+
+  const earlyRate = finalEarlyTurnoutRate(key);
+  const dayRate = (data.finalTurnoutRateDay !== null && data.finalTurnoutRateDay !== undefined) ? data.finalTurnoutRateDay : null;
+
+  const earlyText = earlyRate !== null ? earlyRate.toFixed(2) + "%" : "確定後に表示";
+  const dayText = dayRate !== null ? dayRate.toFixed(2) + "%" : "確定後に表示";
+
+  const validText = validNow !== null ? validNow.toLocaleString("ja-JP") + "人" : "—";
+  const validLabel = latestIdx >= 0 ? "有効投票数（" + data.times[latestIdx] + "現在）" : "有効投票数";
+
+  el.innerHTML =
+    '<div class="hr-summary-card"><div class="label">期日前投票率（確定）</div><div class="value">' + earlyText + '</div></div>' +
+    '<div class="hr-summary-card"><div class="label">当日投票率（確定）</div><div class="value">' + dayText + '</div></div>' +
+    '<div class="hr-summary-card"><div class="label">' + validLabel + '</div><div class="value">' + validText + '</div></div>';
+}
+
+// 得票数リーダーボード（候補者ごとの横バー）を描画。並び順トグル（届出順／得票数順）に従う。
+function renderLeaderboard(key, idx){
+  const wrap = document.getElementById("rs-leaderboard");
+  if(!wrap) return;
+  const data = RESULTS_DATA[key];
+  const cands = data.candidates;
+  const votesRow = data.data[idx] || [];
+  const hasVotes = votesRow.some(v => v !== null);
+  const label = data.times[idx];
+
+  if(!hasVotes){
+    wrap.innerHTML = '<p class="rs-current-label">' + label + '現在の得票数はまだ発表されていません。</p>';
+    return;
+  }
+
+  const items = cands.map((c, i) => ({
+    order: c.order,
+    name: c.name,
+    votes: votesRow[i] === undefined ? null : votesRow[i]
+  }));
+
+  let ordered;
+  if(resultsSortMode === "votes"){
+    ordered = items.slice().sort((a, b)=>{
+      const av = a.votes === null ? -1 : a.votes;
+      const bv = b.votes === null ? -1 : b.votes;
+      return bv - av;
+    });
+  }else{
+    ordered = items.slice().sort((a, b)=> a.order - b.order);
+  }
+
+  const maxVotes = Math.max(...items.map(it => it.votes || 0), 1);
+
+  let rank = 0, prevVotes = null;
+  const rowsHTML = ordered.map((it, pos)=>{
+    let badge;
+    if(resultsSortMode === "votes"){
+      if(it.votes !== prevVotes){ rank = pos + 1; prevVotes = it.votes; }
+      badge = it.votes === null ? "—" : (rank + "位");
+    }else{
+      badge = "届出" + it.order + "番";
+    }
+    const pct = it.votes ? (it.votes / maxVotes * 100) : 0;
+    return '<div class="rs-row">' +
+      '<div class="rs-badge">' + badge + '</div>' +
+      '<div class="rs-info">' +
+        '<div class="rs-name">' + it.name + '</div>' +
+        '<div class="rs-track"><div class="rs-fill" style="width:' + pct + '%"></div></div>' +
+      '</div>' +
+      '<div class="rs-votes">' + fmtVotes(it.votes) + '<span class="rs-votes-unit">票</span></div>' +
+    '</div>';
+  });
+
+  // 得票数順のときだけ、改選定数の位置に区切り線を入れる（当選の宣言ではなく定数の目安として表示）
+  if(resultsSortMode === "votes" && data.seats > 1 && ordered.length > data.seats){
+    rowsHTML.splice(data.seats, 0, '<div class="rs-seat-divider">改選定数 ' + data.seats + '</div>');
+  }
+
+  wrap.innerHTML = rowsHTML.join("");
+}
+
+// 全時刻×全候補（届出順固定）の一覧表を描画
+function renderResultsTrendTable(key){
+  const data = RESULTS_DATA[key];
+  const theadRow = document.getElementById("rs-trend-table-head");
+  const tbody = document.getElementById("rs-trend-table-body");
+  if(!theadRow || !tbody) return;
+
+  const orderedCands = data.candidates.map((c, i)=>({...c, origIndex:i})).sort((a, b)=> a.order - b.order);
+  theadRow.innerHTML = "<th>時刻</th><th>有効投票数</th>" + orderedCands.map(c => "<th>" + c.name + "</th>").join("");
+
+  const latestIdx = latestResultsIndex(key);
+  tbody.innerHTML = data.times.map((label, i)=>{
+    const hasData = data.validVotes[i] !== null;
+    const rowVotes = data.data[i] || [];
+    const cls = !hasData ? "is-empty" : (i === latestIdx ? "is-latest" : "");
+    const vv = hasData ? fmtVotes(data.validVotes[i]) : "—";
+    const cells = orderedCands.map(c=>{
+      const v = rowVotes[c.origIndex];
+      return "<td>" + (hasData ? fmtVotes(v) : "—") + "</td>";
+    }).join("");
+    return '<tr class="' + cls + '"><td>' + label + '</td><td>' + vv + '</td>' + cells + '</tr>';
+  }).join("");
+}
+
+// 時刻チップ＋現在表示中の時刻ラベル＋リーダーボードをまとめて更新
+function renderResultsSnapshot(key){
+  const data = RESULTS_DATA[key];
+  const latestIdx = latestResultsIndex(key);
+  if(currentResultsTimeIndex === -1 || currentResultsTimeIndex >= data.times.length){
+    currentResultsTimeIndex = latestIdx;
+  }
+  const idx = currentResultsTimeIndex >= 0 ? currentResultsTimeIndex : 0;
+  currentResultsTimeIndex = idx;
+
+  // 時刻チップ（まだ発表されていない時刻はボタン自体を表示しない）
+  const chipsEl = document.getElementById("rs-chips");
+  if(chipsEl){
+    chipsEl.innerHTML = "";
+    data.times.forEach((label, i)=>{
+      const has = data.validVotes[i] !== null;
+      if(!has) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "hour-chip has-data" + (i === idx ? " active" : "");
+      btn.textContent = label;
+      btn.addEventListener("click", ()=>{
+        currentResultsTimeIndex = i;
+        renderResultsSnapshot(key);
+      });
+      chipsEl.appendChild(btn);
+    });
+  }
+
+  const labelEl = document.getElementById("rs-current-label");
+  if(labelEl){
+    labelEl.textContent = data.times[idx] + "現在の得票数" + (idx === latestIdx ? "（最新）" : "");
+  }
+
+  renderLeaderboard(key, idx);
+  renderResultsTrendTable(key);
+}
+
+function applyResultsView(){
+  const leaderboard = document.getElementById("rs-leaderboard");
+  const trendWrap = document.getElementById("rs-trend-table-wrap");
+  const sortToggle = document.getElementById("rs-sort-toggle");
+  const chipsEl = document.getElementById("rs-chips");
+  const labelEl = document.getElementById("rs-current-label");
+  const isTable = resultsViewMode === "table";
+  if(leaderboard) leaderboard.style.display = isTable ? "none" : "";
+  if(trendWrap) trendWrap.style.display = isTable ? "block" : "none";
+  if(sortToggle) sortToggle.style.display = isTable ? "none" : "";
+  if(chipsEl) chipsEl.style.display = isTable ? "none" : "";
+  if(labelEl) labelEl.style.display = isTable ? "none" : "";
+  document.querySelectorAll("#rs-view-toggle button").forEach(b=>{
+    b.classList.toggle("active", b.dataset.view === resultsViewMode);
+  });
+}
+
+function renderResults(key){
+  currentResultsKey = key;
+  const data = RESULTS_DATA[key];
+  if(!data) return;
+
+  const waitingEl = document.getElementById("results-waiting");
+  const noCandEl = document.getElementById("results-no-candidates");
+  const bodyEl = document.getElementById("rs-body");
+  const updatedLineEl = document.getElementById("results-updated-line");
+
+  if(!data.candidates || data.candidates.length === 0){
+    if(noCandEl) noCandEl.style.display = "block";
+    if(waitingEl) waitingEl.style.display = "none";
+    if(bodyEl) bodyEl.style.display = "none";
+    if(updatedLineEl) updatedLineEl.innerHTML = "";
+    return;
+  }
+  if(noCandEl) noCandEl.style.display = "none";
+
+  const latestIdx = latestResultsIndex(key);
+  if(latestIdx === -1){
+    if(waitingEl) waitingEl.style.display = "block";
+    if(bodyEl) bodyEl.style.display = "none";
+    if(updatedLineEl) updatedLineEl.innerHTML = "";
+    return;
+  }
+  if(waitingEl) waitingEl.style.display = "none";
+  if(bodyEl) bodyEl.style.display = "";
+
+  if(updatedLineEl){
+    updatedLineEl.innerHTML = "最終更新：<b>" + data.times[latestIdx] + "時点</b>（開票途中の速報値）";
+  }
+
+  renderResultsProgress(key);
+  renderResultsFinalStats(key);
+  renderResultsSnapshot(key);
+  applyResultsView();
+}
+
+try{
+  if(typeof RESULTS_DATA !== "undefined"){
+    renderResults("governor");
+
+    document.querySelectorAll(".results-switch button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll(".results-switch button").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        currentResultsTimeIndex = -1; // 選挙を切り替えたら最新時刻の表示に戻す
+        renderResults(btn.dataset.target);
+      });
+    });
+
+    document.querySelectorAll("#rs-sort-toggle button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll("#rs-sort-toggle button").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        resultsSortMode = btn.dataset.sort;
+        renderResultsSnapshot(currentResultsKey);
+      });
+    });
+
+    document.querySelectorAll("#rs-view-toggle button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        resultsViewMode = btn.dataset.view;
+        applyResultsView();
+      });
+    });
+  }
+}catch(err){
+  if(window.console && console.error) console.error("renderResults init failed:", err);
+}
+
+/* ============================================================
    レイアウト切替（PC=横長 / スマホ=縦長）の二重保証
    CSSの @media (max-width:760px) が主だが、埋め込みプレビュー等の
    環境によってメディアクエリの判定が実際の画面幅と食い違うケースに
@@ -2422,7 +3398,13 @@ const NAV_MODE = "tabs";
     const panels = Array.from(document.querySelectorAll("section[data-tab-panel]"));
 
     function activate(id, opts){
-      const target = panels.some(p=>p.id===id) ? id : (panels[0] && panels[0].id);
+      let target = panels.some(p=>p.id===id) ? id : (panels[0] && panels[0].id);
+      if(!target) return;
+      // 非公開（is-feature-hidden）なパネルへは、直接URLを指定されても遷移させない
+      const targetPanel = panels.find(p=>p.id===target);
+      if(targetPanel && targetPanel.classList.contains("is-feature-hidden")){
+        target = panels[0] && panels[0].id;
+      }
       if(!target) return;
       panels.forEach(p=>p.classList.toggle("active", p.id===target));
       navLinks.forEach(a=>a.classList.toggle("active", a.getAttribute("href")==="#"+target));
