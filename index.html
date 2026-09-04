@@ -1201,7 +1201,7 @@
     <div class="sec-head">
       <div class="kicker">Election Day / Hourly Turnout</div>
       <h2>投票日 時間別投票状況（投票所別）</h2>
-      <p>9月13日（日）投票日当日、読谷村内の各投票所（第1〜第6投票所）における投票者数の累計を、8時から20時まで1時間ごとに公表します。数値は投票終了後、順次更新します。</p>
+      <p>9月13日（日）投票日当日、読谷村内の各投票所（第1〜第6投票所）における投票者数の累計を、9時・10時・11時・14時・16時・18時・19時30分に公表します。数値は集計でき次第、順次更新します。</p>
     </div>
 
     <div class="hourly-switch">
@@ -1214,7 +1214,7 @@
 
       <div class="turnout-waiting" id="hourly-waiting">
         <div class="tw-icon">🗳️</div>
-        <p class="tw-text">投票日の時間別投票状況はまだ公表されていません。<br>9月13日、投票所ごとの集計が整い次第、1時間ごとに更新します。</p>
+        <p class="tw-text">投票日の時間別投票状況はまだ公表されていません。<br>9月13日、9時・10時・11時・14時・16時・18時・19時30分に、投票所ごとの集計が整い次第更新します。</p>
       </div>
 
       <div id="hr-body">
@@ -1935,26 +1935,27 @@ const TURNOUT_DATA = {
 /* ============================================================
    ★★★ 投票日 時間別投票状況：ここに時間ごとの数値を入力してください ★★★
    ・"stations" … 投票所名（編集不要）
-   ・"times"    … 集計時刻（8:00〜20:00の1時間ごと。編集不要）
+   ・"times"    … 集計時刻（9:00, 10:00, 11:00, 14:00, 16:00, 18:00, 19:30の
+     7回。編集不要）
    ・"data[時刻のインデックス]" … その時刻「現在」の、各投票所ごとの
      【累計】投票者数（男・女）を、投票所の並び順（第1〜第6）どおりに入力。
      まだ発表されていない時刻は emptyHourlyRow() のままにしておくと、
-     「まだ発表されていません」として扱われます。
-     例）10:00現在の第1投票所が男120人・女98人だった場合、
-        governor.data[2]（8:00が0番目なので10:00は2番目）の
+     「まだ発表されていません」として扱われ、その時刻のボタンも表示されません。
+     例）11:00現在の第1投票所が男120人・女98人だった場合、
+        governor.data[2]（9:00が0番目なので11:00は2番目）の
         1つ目（第1投票所）を { male: 120, female: 98 } に書き換える
    ・エクセルで数値をいただいた場合は、その内容をこの形に変換して反映します。
    ============================================================ */
 // 場所名は「投票所のご案内」（#polling）に掲載の名称と揃えています。
 const HOURLY_STATIONS = [
   {name:"第1投票所", place:"波平自治会館ホール"},
-  {name:"第2投票所", place:"読谷村立渡慶次小学校 体育館"},
+  {name:"第2投票所", place:"読谷村立渡慶次小学校 多目的教室"},
   {name:"第3投票所", place:"読谷村立古堅中学校"},
   {name:"第4投票所", place:"喜名自治会館ホール"},
   {name:"第5投票所", place:"楚辺自治会館 大ホール"},
   {name:"第6投票所", place:"古堅自治会館ホール"}
 ];
-const HOURLY_TIMES = ["8:00","9:00","10:00","11:00","12:00","13:00","14:00","15:00","16:00","17:00","18:00","19:00","20:00"];
+const HOURLY_TIMES = ["9:00","10:00","11:00","14:00","16:00","18:00","19:30"];
 
 function emptyHourlyRow(){
   return HOURLY_STATIONS.map(()=>({male:null, female:null}));
@@ -1964,11 +1965,11 @@ const HOURLY_DATA = {
   governor: {
     stations: HOURLY_STATIONS,
     times: HOURLY_TIMES,
-    // data[0]=8:00, data[1]=9:00, … data[12]=20:00
+    // data[0]=9:00, data[1]=10:00, data[2]=11:00, data[3]=14:00,
+    // data[4]=16:00, data[5]=18:00, data[6]=19:30
     data: [
-      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
-      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
-      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
       emptyHourlyRow()
     ]
   },
@@ -1976,9 +1977,8 @@ const HOURLY_DATA = {
     stations: HOURLY_STATIONS,
     times: HOURLY_TIMES,
     data: [
-      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
-      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
-      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
       emptyHourlyRow()
     ]
   }
@@ -3570,7 +3570,7 @@ const KEY_LOCATIONS = {
   ],
   polling: [
     { name:"第1投票所　波平自治会館 ホール", addr:"沖縄県中頭郡読谷村字波平61番地", lat:26.405766, lon:127.733940 },
-    { name:"第2投票所　読谷村立渡慶次小学校 体育館", addr:"沖縄県中頭郡読谷村字瀬名波510番地", lat:26.417736980528197, lon:127.7288251804656 },
+    { name:"第2投票所　読谷村立渡慶次小学校 多目的教室", addr:"沖縄県中頭郡読谷村字瀬名波510番地", lat:26.418460500613474, lon:127.72904580708655 },
     { name:"第3投票所　読谷村立古堅中学校", addr:"沖縄県中頭郡読谷村字伊良皆297番地", lat:26.380877, lon:127.752670 },
     { name:"第4投票所　喜名自治会館 ホール", addr:"沖縄県中頭郡読谷村字喜名2207番地", lat:26.39902901891659, lon:127.75671918089957 },
     { name:"第5投票所　楚辺自治会館 大ホール", addr:"沖縄県中頭郡読谷村字楚辺1928番地1", lat:26.38574006183021, lon:127.72716121183082 },
