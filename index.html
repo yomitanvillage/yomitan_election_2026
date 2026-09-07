@@ -623,6 +623,37 @@
   .poll-card .addr{font-size:13px;color:var(--ink-soft);margin-bottom:8px;}
   .poll-card a.map{display:inline-block;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
 
+  /* ---------- 読谷村議会議員選挙 候補者情報 ---------- */
+  .cand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+  @media(max-width:760px){.cand-grid{grid-template-columns:1fr;}}
+  .cand-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:22px;}
+  .cand-card .num{
+    display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;
+    border-radius:50%;background:var(--assembly);color:#fff;font-weight:800;font-size:14.5px;margin-bottom:12px;
+  }
+  .cand-card h5{margin:0 0 12px;font-size:22px;line-height:2;}
+  .cand-card h5 ruby{ruby-align:center;}
+  .cand-card h5 rt{font-size:13px;font-weight:400;color:var(--ink-soft);}
+  .cand-card .party{
+    display:inline-block;font-size:14.5px;font-weight:700;color:var(--sea-dark);
+    background:var(--sand-2);border-radius:999px;padding:6px 15px;
+  }
+  .cand-table-wrap{display:none;}
+  .cand-table-wrap td, .cand-table-wrap th{text-align:left;white-space:normal;}
+  .cand-table-wrap td:first-child, .cand-table-wrap th:first-child{text-align:center;white-space:nowrap;}
+  .cand-table-wrap td.ct-name{font-size:17px;line-height:1.9;}
+  .cand-table-wrap .ct-name rt{font-size:12px;color:var(--ink-soft);}
+  .cand-table-wrap .ct-party{
+    display:inline-block;font-size:12.5px;font-weight:700;color:var(--sea-dark);
+    background:var(--sand-2);border-radius:999px;padding:3px 12px;
+  }
+  .gazette-block{
+    background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px;
+    margin-bottom:18px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;
+  }
+  .gazette-block .gazette-note{font-size:12.5px;color:var(--ink-soft);margin:0;}
+  .gazette-block a.btn{margin-top:0;}
+
   /* ---------- 掲示場・投票所マップ ---------- */
   .map-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
   .map-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px;}
@@ -788,6 +819,7 @@
     <nav class="tabs" id="site-nav">
       <button type="button" class="nav-close" id="nav-close" aria-label="メニューを閉じる">✕</button>
       <a href="#info">選挙情報</a>
+      <a href="#candidates" class="is-feature-hidden" data-candidates-nav>候補者情報</a>
       <a href="#early">期日前投票</a>
       <a href="#polling">投票所案内</a>
       <a href="#alt-voting">当日行けない方へ</a>
@@ -872,6 +904,53 @@
           <dt>前回</dt><dd>2022年9月執行</dd>
         </dl>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== 読谷村議会議員選挙 候補者情報 ==========
+     公開・非表示は PUBLISH_CANDIDATES（JS側）で切り替えます。
+     公開前でも URL に ?preview=candidates を付けるとテスト表示できます。
+     「選挙公報」ボタンは別枠（PUBLISH_GAZETTE）で、告示後に立候補者数が
+     定数（19人）を超えた場合にのみ true にして表示してください。 -->
+<section id="candidates" data-tab-panel class="is-feature-hidden" data-candidates-section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="kicker">Assembly Election / Candidates</div>
+      <h2>読谷村議会議員選挙候補者情報</h2>
+      <p>届出の受付は9月8日（火）17時までです。受付終了後、確定した立候補者を届出順に掲載します。氏名・よみがな・党派は届出内容に基づきます。</p>
+    </div>
+
+    <div class="gazette-block is-feature-hidden" id="gazette-block">
+      <a class="btn" id="gazette-link" target="_blank" rel="noopener" href="#">選挙公報を見る →</a>
+      <p class="gazette-note">選挙公報は、立候補者数が定数（19人）を超えた場合のみ発行されます。</p>
+    </div>
+
+    <div class="chart-card">
+      <div class="turnout-waiting" id="candidates-waiting">
+        <div class="tw-icon">🗳️</div>
+        <p class="tw-text">読谷村議会議員選挙の候補者情報は、まだ確定していません。<br>9月8日17時の届出締切後、確定次第この欄に掲載します。</p>
+      </div>
+
+      <div id="candidates-body">
+        <div class="updated" id="candidates-updated-line"></div>
+
+        <div class="view-toggle" id="cand-view-toggle">
+          <button type="button" class="active" data-view="card">カードで見る</button>
+          <button type="button" data-view="table">表で見る</button>
+        </div>
+
+        <div class="cand-grid" id="cand-grid"></div>
+
+        <div class="tt-scroll cand-table-wrap" id="cand-table-wrap">
+          <table class="tt-table">
+            <thead><tr><th>届出番号</th><th>氏名</th><th>党派</th></tr></thead>
+            <tbody id="cand-table-body"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <p class="chart-source">最新情報は<a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/gyomu/senkyo/1191.html" target="_blank" rel="noopener">読谷村選挙管理委員会</a>の発表を必ずご確認ください。</p>
     </div>
   </div>
 </section>
@@ -1800,6 +1879,56 @@ function resultsVisible(){
   return PUBLISH_RESULTS || isResultsPreview();
 }
 
+/* ============================================================
+   URLの ?preview=... を汎用的に判定するヘルパー。
+   カンマ区切りで複数指定できます（例：?preview=candidates,gazette）。
+   ============================================================ */
+function previewIncludes(name){
+  try{
+    const v = new URLSearchParams(window.location.search).get("preview") || "";
+    return v.split(",").map(s=>s.trim()).includes(name);
+  }catch(err){
+    return false;
+  }
+}
+
+/* ============================================================
+   「読谷村議会議員選挙候補者情報」ページの公開・非表示
+   （考え方は上のPUBLISH_HOURLY_RESULTSと同じ）
+   ・告示（9/8予定）後、候補者が確定し掲載してよいタイミングで
+     PUBLISH_CANDIDATES を true に書き換えてください。
+   ・公開前のテスト表示は  ?preview=candidates  を付けてアクセスしてください。
+   ============================================================ */
+const PUBLISH_CANDIDATES = false;
+
+function isCandidatesPreview(){
+  return previewIncludes("candidates");
+}
+function candidatesVisible(){
+  return PUBLISH_CANDIDATES || isCandidatesPreview();
+}
+
+/* ============================================================
+   村議会議員選挙「選挙公報」ボタンの公開・非表示
+   ・選挙公報は、立候補者数が定数（19人）を超えた場合のみ発行されます。
+   ・超えなかった場合は、投票日までこのボタンは非表示のままにしてください。
+   ・超えた場合、GAZETTE_URL に公報（PDF等）のリンク先を入力してから
+     PUBLISH_GAZETTE を true にすると、候補者情報ページ上部にボタンが表示されます。
+   ・候補者情報ページ自体が非公開（is-feature-hidden）の間は、
+     このボタンを true にしても画面には表示されません。
+   ・公開前のテスト表示は  ?preview=gazette  を付けてアクセスしてください
+     （候補者ページ自体も見たい場合は  ?preview=candidates,gazette ）。
+   ============================================================ */
+const PUBLISH_GAZETTE = false;
+const GAZETTE_URL = null; // 例: "https://www.vill.yomitan.okinawa.jp/.../koho.pdf"
+
+function isGazettePreview(){
+  return previewIncludes("gazette");
+}
+function gazetteVisible(){
+  return PUBLISH_GAZETTE || isGazettePreview();
+}
+
 const ELECTION_DATA = {
   governor: {
     label: "沖縄県知事選挙",
@@ -1868,12 +1997,12 @@ const ELECTION_DATA = {
 const TURNOUT_DATA = {
   governor: {
     dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
-    current:  [0.31, 0.69, 1.10, 1.57, 2.07, 2.61, 3.05, 3.54, 4.23, 4.99, null, null, null, null, null, null],
+    current:  [0.31, 0.69, 1.10, 1.57, 2.07, 2.61, 3.05, 3.54, 4.23, 4.99, 5.82, null, null, null, null, null],
     // "最終更新"に表示する時刻。currentを更新するたびに、実際に集計・掲載した
     // 時刻（例:"20:45"）に書き換えてください。日付はcurrentの最新日から自動で
     // 表示されるので、ここは時刻（"HH:MM"）だけを入力すればOKです。
     // 時刻が分からない・未入力のうちはnullのままでOK（時刻なしで表示されます）。
-    updatedTime: "20:17", // 9/6分
+    updatedTime: "20:06", // 9/7分
     // 2022年は8/26開始（16日間）。日数ベースで対応：8/26→0.30% … 9/10(最終日)→31.52%
     previous: [0.30, 0.63, 1.09, 1.56, 2.04, 2.23, 2.58, 2.97, 3.20, 3.36, 3.85, 4.46, 8.82, 15.67, 24.16, 31.52],
     // 選挙人名簿登録者数（令和8年8月26日現在）：合計33,048人／男15,863人／女17,185人
@@ -1889,7 +2018,7 @@ const TURNOUT_DATA = {
     currentDetail: [
       {male:67, female:35}, {male:80, female:45}, {male:80, female:57}, {male:80, female:74},
       {male:85, female:82}, {male:87, female:92}, {male:78, female:67}, {male:77, female:84},
-      {male:115, female:113}, {male:124, female:128}, {male:null, female:null}, {male:null, female:null},
+      {male:115, female:113}, {male:124, female:128}, {male:142, female:131}, {male:null, female:null},
       {male:null, female:null}, {male:null, female:null}, {male:null, female:null}, {male:null, female:null}
     ],
     // 2022年 知事選 期日前投票状況（日別）PDFより（8/26〜9/10、16日分）
@@ -1931,6 +2060,30 @@ const TURNOUT_DATA = {
     previousDates: ["9/7(水)","9/8(木)","9/9(金)","9/10(土)"]
   }
 };
+
+/* ============================================================
+   ★★★ 読谷村議会議員選挙 候補者情報：告示後にここへ入力してください ★★★
+   ・届出順（届出番号順）に並べてください。
+   ・"order" … 届出番号（そのまま整数で）
+   ・"name"  … 氏名
+   ・"yomi"  … よみがな（ひらがな表記）
+   ・"party" … 党派。無所属の場合は "無所属" と入力してください。
+   ・候補者が確定するまでは空配列 [] のままにしておくと、
+     ページには「まだ確定していません」の案内が表示されます。
+   例）届出1番、山田太郎さん（やまだたろう・無所属）の場合：
+       { order:1, name:"山田太郎", yomi:"やまだたろう", party:"無所属" }
+   ============================================================ */
+const ASSEMBLY_CANDIDATES = [
+  // ↓レイアウト確認用のテストデータです。告示後、実際の届出内容に置き換えてください
+  {order:1, name:"読谷 太郎", yomi:"よみたん たろう", party:"無所属"},
+  {order:2, name:"よみたん 一郎", yomi:"よみたん いちろう", party:"自民党"},
+  {order:3, name:"読谷 はなこ", yomi:"よみたん はなこ", party:"社民党"}
+];
+
+// 候補者情報の最終更新時刻。ASSEMBLY_CANDIDATESの内容を更新するたびに、
+// 実際に更新した日時（例:"9/8 17:45"）に書き換えてください。
+// 未入力のうちはnullのままでOK（更新時刻なしで表示されます）。
+const CANDIDATES_UPDATED_TIME = null;
 
 /* ============================================================
    ★★★ 投票日 時間別投票状況：ここに時間ごとの数値を入力してください ★★★
@@ -3354,6 +3507,126 @@ try{
   }
 }catch(err){
   if(window.console && console.error) console.error("renderResults init failed:", err);
+}
+
+/* ============================================================
+   「読谷村議会議員選挙候補者情報」ページの表示切替・描画
+   ============================================================ */
+(function initCandidatesVisibility(){
+  try{
+    if(candidatesVisible()){
+      const navA = document.querySelector("[data-candidates-nav]");
+      const sec = document.getElementById("candidates");
+      if(navA) navA.classList.remove("is-feature-hidden");
+      if(sec) sec.classList.remove("is-feature-hidden");
+    }
+  }catch(err){
+    if(window.console && console.error) console.error("initCandidatesVisibility failed:", err);
+  }
+})();
+
+// 氏名に漢字が含まれる部分だけ、対応するよみがなをルビ（<ruby><rt>）として振る。
+// 氏名・よみがなをそれぞれ空白（半角/全角）で姓・名に分割し、同じ位置同士を対応させる。
+// 分割数が一致しない場合は、氏名全体に対して一括でルビを振る（フォールバック）。
+function hasKanji(s){
+  return /[一-鿿㐀-䶿々〆ヶ]/.test(s || "");
+}
+function rubySegment(part, yomiPart){
+  return hasKanji(part) ? ("<ruby>" + part + "<rt>" + (yomiPart || "") + "</rt></ruby>") : part;
+}
+function nameWithRuby(name, yomi){
+  if(!yomi) return name;
+  const nameParts = name.split(/[\s　]+/).filter(Boolean);
+  const yomiParts = yomi.split(/[\s　]+/).filter(Boolean);
+  if(nameParts.length === 0) return name;
+  if(nameParts.length !== yomiParts.length){
+    return rubySegment(name, yomi);
+  }
+  return nameParts.map((part, i) => rubySegment(part, yomiParts[i])).join("　");
+}
+
+let candViewMode = "card"; // "card" | "table" — 表示形式の切替（並び順は常に届出順の昇順）
+
+function applyCandidatesView(){
+  const gridEl = document.getElementById("cand-grid");
+  const tableWrap = document.getElementById("cand-table-wrap");
+  const isTable = candViewMode === "table";
+  if(gridEl) gridEl.style.display = isTable ? "none" : "";
+  if(tableWrap) tableWrap.style.display = isTable ? "block" : "none";
+}
+
+function renderCandidates(){
+  const waitingEl = document.getElementById("candidates-waiting");
+  const bodyEl = document.getElementById("candidates-body");
+  const gridEl = document.getElementById("cand-grid");
+  const gazetteBlock = document.getElementById("gazette-block");
+  const gazetteLink = document.getElementById("gazette-link");
+  const updatedEl = document.getElementById("candidates-updated-line");
+  if(!waitingEl || !bodyEl || !gridEl) return;
+
+  if(gazetteBlock){
+    if(gazetteVisible() && GAZETTE_URL){
+      gazetteBlock.classList.remove("is-feature-hidden");
+      if(gazetteLink) gazetteLink.href = GAZETTE_URL;
+    }else{
+      gazetteBlock.classList.add("is-feature-hidden");
+    }
+  }
+
+  if(!ASSEMBLY_CANDIDATES.length){
+    waitingEl.style.display = "block";
+    bodyEl.style.display = "none";
+    if(updatedEl) updatedEl.innerHTML = "";
+    return;
+  }
+  waitingEl.style.display = "none";
+  bodyEl.style.display = "";
+
+  if(updatedEl){
+    updatedEl.innerHTML = CANDIDATES_UPDATED_TIME
+      ? "最終更新：<b>" + CANDIDATES_UPDATED_TIME + "時点</b>"
+      : "";
+  }
+
+  // 表示形式（カード／表）にかかわらず、並び順は常に届出順（届出番号の昇順）
+  const ordered = ASSEMBLY_CANDIDATES.slice().sort((a, b)=> a.order - b.order);
+  gridEl.innerHTML = ordered.map(c =>
+    '<div class="cand-card">' +
+      '<div class="num">' + c.order + '</div>' +
+      '<h5>' + nameWithRuby(c.name, c.yomi) + '</h5>' +
+      '<span class="party">' + (c.party || "無所属") + '</span>' +
+    '</div>'
+  ).join("");
+
+  const tableBody = document.getElementById("cand-table-body");
+  if(tableBody){
+    tableBody.innerHTML = ordered.map(c =>
+      '<tr>' +
+        '<td>' + c.order + '</td>' +
+        '<td class="ct-name">' + nameWithRuby(c.name, c.yomi) + '</td>' +
+        '<td><span class="ct-party">' + (c.party || "無所属") + '</span></td>' +
+      '</tr>'
+    ).join("");
+  }
+
+  applyCandidatesView();
+}
+
+try{
+  if(typeof ASSEMBLY_CANDIDATES !== "undefined"){
+    renderCandidates();
+
+    document.querySelectorAll("#cand-view-toggle button").forEach(btn=>{
+      btn.addEventListener("click", ()=>{
+        document.querySelectorAll("#cand-view-toggle button").forEach(b=>b.classList.remove("active"));
+        btn.classList.add("active");
+        candViewMode = btn.dataset.view;
+        applyCandidatesView();
+      });
+    });
+  }
+}catch(err){
+  if(window.console && console.error) console.error("renderCandidates init failed:", err);
 }
 
 /* ============================================================
