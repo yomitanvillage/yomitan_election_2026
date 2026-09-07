@@ -918,7 +918,7 @@
     <div class="sec-head">
       <div class="kicker">Assembly Election / Candidates</div>
       <h2>読谷村議会議員選挙候補者情報</h2>
-      <p>届出の受付は9月8日（火）17時までです。受付終了後、確定した立候補者を届出順に掲載します。氏名・よみがな・党派は届出内容に基づきます。</p>
+      <p>届出の受付時間は9月8日（火）8時30分〜17時です。確定した候補者から順に、届出順で掲載します。候補者数によっては、全員分の掲載までお時間をいただく場合がありますので、あらかじめご了承ください。氏名・よみがな・党派は届出内容に基づきます。</p>
     </div>
 
     <div class="gazette-block is-feature-hidden" id="gazette-block">
@@ -929,7 +929,7 @@
     <div class="chart-card">
       <div class="turnout-waiting" id="candidates-waiting">
         <div class="tw-icon">🗳️</div>
-        <p class="tw-text">読谷村議会議員選挙の候補者情報は、まだ確定していません。<br>9月8日17時の届出締切後、確定次第この欄に掲載します。</p>
+        <p class="tw-text">読谷村議会議員選挙の候補者情報は、まだ確定していません。<br>9月8日8時30分〜17時に届出を受け付け、確定した候補者から順に届出順で掲載します。候補者数によっては、掲載までお時間をいただく場合があります。</p>
       </div>
 
       <div id="candidates-body">
@@ -1894,18 +1894,28 @@ function previewIncludes(name){
 
 /* ============================================================
    「読谷村議会議員選挙候補者情報」ページの公開・非表示
-   （考え方は上のPUBLISH_HOURLY_RESULTSと同じ）
-   ・告示（9/8予定）後、候補者が確定し掲載してよいタイミングで
-     PUBLISH_CANDIDATES を true に書き換えてください。
-   ・公開前のテスト表示は  ?preview=candidates  を付けてアクセスしてください。
+   （考え方は上のPUBLISH_HOURLY_RESULTSと同じだが、こちらは告示日当日の
+     時刻になったら自動でも公開されるようになっている）
+   ・CANDIDATES_REVEAL_AT の日時（告示日の朝6:00を想定）になると、
+     手動で何も操作しなくても自動的にナビ・ページ本体・新着案内が公開される。
+   ・それより前でも、関係者だけ確認したい場合は PUBLISH_CANDIDATES を
+     true に書き換えるか、  ?preview=candidates  を付けてアクセスしてください。
    ============================================================ */
 const PUBLISH_CANDIDATES = false;
+const CANDIDATES_REVEAL_AT = "2026-09-08T06:00:00+09:00"; // 告示日の朝6:00（自動公開のタイミング）
 
 function isCandidatesPreview(){
   return previewIncludes("candidates");
 }
+function isAfterCandidatesRevealTime(){
+  try{
+    return new Date() >= new Date(CANDIDATES_REVEAL_AT);
+  }catch(err){
+    return false;
+  }
+}
 function candidatesVisible(){
-  return PUBLISH_CANDIDATES || isCandidatesPreview();
+  return PUBLISH_CANDIDATES || isCandidatesPreview() || isAfterCandidatesRevealTime();
 }
 
 /* ============================================================
@@ -2040,11 +2050,11 @@ const TURNOUT_DATA = {
     updatedTime: null,
     // 2022年は9/7開始（4日間、告示が9/6のため）。9/7→4.96% … 9/10(最終日)→29.50%
     previous: [4.96, 12.50, 21.57, 29.50],
-    // 選挙人名簿登録者数（2026年）：村選管から判明次第、下記3つ（＋基準日）を実数に置き換えてください
-    electorsTotal: null,
-    electorsMale: null,
-    electorsFemale: null,
-    electorsAsOf: null,
+    // 選挙人名簿登録者数（令和8年9月7日現在）：合計33,032人／男15,854人／女17,178人
+    electorsTotal: 33032,
+    electorsMale: 15854,
+    electorsFemale: 17178,
+    electorsAsOf: "9月7日",
     // 選挙人名簿登録者数（2022年9月5日基準日）：合計32,769人／男15,900人／女16,869人
     prevElectorsTotal: 32769,
     prevElectorsMale: 15900,
@@ -2074,10 +2084,7 @@ const TURNOUT_DATA = {
        { order:1, name:"山田太郎", yomi:"やまだたろう", party:"無所属" }
    ============================================================ */
 const ASSEMBLY_CANDIDATES = [
-  // ↓レイアウト確認用のテストデータです。告示後、実際の届出内容に置き換えてください
-  {order:1, name:"読谷 太郎", yomi:"よみたん たろう", party:"無所属"},
-  {order:2, name:"よみたん 一郎", yomi:"よみたん いちろう", party:"自民党"},
-  {order:3, name:"読谷 はなこ", yomi:"よみたん はなこ", party:"社民党"}
+  // 告示後、確定次第ここに追加してください
 ];
 
 // 候補者情報の最終更新時刻。ASSEMBLY_CANDIDATESの内容を更新するたびに、
@@ -2499,8 +2506,44 @@ function todayISO(){
 })();
 
 /* ============================================================
+   新着案内：村議会議員選挙の告示日を自動でお知らせする
+   ・CANDIDATES_REVEAL_AT（告示日の朝6:00を想定）になったら、
+     「９月８日は読谷村議会議員選挙の告示日です」を新着案内リストの
+     先頭に追加する。リンク先は「候補者情報」ページ。
+   ・タイミングは候補者情報ページの自動公開（isAfterCandidatesRevealTime）
+     と共通なので、日程が変わった場合もCANDIDATES_REVEAL_AT側だけ直せばOK。
+   ============================================================ */
+(function announceAssemblyFilingDay(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+    if(!isAfterCandidatesRevealTime()) return;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#candidates";
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "news-date";
+    dateSpan.textContent = "9/8";
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "news-title";
+    titleSpan.textContent = "９月８日は読谷村議会議員選挙の告示日です";
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "news-arrow";
+    arrowSpan.textContent = "›";
+    a.appendChild(dateSpan);
+    a.appendChild(titleSpan);
+    a.appendChild(arrowSpan);
+    li.appendChild(a);
+    listEl.insertBefore(li, listEl.firstChild);
+  }catch(err){
+    if(window.console && console.error) console.error("announceAssemblyFilingDay failed:", err);
+  }
+})();
+
+/* ============================================================
    新着案内：最新3件だけ常に表示し、それより古いものはアコーディオンに
-   たたむ。上の2つのannounce*関数がすべての自動お知らせを挿入し終えた
+   たたむ。上の3つのannounce*関数がすべての自動お知らせを挿入し終えた
    「あと」に実行する必要があるため、このタイミングに置いている。
    ============================================================ */
 (function collapseExtraNewsItems(){
