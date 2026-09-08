@@ -624,7 +624,7 @@
   .poll-card a.map{display:inline-block;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
 
   /* ---------- 読谷村議会議員選挙 候補者情報（表のみで表示） ---------- */
-  #candidates-updated-line, #cand-seats-line{font-size:15px;}
+  #cand-seats-line{font-size:15px;}
   .cand-table-wrap td, .cand-table-wrap th{text-align:left;white-space:normal;}
   .cand-table-wrap td:first-child, .cand-table-wrap th:first-child{text-align:center;white-space:nowrap;}
   .cand-table-wrap td.ct-name{font-size:17px;line-height:1.9;}
@@ -925,7 +925,6 @@
       </div>
 
       <div id="candidates-body">
-        <div class="updated" id="candidates-updated-line"></div>
         <div class="electors-line" id="cand-seats-line"></div>
 
         <div class="tt-scroll cand-table-wrap" id="cand-table-wrap">
@@ -1943,13 +1942,8 @@ function candidatesListVisible(){
    候補者の届出受付終了（9/8 17:00）を自動で反映する
    ・届出受付時間の案内文（candidates-lead-note）は、受付終了後は
      内容が実情に合わなくなるため、この時刻以降は自動的に非表示にする。
-   ・最終更新の表示も、この時刻以降は届出受付終了時点の表示
-     「CANDIDATES_FINAL_LABEL（＝17:00）」に自動的に切り替える
-     （CANDIDATES_UPDATED_TIMEを手入力し忘れていても、17時以降は
-     常にこの表示になる）。
    ============================================================ */
 const CANDIDATES_FINAL_AT = "2026-09-08T17:00:00+09:00"; // 届出受付終了時刻
-const CANDIDATES_FINAL_LABEL = "9/8 17:00"; // 受付終了後に表示する「最終更新」のラベル
 
 function isAfterCandidatesFinalTime(){
   try{
@@ -2150,11 +2144,6 @@ const ASSEMBLY_CANDIDATES = [
   {order:19, name:"青山　マキ", yomi:"あおやま　まき", party:"無所属"},
   {order:20, name:"オオノ　隆志", yomi:"おおの　たかし", party:"無所属"}
 ];
-
-// 候補者情報の最終更新時刻。ASSEMBLY_CANDIDATESの内容を更新するたびに、
-// 実際に更新した日時（例:"9/8 17:45"）に書き換えてください。
-// 未入力のうちはnullのままでOK（更新時刻なしで表示されます）。
-const CANDIDATES_UPDATED_TIME = "9/8 10:30";
 
 /* ============================================================
    ★★★ 投票日 時間別投票状況：ここに時間ごとの数値を入力してください ★★★
@@ -3737,7 +3726,6 @@ function renderCandidates(){
   const waitingEl = document.getElementById("candidates-waiting");
   const bodyEl = document.getElementById("candidates-body");
   const tableBody = document.getElementById("cand-table-body");
-  const updatedEl = document.getElementById("candidates-updated-line");
   const seatsEl = document.getElementById("cand-seats-line");
   const leadNoteEl = document.getElementById("candidates-lead-note");
   if(!waitingEl || !bodyEl || !tableBody) return;
@@ -3757,21 +3745,11 @@ function renderCandidates(){
   if(!showList){
     waitingEl.style.display = "block";
     bodyEl.style.display = "none";
-    if(updatedEl) updatedEl.innerHTML = "";
     if(seatsEl) seatsEl.innerHTML = "";
     return;
   }
   waitingEl.style.display = "none";
   bodyEl.style.display = "";
-
-  if(updatedEl){
-    // 届出受付終了（17:00）後は、CANDIDATES_UPDATED_TIMEの入力有無にかかわらず
-    // 「9/8 17:00時点」の表示に自動で切り替える。
-    const displayTime = isAfterCandidatesFinalTime() ? CANDIDATES_FINAL_LABEL : CANDIDATES_UPDATED_TIME;
-    updatedEl.innerHTML = displayTime
-      ? "最終更新：<b>" + displayTime + "時点</b>"
-      : "";
-  }
 
   // 定員（改選定数）は開票速報のデータ（RESULTS_DATA.assembly.seats）と同じ値を使い回す
   if(seatsEl){
