@@ -2455,18 +2455,16 @@ function todayISO(){
 })();
 
 /* ============================================================
-   新着案内：期日前投票の開始を自動でお知らせする
+   新着案内：知事選 期日前投票の開始を自動でお知らせする
    ・8/28になったら（日付ベース）「沖縄県知事選挙の期日前投票が始まりました」
-   ・ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT（9/9 6:00を想定）になったら
-     「読谷村議会議員選挙の期日前投票が始まりました」
    を、新着案内リスト（#news-list）の先頭に自動で追加する。リンク先は
-   どちらも期日前投票のページ（#early）。
-   知事選の日付はELECTION_DATAのearlyStartを見ているので、日程が変わった
-   場合もそこだけ直せばOK。村議選は時刻（6:00）まで指定したいため、
-   下のASSEMBLY_EARLY_VOTING_ANNOUNCE_ATを別途持っている。
+   期日前投票のページ（#early）。
+   日付はELECTION_DATAのearlyStartを見ているので、日程が変わった場合も
+   ここは書き換え不要（ELECTION_DATA側だけ直せばOK）。
+   ・村議選の期日前投票開始のお知らせは、時系列上いちばん新しいため、
+     別関数（announceAssemblyEarlyVotingStart）としてannounce系の
+     いちばん最後に置いている（新着案内の先頭＝最新に来るように）。
    ============================================================ */
-const ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT = "2026-09-09T06:00:00+09:00"; // 村議選 期日前投票開始のお知らせを出す時刻
-
 (function announceEarlyVotingStart(){
   try{
     const listEl = document.getElementById("news-list");
@@ -2504,13 +2502,8 @@ const ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT = "2026-09-09T06:00:00+09:00"; // 村議
     }
 
     const today = todayStr();
-    // insertBeforeで毎回先頭に追加するため、古い方（知事選）を先に追加してから
-    // 新しい方（村議選）を追加すると、表示は新しい順（村議選が一番上）になる。
     if(today >= ELECTION_DATA.governor.earlyStart){
       addAnnouncement(ELECTION_DATA.governor.earlyStart, "沖縄県知事選挙の期日前投票が始まりました");
-    }
-    if(new Date() >= new Date(ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT)){
-      addAnnouncement(ELECTION_DATA.assembly.earlyStart, "読谷村議会議員選挙の期日前投票が始まりました");
     }
   }catch(err){
     if(window.console && console.error) console.error("announceEarlyVotingStart failed:", err);
@@ -2676,8 +2669,53 @@ const ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT = "2026-09-09T06:00:00+09:00"; // 村議
 })();
 
 /* ============================================================
+   新着案内：村議会議員選挙 期日前投票の開始を自動でお知らせする
+   ・ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT（9/9 6:00を想定）になったら
+     「読谷村議会議員選挙の期日前投票が始まりました」を新着案内リストの
+     先頭に追加する。リンク先は期日前投票のページ（#early）。
+   ・時系列上、これまでのannounce*関数が扱う出来事（8/28〜9/8）より
+     すべて新しいため、意図的にannounce系のいちばん最後に置いている
+     （insertBeforeで先頭に追加する都合上、最後に実行したものが
+     新着案内の一番上＝最新になるため）。
+   ============================================================ */
+const ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT = "2026-09-09T06:00:00+09:00"; // 村議選 期日前投票開始のお知らせを出す時刻
+
+(function announceAssemblyEarlyVotingStart(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+    if(new Date() < new Date(ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT)) return;
+
+    function fmtMD(dateStr){
+      const parts = dateStr.split("-");
+      return Number(parts[1]) + "/" + Number(parts[2]);
+    }
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#early";
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "news-date";
+    dateSpan.textContent = fmtMD(ELECTION_DATA.assembly.earlyStart);
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "news-title";
+    titleSpan.textContent = "読谷村議会議員選挙の期日前投票が始まりました";
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "news-arrow";
+    arrowSpan.textContent = "›";
+    a.appendChild(dateSpan);
+    a.appendChild(titleSpan);
+    a.appendChild(arrowSpan);
+    li.appendChild(a);
+    listEl.insertBefore(li, listEl.firstChild);
+  }catch(err){
+    if(window.console && console.error) console.error("announceAssemblyEarlyVotingStart failed:", err);
+  }
+})();
+
+/* ============================================================
    新着案内：最新3件だけ常に表示し、それより古いものはアコーディオンに
-   たたむ。上の5つのannounce*関数がすべての自動お知らせを挿入し終えた
+   たたむ。上の6つのannounce*関数がすべての自動お知らせを挿入し終えた
    「あと」に実行する必要があるため、このタイミングに置いている。
    ============================================================ */
 (function collapseExtraNewsItems(){
