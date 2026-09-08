@@ -638,7 +638,9 @@
     margin-bottom:18px;display:flex;flex-wrap:wrap;align-items:center;gap:12px 18px;
   }
   .gazette-block .gazette-note{font-size:12.5px;color:var(--ink-soft);margin:0;}
-  .gazette-block a.btn{margin-top:0;}
+  .gazette-block .btn{margin-top:0;}
+  .e-card-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;}
+  .e-card-actions .btn{margin-top:0;}
 
   /* ---------- 掲示場・投票所マップ ---------- */
   .map-card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;}
@@ -692,9 +694,9 @@
   }
   .c-card h5{margin:0 0 6px;font-size:15px;}
   .c-card p{margin:0;font-size:13.5px;color:var(--ink-soft);}
-  a.btn, .c-card a.btn{
+  a.btn, .c-card a.btn, button.btn{
     display:inline-block;margin-top:12px;font-size:13px;font-weight:800;color:#fff;background:var(--sea);
-    padding:8px 16px;border-radius:999px;text-decoration:none;
+    padding:8px 16px;border-radius:999px;text-decoration:none;border:none;cursor:pointer;font-family:inherit;
   }
 
   .ai-dial-banner{
@@ -889,7 +891,10 @@
           <dt>定数</dt><dd>19名</dd>
           <dt>前回</dt><dd>2022年9月執行</dd>
         </dl>
-        <a class="btn" style="margin-top:14px;" href="#candidates">候補者情報を見る →</a>
+        <div class="e-card-actions">
+          <a class="btn" href="#candidates">候補者情報を見る →</a>
+          <button type="button" class="btn js-open-gazette gazette-toggle is-feature-hidden" id="info-gazette-btn">選挙公報を読む</button>
+        </div>
       </div>
     </div>
   </div>
@@ -908,9 +913,9 @@
       <p id="candidates-lead-note">届出の受付時間は9月8日（火）8時30分〜17時です。確定した候補者から順に、届出順で掲載します。候補者数によっては、全員分の掲載までお時間をいただく場合がありますので、あらかじめご了承ください。氏名・よみがな・党派は届出内容に基づきます。</p>
     </div>
 
-    <div class="gazette-block is-feature-hidden" id="gazette-block">
-      <a class="btn" id="gazette-link" target="_blank" rel="noopener" href="#">選挙公報を見る →</a>
-      <p class="gazette-note">選挙公報は、立候補者数が定数（19人）を超えた場合のみ発行されます。</p>
+    <div class="gazette-block gazette-toggle is-feature-hidden" id="gazette-block">
+      <button type="button" class="btn js-open-gazette">選挙公報を読む</button>
+      <p class="gazette-note">立候補者の氏名・経歴・政見などをまとめた冊子です。</p>
     </div>
 
     <div class="chart-card">
@@ -1807,6 +1812,20 @@
   </div>
 </div>
 
+<!-- 選挙公報を開く前の案内モーダル -->
+<div class="modal-overlay" id="gazette-modal">
+  <div class="modal-box">
+    <div class="modal-icon">📰</div>
+    <h3>選挙公報を開きます</h3>
+    <p>選挙公報は、読谷村選挙管理委員会が発行する、立候補者の氏名・経歴・政見などをまとめた冊子です。</p>
+    <p>公報内の二次元コード（QRコード）は、タップ（クリック）すると各候補者が指定したリンク先へ移動します。</p>
+    <div class="modal-actions">
+      <button type="button" class="modal-cancel" id="gazette-modal-cancel">閉じる</button>
+      <button type="button" class="modal-confirm" id="gazette-modal-confirm">選挙公報を開く</button>
+    </div>
+  </div>
+</div>
+
 <script>
 /* ============================================================
    編集用データ
@@ -1951,14 +1970,18 @@ function isAfterCandidatesFinalTime(){
    ・公開前のテスト表示は  ?preview=gazette  を付けてアクセスしてください
      （候補者ページ自体も見たい場合は  ?preview=candidates,gazette ）。
    ============================================================ */
-const PUBLISH_GAZETTE = false;
-const GAZETTE_URL = null; // 例: "https://www.vill.yomitan.okinawa.jp/.../koho.pdf"
+const PUBLISH_GAZETTE = true;
+const GAZETTE_URL = "https://cccc.backshelf.jp/bookview/?filseq=24731";
 
 function isGazettePreview(){
   return previewIncludes("gazette");
 }
 function gazetteVisible(){
   return PUBLISH_GAZETTE || isGazettePreview();
+}
+// 「表示してよい」だけでなく「実際にリンク先も入力済み」かどうか（ボタン等の出し分けに使用）
+function gazetteReady(){
+  return gazetteVisible() && !!GAZETTE_URL;
 }
 
 const ELECTION_DATA = {
@@ -2588,8 +2611,84 @@ const ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT = "2026-09-09T06:00:00+09:00"; // 村議
 })();
 
 /* ============================================================
+   新着案内：村議会議員選挙の候補者確定を自動でお知らせする
+   ・CANDIDATES_LIST_REVEAL_AT（候補者一覧の公表時刻）を過ぎ、かつ
+     ASSEMBLY_CANDIDATESにデータが入っていたら、「読谷村議会議員選挙の
+     候補者が決まりました」を新着案内リストの先頭に追加する。
+     リンク先は「候補者情報」ページ。
+   ・このあとの announceGazettePublished() より先に実行しているため、
+     新着案内では選挙公報のお知らせのすぐ下（1つ古い位置）に並ぶ。
+   ============================================================ */
+(function announceCandidatesDecided(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+    if(!isAfterCandidatesListRevealTime() || ASSEMBLY_CANDIDATES.length === 0) return;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#candidates";
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "news-date";
+    dateSpan.textContent = "9/8";
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "news-title";
+    titleSpan.textContent = "読谷村議会議員選挙の候補者が決まりました";
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "news-arrow";
+    arrowSpan.textContent = "›";
+    a.appendChild(dateSpan);
+    a.appendChild(titleSpan);
+    a.appendChild(arrowSpan);
+    li.appendChild(a);
+    listEl.insertBefore(li, listEl.firstChild);
+  }catch(err){
+    if(window.console && console.error) console.error("announceCandidatesDecided failed:", err);
+  }
+})();
+
+/* ============================================================
+   新着案内：選挙公報の掲載を自動でお知らせする
+   ・gazetteReady()（PUBLISH_GAZETTEがtrue、かつGAZETTE_URL入力済み）に
+     なったら、「読谷村議会議員選挙の選挙公報を掲載しました」を新着案内
+     リストの先頭に追加する。
+   ・リンクは他ページへの遷移ではなく、選挙公報ボタンと同じ案内モーダルを
+     開く（.js-open-gazette）。hrefは "#" から始めない値にして、
+     initNav()のタブ切替対象（.news-list a[href^="#"]）に含まれない
+     ようにしている（含まれるとタブ切替とモーダル表示が二重に起きるため）。
+   ============================================================ */
+(function announceGazettePublished(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+    if(!gazetteReady()) return;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "javascript:void(0)";
+    a.className = "js-open-gazette";
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "news-date";
+    dateSpan.textContent = "9/8";
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "news-title";
+    titleSpan.textContent = "読谷村議会議員選挙の選挙公報を掲載しました";
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "news-arrow";
+    arrowSpan.textContent = "›";
+    a.appendChild(dateSpan);
+    a.appendChild(titleSpan);
+    a.appendChild(arrowSpan);
+    li.appendChild(a);
+    listEl.insertBefore(li, listEl.firstChild);
+  }catch(err){
+    if(window.console && console.error) console.error("announceGazettePublished failed:", err);
+  }
+})();
+
+/* ============================================================
    新着案内：最新3件だけ常に表示し、それより古いものはアコーディオンに
-   たたむ。上の3つのannounce*関数がすべての自動お知らせを挿入し終えた
+   たたむ。上の5つのannounce*関数がすべての自動お知らせを挿入し終えた
    「あと」に実行する必要があるため、このタイミングに置いている。
    ============================================================ */
 (function collapseExtraNewsItems(){
@@ -3638,8 +3737,6 @@ function renderCandidates(){
   const waitingEl = document.getElementById("candidates-waiting");
   const bodyEl = document.getElementById("candidates-body");
   const tableBody = document.getElementById("cand-table-body");
-  const gazetteBlock = document.getElementById("gazette-block");
-  const gazetteLink = document.getElementById("gazette-link");
   const updatedEl = document.getElementById("candidates-updated-line");
   const seatsEl = document.getElementById("cand-seats-line");
   const leadNoteEl = document.getElementById("candidates-lead-note");
@@ -3651,14 +3748,8 @@ function renderCandidates(){
     leadNoteEl.style.display = isAfterCandidatesFinalTime() ? "none" : "";
   }
 
-  if(gazetteBlock){
-    if(gazetteVisible() && GAZETTE_URL){
-      gazetteBlock.classList.remove("is-feature-hidden");
-      if(gazetteLink) gazetteLink.href = GAZETTE_URL;
-    }else{
-      gazetteBlock.classList.add("is-feature-hidden");
-    }
-  }
+  // 選挙公報ボタン（gazette-block）の表示切替は updateGazetteButtonsVisibility() が
+  // 一括で行う（候補者情報ページ以外のボタンとまとめて扱うため）。
 
   // データが入力済みでも、CANDIDATES_LIST_REVEAL_AT（公表時刻）になるまでは
   // 「まだ確定していません」の案内のままにしておく（早期公開を防ぐため）。
@@ -3901,6 +3992,62 @@ const AI_DIAL_TEL = "050-1785-6183";
     });
   }catch(err){
     if(window.console && console.error) console.error("initAiCallModal failed:", err);
+  }
+})();
+
+/* ============================================================
+   選挙公報を開く前の案内モーダル
+   ・候補者情報ページ上部のボタン／選挙情報の村議選欄のボタン／新着案内の
+     リンク、すべて .js-open-gazette クラスから同じモーダルを呼び出す。
+   ・「選挙公報を開く」を押したときだけ、実際のリンク（GAZETTE_URL）を
+     新しいタブで開く。
+   ・GAZETTE_URLが未入力、またはgazetteVisible()がfalseの間は、
+     各ボタン自体が is-feature-hidden で非表示になっている
+     （updateGazetteButtonsVisibility()を参照）。
+   ============================================================ */
+function updateGazetteButtonsVisibility(){
+  try{
+    const ready = gazetteReady();
+    document.querySelectorAll(".gazette-toggle").forEach(el=>{
+      el.classList.toggle("is-feature-hidden", !ready);
+    });
+  }catch(err){
+    if(window.console && console.error) console.error("updateGazetteButtonsVisibility failed:", err);
+  }
+}
+updateGazetteButtonsVisibility();
+
+(function initGazetteModal(){
+  try{
+    const modal = document.getElementById("gazette-modal");
+    const cancelBtn = document.getElementById("gazette-modal-cancel");
+    const confirmBtn = document.getElementById("gazette-modal-confirm");
+    if(!modal || !cancelBtn || !confirmBtn) return;
+
+    function openModal(){ modal.classList.add("open"); }
+    function closeModal(){ modal.classList.remove("open"); }
+
+    document.querySelectorAll(".js-open-gazette").forEach(el=>{
+      el.addEventListener("click", (e)=>{
+        e.preventDefault();
+        if(!GAZETTE_URL) return;
+        openModal();
+      });
+    });
+
+    cancelBtn.addEventListener("click", closeModal);
+    confirmBtn.addEventListener("click", ()=>{
+      if(GAZETTE_URL) window.open(GAZETTE_URL, "_blank", "noopener");
+      closeModal();
+    });
+    modal.addEventListener("click", (e)=>{
+      if(e.target === modal) closeModal();
+    });
+    document.addEventListener("keydown", (e)=>{
+      if(e.key === "Escape") closeModal();
+    });
+  }catch(err){
+    if(window.console && console.error) console.error("initGazetteModal failed:", err);
   }
 })();
 
