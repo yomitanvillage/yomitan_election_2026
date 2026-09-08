@@ -624,6 +624,7 @@
   .poll-card a.map{display:inline-block;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
 
   /* ---------- 読谷村議会議員選挙 候補者情報（表のみで表示） ---------- */
+  #candidates-updated-line, #cand-seats-line{font-size:15px;}
   .cand-table-wrap td, .cand-table-wrap th{text-align:left;white-space:normal;}
   .cand-table-wrap td:first-child, .cand-table-wrap th:first-child{text-align:center;white-space:nowrap;}
   .cand-table-wrap td.ct-name{font-size:17px;line-height:1.9;}
@@ -888,6 +889,7 @@
           <dt>定数</dt><dd>19名</dd>
           <dt>前回</dt><dd>2022年9月執行</dd>
         </dl>
+        <a class="btn" style="margin-top:14px;" href="#candidates">候補者情報を見る →</a>
       </div>
     </div>
   </div>
@@ -919,6 +921,7 @@
 
       <div id="candidates-body">
         <div class="updated" id="candidates-updated-line"></div>
+        <div class="electors-line" id="cand-seats-line"></div>
 
         <div class="tt-scroll cand-table-wrap" id="cand-table-wrap">
           <table class="tt-table">
@@ -3613,6 +3616,7 @@ function renderCandidates(){
   const gazetteBlock = document.getElementById("gazette-block");
   const gazetteLink = document.getElementById("gazette-link");
   const updatedEl = document.getElementById("candidates-updated-line");
+  const seatsEl = document.getElementById("cand-seats-line");
   if(!waitingEl || !bodyEl || !tableBody) return;
 
   if(gazetteBlock){
@@ -3631,6 +3635,7 @@ function renderCandidates(){
     waitingEl.style.display = "block";
     bodyEl.style.display = "none";
     if(updatedEl) updatedEl.innerHTML = "";
+    if(seatsEl) seatsEl.innerHTML = "";
     return;
   }
   waitingEl.style.display = "none";
@@ -3639,6 +3644,14 @@ function renderCandidates(){
   if(updatedEl){
     updatedEl.innerHTML = CANDIDATES_UPDATED_TIME
       ? "最終更新：<b>" + CANDIDATES_UPDATED_TIME + "時点</b>"
+      : "";
+  }
+
+  // 定員（改選定数）は開票速報のデータ（RESULTS_DATA.assembly.seats）と同じ値を使い回す
+  if(seatsEl){
+    const seats = (typeof RESULTS_DATA !== "undefined" && RESULTS_DATA.assembly) ? RESULTS_DATA.assembly.seats : null;
+    seatsEl.innerHTML = seats
+      ? "定員：<b>" + seats + "名</b>／届出候補者：<b>" + ASSEMBLY_CANDIDATES.length + "名</b>"
       : "";
   }
 
@@ -3699,7 +3712,7 @@ const NAV_MODE = "tabs";
   try{
     // タブ間を行き来する本文中のリンク（例：新着案内や「行けない方へ」の中の
     // 「期日前投票のご案内はこちら」等）も、タブ切替の対象に含める。
-    const navLinks = Array.from(document.querySelectorAll('nav.tabs a, footer a[href^="#"], .news-list a[href^="#"], .altv-detail a[href^="#"], .ai-mini-cta a[href^="#"]'));
+    const navLinks = Array.from(document.querySelectorAll('nav.tabs a, footer a[href^="#"], .news-list a[href^="#"], .altv-detail a[href^="#"], .ai-mini-cta a[href^="#"], .e-card a[href^="#"]'));
     const panels = Array.from(document.querySelectorAll("section[data-tab-panel]"));
 
     function activate(id, opts){
