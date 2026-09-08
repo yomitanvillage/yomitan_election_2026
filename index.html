@@ -905,7 +905,7 @@
     <div class="sec-head">
       <div class="kicker">Assembly Election / Candidates</div>
       <h2>読谷村議会議員選挙候補者情報</h2>
-      <p>届出の受付時間は9月8日（火）8時30分〜17時です。確定した候補者から順に、届出順で掲載します。候補者数によっては、全員分の掲載までお時間をいただく場合がありますので、あらかじめご了承ください。氏名・よみがな・党派は届出内容に基づきます。</p>
+      <p id="candidates-lead-note">届出の受付時間は9月8日（火）8時30分〜17時です。確定した候補者から順に、届出順で掲載します。候補者数によっては、全員分の掲載までお時間をいただく場合がありますので、あらかじめご了承ください。氏名・よみがな・党派は届出内容に基づきます。</p>
     </div>
 
     <div class="gazette-block is-feature-hidden" id="gazette-block">
@@ -1918,6 +1918,26 @@ function isAfterCandidatesListRevealTime(){
 }
 function candidatesListVisible(){
   return isCandidatesPreview() || isAfterCandidatesListRevealTime();
+}
+
+/* ============================================================
+   候補者の届出受付終了（9/8 17:00）を自動で反映する
+   ・届出受付時間の案内文（candidates-lead-note）は、受付終了後は
+     内容が実情に合わなくなるため、この時刻以降は自動的に非表示にする。
+   ・最終更新の表示も、この時刻以降は届出受付終了時点の表示
+     「CANDIDATES_FINAL_LABEL（＝17:00）」に自動的に切り替える
+     （CANDIDATES_UPDATED_TIMEを手入力し忘れていても、17時以降は
+     常にこの表示になる）。
+   ============================================================ */
+const CANDIDATES_FINAL_AT = "2026-09-08T17:00:00+09:00"; // 届出受付終了時刻
+const CANDIDATES_FINAL_LABEL = "9/8 17:00"; // 受付終了後に表示する「最終更新」のラベル
+
+function isAfterCandidatesFinalTime(){
+  try{
+    return new Date() >= new Date(CANDIDATES_FINAL_AT);
+  }catch(err){
+    return false;
+  }
 }
 
 /* ============================================================
@@ -3617,7 +3637,14 @@ function renderCandidates(){
   const gazetteLink = document.getElementById("gazette-link");
   const updatedEl = document.getElementById("candidates-updated-line");
   const seatsEl = document.getElementById("cand-seats-line");
+  const leadNoteEl = document.getElementById("candidates-lead-note");
   if(!waitingEl || !bodyEl || !tableBody) return;
+
+  // 届出受付終了（17:00）後は、受付時間の案内文は実情に合わなくなるため自動で消す。
+  // showListの状態（一覧が見えているかどうか）に関係なく適用する。
+  if(leadNoteEl){
+    leadNoteEl.style.display = isAfterCandidatesFinalTime() ? "none" : "";
+  }
 
   if(gazetteBlock){
     if(gazetteVisible() && GAZETTE_URL){
@@ -3642,8 +3669,11 @@ function renderCandidates(){
   bodyEl.style.display = "";
 
   if(updatedEl){
-    updatedEl.innerHTML = CANDIDATES_UPDATED_TIME
-      ? "最終更新：<b>" + CANDIDATES_UPDATED_TIME + "時点</b>"
+    // 届出受付終了（17:00）後は、CANDIDATES_UPDATED_TIMEの入力有無にかかわらず
+    // 「9/8 17:00時点」の表示に自動で切り替える。
+    const displayTime = isAfterCandidatesFinalTime() ? CANDIDATES_FINAL_LABEL : CANDIDATES_UPDATED_TIME;
+    updatedEl.innerHTML = displayTime
+      ? "最終更新：<b>" + displayTime + "時点</b>"
       : "";
   }
 
