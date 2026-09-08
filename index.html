@@ -623,22 +623,7 @@
   .poll-card .addr{font-size:13px;color:var(--ink-soft);margin-bottom:8px;}
   .poll-card a.map{display:inline-block;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
 
-  /* ---------- 読谷村議会議員選挙 候補者情報 ---------- */
-  .cand-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
-  @media(max-width:760px){.cand-grid{grid-template-columns:1fr;}}
-  .cand-card{background:var(--card);border-radius:16px;box-shadow:var(--shadow);padding:22px;}
-  .cand-card .num{
-    display:inline-flex;align-items:center;justify-content:center;width:36px;height:36px;
-    border-radius:50%;background:var(--assembly);color:#fff;font-weight:800;font-size:14.5px;margin-bottom:12px;
-  }
-  .cand-card h5{margin:0 0 12px;font-size:22px;line-height:2;}
-  .cand-card h5 ruby{ruby-align:center;}
-  .cand-card h5 rt{font-size:13px;font-weight:400;color:var(--ink-soft);}
-  .cand-card .party{
-    display:inline-block;font-size:14.5px;font-weight:700;color:var(--sea-dark);
-    background:var(--sand-2);border-radius:999px;padding:6px 15px;
-  }
-  .cand-table-wrap{display:none;}
+  /* ---------- 読谷村議会議員選挙 候補者情報（表のみで表示） ---------- */
   .cand-table-wrap td, .cand-table-wrap th{text-align:left;white-space:normal;}
   .cand-table-wrap td:first-child, .cand-table-wrap th:first-child{text-align:center;white-space:nowrap;}
   .cand-table-wrap td.ct-name{font-size:17px;line-height:1.9;}
@@ -934,13 +919,6 @@
 
       <div id="candidates-body">
         <div class="updated" id="candidates-updated-line"></div>
-
-        <div class="view-toggle" id="cand-view-toggle">
-          <button type="button" class="active" data-view="card">カードで見る</button>
-          <button type="button" data-view="table">表で見る</button>
-        </div>
-
-        <div class="cand-grid" id="cand-grid"></div>
 
         <div class="tt-scroll cand-table-wrap" id="cand-table-wrap">
           <table class="tt-table">
@@ -1917,6 +1895,29 @@ function candidatesVisible(){
 }
 
 /* ============================================================
+   候補者「一覧（表）」自体の公表タイミング
+   ・ASSEMBLY_CANDIDATESに実際のデータを先に入力しておいても、
+     CANDIDATES_LIST_REVEAL_AT の日時になるまでは「まだ確定していません」
+     の案内のまま表示され、一覧は自動では見えない。
+   ・誤って早く公開してしまうことを防ぐための仕掛けなので、
+     公表時刻が変わった場合はこの日時だけ書き換えればよい。
+   ・確認のためのテスト表示は  ?preview=candidates  を付けてアクセスしてください
+     （この場合は時刻に関係なく一覧が見える）。
+   ============================================================ */
+const CANDIDATES_LIST_REVEAL_AT = "2026-09-08T10:30:00+09:00"; // 候補者一覧の公表時刻
+
+function isAfterCandidatesListRevealTime(){
+  try{
+    return new Date() >= new Date(CANDIDATES_LIST_REVEAL_AT);
+  }catch(err){
+    return false;
+  }
+}
+function candidatesListVisible(){
+  return isCandidatesPreview() || isAfterCandidatesListRevealTime();
+}
+
+/* ============================================================
    村議会議員選挙「選挙公報」ボタンの公開・非表示
    ・選挙公報は、立候補者数が定数（19人）を超えた場合のみ発行されます。
    ・超えなかった場合は、投票日までこのボタンは非表示のままにしてください。
@@ -2082,13 +2083,32 @@ const TURNOUT_DATA = {
        { order:1, name:"山田太郎", yomi:"やまだたろう", party:"無所属" }
    ============================================================ */
 const ASSEMBLY_CANDIDATES = [
-  // 告示後、確定次第ここに追加してください
+  {order:1, name:"よなは　さき", yomi:"よなは　さき", party:"無所属"},
+  {order:2, name:"イサ　真武", yomi:"いさ　しんぶ", party:"共産党"},
+  {order:3, name:"岸本　ダイジロウ", yomi:"きしもと　だいじろう", party:"自民党"},
+  {order:4, name:"オオシロ　友誼", yomi:"おおしろ　ともぎ", party:"無所属"},
+  {order:5, name:"比嘉　たかや", yomi:"ひが　たかや", party:"無所属"},
+  {order:6, name:"ながはま　宗則", yomi:"ながはま　むねのり", party:"無所属"},
+  {order:7, name:"比嘉　ゆきお", yomi:"ひが　ゆきお", party:"無所属"},
+  {order:8, name:"城間　まゆみ", yomi:"しろま　まゆみ", party:"無所属"},
+  {order:9, name:"與那覇　ノリオ", yomi:"よなは　のりお", party:"無所属"},
+  {order:10, name:"上原　くみこ", yomi:"うえはら　くみこ", party:"公明党"},
+  {order:11, name:"なかま　朝雄", yomi:"なかま　あさお", party:"無所属"},
+  {order:12, name:"平良　かつし", yomi:"たいら　かつし", party:"無所属"},
+  {order:13, name:"松田　しげる", yomi:"まつだ　しげる", party:"無所属"},
+  {order:14, name:"上地　りえこ", yomi:"うえち　りえこ", party:"無所属"},
+  {order:15, name:"當間　リョウジ", yomi:"とうま　りょうじ", party:"無所属"},
+  {order:16, name:"神谷　カエイ", yomi:"かみや　かえい", party:"無所属"},
+  {order:17, name:"クニヨシ　雅和", yomi:"くによし　まさかず", party:"無所属"},
+  {order:18, name:"いのうえ　和彦", yomi:"いのうえ　かずひこ", party:"社民党"},
+  {order:19, name:"青山　マキ", yomi:"あおやま　まき", party:"無所属"},
+  {order:20, name:"オオノ　隆志", yomi:"おおの　たかし", party:"無所属"}
 ];
 
 // 候補者情報の最終更新時刻。ASSEMBLY_CANDIDATESの内容を更新するたびに、
 // 実際に更新した日時（例:"9/8 17:45"）に書き換えてください。
 // 未入力のうちはnullのままでOK（更新時刻なしで表示されます）。
-const CANDIDATES_UPDATED_TIME = null;
+const CANDIDATES_UPDATED_TIME = "9/8 10:30";
 
 /* ============================================================
    ★★★ 投票日 時間別投票状況：ここに時間ごとの数値を入力してください ★★★
@@ -3586,24 +3606,14 @@ function nameWithRuby(name, yomi){
   return nameParts.map((part, i) => rubySegment(part, yomiParts[i])).join("　");
 }
 
-let candViewMode = "card"; // "card" | "table" — 表示形式の切替（並び順は常に届出順の昇順）
-
-function applyCandidatesView(){
-  const gridEl = document.getElementById("cand-grid");
-  const tableWrap = document.getElementById("cand-table-wrap");
-  const isTable = candViewMode === "table";
-  if(gridEl) gridEl.style.display = isTable ? "none" : "";
-  if(tableWrap) tableWrap.style.display = isTable ? "block" : "none";
-}
-
 function renderCandidates(){
   const waitingEl = document.getElementById("candidates-waiting");
   const bodyEl = document.getElementById("candidates-body");
-  const gridEl = document.getElementById("cand-grid");
+  const tableBody = document.getElementById("cand-table-body");
   const gazetteBlock = document.getElementById("gazette-block");
   const gazetteLink = document.getElementById("gazette-link");
   const updatedEl = document.getElementById("candidates-updated-line");
-  if(!waitingEl || !bodyEl || !gridEl) return;
+  if(!waitingEl || !bodyEl || !tableBody) return;
 
   if(gazetteBlock){
     if(gazetteVisible() && GAZETTE_URL){
@@ -3614,7 +3624,10 @@ function renderCandidates(){
     }
   }
 
-  if(!ASSEMBLY_CANDIDATES.length){
+  // データが入力済みでも、CANDIDATES_LIST_REVEAL_AT（公表時刻）になるまでは
+  // 「まだ確定していません」の案内のままにしておく（早期公開を防ぐため）。
+  const showList = ASSEMBLY_CANDIDATES.length > 0 && candidatesListVisible();
+  if(!showList){
     waitingEl.style.display = "block";
     bodyEl.style.display = "none";
     if(updatedEl) updatedEl.innerHTML = "";
@@ -3629,42 +3642,20 @@ function renderCandidates(){
       : "";
   }
 
-  // 表示形式（カード／表）にかかわらず、並び順は常に届出順（届出番号の昇順）
+  // 常に届出順（届出番号の昇順）で表示
   const ordered = ASSEMBLY_CANDIDATES.slice().sort((a, b)=> a.order - b.order);
-  gridEl.innerHTML = ordered.map(c =>
-    '<div class="cand-card">' +
-      '<div class="num">' + c.order + '</div>' +
-      '<h5>' + nameWithRuby(c.name, c.yomi) + '</h5>' +
-      '<span class="party">' + (c.party || "無所属") + '</span>' +
-    '</div>'
+  tableBody.innerHTML = ordered.map(c =>
+    '<tr>' +
+      '<td>' + c.order + '</td>' +
+      '<td class="ct-name">' + nameWithRuby(c.name, c.yomi) + '</td>' +
+      '<td><span class="ct-party">' + (c.party || "無所属") + '</span></td>' +
+    '</tr>'
   ).join("");
-
-  const tableBody = document.getElementById("cand-table-body");
-  if(tableBody){
-    tableBody.innerHTML = ordered.map(c =>
-      '<tr>' +
-        '<td>' + c.order + '</td>' +
-        '<td class="ct-name">' + nameWithRuby(c.name, c.yomi) + '</td>' +
-        '<td><span class="ct-party">' + (c.party || "無所属") + '</span></td>' +
-      '</tr>'
-    ).join("");
-  }
-
-  applyCandidatesView();
 }
 
 try{
   if(typeof ASSEMBLY_CANDIDATES !== "undefined"){
     renderCandidates();
-
-    document.querySelectorAll("#cand-view-toggle button").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        document.querySelectorAll("#cand-view-toggle button").forEach(b=>b.classList.remove("active"));
-        btn.classList.add("active");
-        candViewMode = btn.dataset.view;
-        applyCandidatesView();
-      });
-    });
   }
 }catch(err){
   if(window.console && console.error) console.error("renderCandidates init failed:", err);
