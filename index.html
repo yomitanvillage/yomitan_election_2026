@@ -256,6 +256,17 @@
   .e-card dt{color:var(--ink-soft);font-weight:700;}
   .e-card dd{margin:0;}
 
+  /* ---------- 選挙情報カード内：最新の期日前投票率ミニ表示 ---------- */
+  .e-card-turnout{background:var(--sand-2);border-radius:14px;padding:14px 16px;margin-top:16px;}
+  .e-card-turnout .et-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;}
+  .e-card-turnout .et-rate{font-size:30px;font-weight:800;color:var(--sea-dark);line-height:1.2;margin-top:2px;}
+  .e-card-turnout .et-rate .et-unit{font-size:16px;font-weight:700;margin-left:1px;}
+  .e-card-turnout .et-diff{display:inline-block;font-size:16px;font-weight:700;margin-top:4px;}
+  .e-card-turnout .et-diff.up{color:var(--good);}
+  .e-card-turnout .et-diff.down{color:var(--warn);}
+  .e-card-turnout .et-link{display:block;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
+  .e-card-turnout .et-empty{font-size:12.5px;color:var(--ink-soft);}
+
   /* ---------- Early voting timeline ----------
      PC・スマホとも常に横長（左にラベル、右に帯グラフ）のレイアウトで統一。
      固定の最小幅を持たせず、コンテナ幅に応じて伸縮させることで、
@@ -878,6 +889,7 @@
           <dt>選出</dt><dd>1名</dd>
           <dt>前回</dt><dd>2022年9月執行</dd>
         </dl>
+        <div class="e-card-turnout" id="info-turnout-governor"><!-- JSが自動生成 --></div>
         <a class="btn" style="margin-top:14px;" target="_blank" rel="noopener" href="https://www.pref.okinawa.lg.jp/kensei/senkyo/1005009/1023802/1040303/index.html">沖縄県知事選挙 特設サイトへ →</a>
       </div>
       <div class="e-card assembly">
@@ -891,6 +903,7 @@
           <dt>定数</dt><dd>19名</dd>
           <dt>前回</dt><dd>2022年9月執行</dd>
         </dl>
+        <div class="e-card-turnout" id="info-turnout-assembly"><!-- JSが自動生成 --></div>
         <div class="e-card-actions">
           <a class="btn" href="#candidates">候補者情報を見る →</a>
           <button type="button" class="btn js-open-gazette gazette-toggle is-feature-hidden" id="info-gazette-btn">選挙公報を読む</button>
@@ -3152,6 +3165,54 @@ try{
   });
 }catch(err){
   if(window.console && console.error) console.error("renderTurnout init failed:", err);
+}
+
+/* ---------- 選挙情報カード内：最新の期日前投票率ミニ表示 ---------- */
+function renderInfoTurnoutStats(){
+  ["governor","assembly"].forEach(key=>{
+    try{
+      const el = document.getElementById("info-turnout-" + key);
+      if(!el) return;
+      const data = TURNOUT_DATA[key];
+      if(!data) return;
+      let idx = -1;
+      for(let i = data.current.length - 1; i >= 0; i--){
+        if(data.current[i] !== null && data.current[i] !== undefined){ idx = i; break; }
+      }
+      if(idx === -1){
+        el.innerHTML = '<p class="et-empty">期日前投票の開始後、ここに最新の投票率を表示します。</p>';
+        return;
+      }
+      const latestCur = data.current[idx];
+      const latestPrev = (data.previous && data.previous[idx] !== undefined) ? data.previous[idx] : null;
+      const diff = (latestPrev !== null) ? (latestCur - latestPrev) : null;
+      const diffCls = diff !== null ? (diff >= 0 ? "up" : "down") : "";
+      const diffText = diff !== null ? ((diff >= 0 ? "+" : "") + diff.toFixed(1) + "pt") : "—";
+      el.innerHTML =
+        '<div class="et-label">現在の累積投票率（' + data.dates[idx] + '時点）</div>' +
+        '<div class="et-rate">' + latestCur.toFixed(2) + '<span class="et-unit">%</span></div>' +
+        '<div class="et-diff ' + diffCls + '">前回同時点より ' + diffText + '</div>' +
+        '<a class="et-link" href="#turnout">投票率速報で詳しく見る →</a>';
+      const link = el.querySelector(".et-link");
+      if(link){
+        link.addEventListener("click", ()=>{
+          try{
+            const btn = document.querySelector('#turnout .switcher button[data-target="' + key + '"]');
+            if(btn) btn.click();
+          }catch(err2){
+            if(window.console && console.error) console.error("info turnout link switch failed:", err2);
+          }
+        });
+      }
+    }catch(err){
+      if(window.console && console.error) console.error("renderInfoTurnoutStats(" + key + ") failed:", err);
+    }
+  });
+}
+try{
+  renderInfoTurnoutStats();
+}catch(err){
+  if(window.console && console.error) console.error("renderInfoTurnoutStats init failed:", err);
 }
 
 /* ============================================================
