@@ -3016,18 +3016,32 @@ function renderTurnoutTable(key, latestIdx){
       return v !== null && v !== undefined ? v.toLocaleString("ja-JP") : "—";
     }
     // 日付ラベルの曜日部分「(金)」などをspanで囲み、狭い画面ではCSSで非表示にして幅を詰める。
-    function formatDateCell(dateLabel){
-      const m = dateLabel.match(/^(.*?)(\([^)]+\))$/);
-      return m ? m[1] + '<span class="tt-weekday">' + m[2] + '</span>' : dateLabel;
+    // 今回（2026年）側は dates に曜日が含まれていないため、月/日から自動計算して補う。
+    const WEEKDAY_JA = ["日","月","火","水","木","金","土"];
+    function weekdayForDateLabel(dateLabel, year){
+      const m = dateLabel.match(/^(\d{1,2})\/(\d{1,2})$/);
+      if(!m) return null;
+      try{
+        const d = new Date(year, parseInt(m[1],10) - 1, parseInt(m[2],10));
+        return WEEKDAY_JA[d.getDay()];
+      }catch(err){ return null; }
     }
-    function buildRow(dateLabel, r, isLatest){
+    function formatDateCell(dateLabel, year){
+      const m = dateLabel.match(/^(.*?)(\([^)]+\))$/);
+      if(m){
+        return m[1] + '<span class="tt-weekday">' + m[2] + '</span>';
+      }
+      const wd = year ? weekdayForDateLabel(dateLabel, year) : null;
+      return wd ? dateLabel + '<span class="tt-weekday">(' + wd + ')</span>' : dateLabel;
+    }
+    function buildRow(dateLabel, r, isLatest, year){
       const rateCell = fmtPct(r ? r.combinedRate : null);
       const rowCls = !r ? "is-empty" : (isLatest ? "is-latest" : "");
-      return `<tr class="${rowCls}"><td>${formatDateCell(dateLabel)}</td><td>${r ? cell(r.male) : "—"}</td><td>${r ? cell(r.female) : "—"}</td><td>${r ? cell(r.dailyTotal) : "—"}</td><td>${r ? cell(r.cumulativeTotal) : "—"}</td><td>${rateCell}</td></tr>`;
+      return `<tr class="${rowCls}"><td>${formatDateCell(dateLabel, year)}</td><td>${r ? cell(r.male) : "—"}</td><td>${r ? cell(r.female) : "—"}</td><td>${r ? cell(r.dailyTotal) : "—"}</td><td>${r ? cell(r.cumulativeTotal) : "—"}</td><td>${rateCell}</td></tr>`;
     }
 
     if(curBody){
-      curBody.innerHTML = data.dates.map((d, i) => buildRow(d, curSeries[i], i === latestIdx)).join("");
+      curBody.innerHTML = data.dates.map((d, i) => buildRow(d, curSeries[i], i === latestIdx, 2026)).join("");
     }
     if(prevBody){
       const prevDates = data.previousDates || data.dates;
