@@ -2059,12 +2059,12 @@ const ELECTION_DATA = {
 const TURNOUT_DATA = {
   governor: {
     dates: ["8/28","8/29","8/30","8/31","9/1","9/2","9/3","9/4","9/5","9/6","9/7","9/8","9/9","9/10","9/11","9/12"],
-    current:  [0.31, 0.69, 1.10, 1.57, 2.07, 2.61, 3.05, 3.54, 4.23, 4.99, 5.82, 6.75, 11.70, 17.08, null, null],
+    current:  [0.31, 0.69, 1.10, 1.57, 2.07, 2.61, 3.05, 3.54, 4.23, 4.99, 5.82, 6.75, 11.70, 17.08, 22.73, null],
     // "最終更新"に表示する時刻。currentを更新するたびに、実際に集計・掲載した
     // 時刻（例:"20:45"）に書き換えてください。日付はcurrentの最新日から自動で
     // 表示されるので、ここは時刻（"HH:MM"）だけを入力すればOKです。
     // 時刻が分からない・未入力のうちはnullのままでOK（時刻なしで表示されます）。
-    updatedTime: "20:30", // 9/10分
+    updatedTime: "20:30", // 9/11分
     // 2022年は8/26開始（16日間）。日数ベースで対応：8/26→0.30% … 9/10(最終日)→31.52%
     previous: [0.30, 0.63, 1.09, 1.56, 2.04, 2.23, 2.58, 2.97, 3.20, 3.36, 3.85, 4.46, 8.82, 15.67, 24.16, 31.52],
     // 選挙人名簿登録者数（令和8年8月26日現在）：合計33,048人／男15,863人／女17,185人
@@ -2083,7 +2083,8 @@ const TURNOUT_DATA = {
       {male:115, female:113}, {male:124, female:128}, {male:142, female:131}, {male:148, female:160},
       {male:770, female:865},
       {male:777, female:1003},
-      {male:null, female:null}, {male:null, female:null}
+      {male:784, female:1082},
+      {male:null, female:null}
     ],
     // 2022年 知事選 期日前投票状況（日別）PDFより（8/26〜9/10、16日分）
     previousDetail: [
@@ -2099,9 +2100,9 @@ const TURNOUT_DATA = {
   },
   assembly: {
     dates: ["9/9","9/10","9/11","9/12"],
-    current:  [5.61, 11.49, null, null],
+    current:  [5.61, 11.49, 17.83, null],
     // "最終更新"に表示する時刻（"HH:MM"）。governorと同じ使い方です。
-    updatedTime: "20:30", // 9/10分
+    updatedTime: "20:30", // 9/11分
     // 2022年は9/7開始（4日間、告示が9/6のため）。9/7→4.96% … 9/10(最終日)→29.50%
     previous: [4.96, 12.50, 21.57, 29.50],
     // 選挙人名簿登録者数（令和8年9月7日現在）：合計33,032人／男15,854人／女17,178人
@@ -2114,7 +2115,7 @@ const TURNOUT_DATA = {
     prevElectorsMale: 15900,
     prevElectorsFemale: 16869,
     currentDetail: [
-      {male:887, female:965}, {male:868, female:1075}, {male:null, female:null}, {male:null, female:null}
+      {male:887, female:965}, {male:868, female:1075}, {male:899, female:1196}, {male:null, female:null}
     ],
     // 2022年 村議選 期日前投票状況（日別）PDFより（9/7〜9/10、4日分）
     previousDetail: [
