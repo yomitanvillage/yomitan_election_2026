@@ -491,15 +491,18 @@
   }
   .hour-chip.has-data{border-color:var(--sea);color:var(--sea-dark);}
   .hour-chip.active{background:var(--sea-dark);border-color:var(--sea-dark);color:#fff;}
-  .hr-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0 0 8px;}
+  .hr-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:0 0 8px;}
   .hr-summary-card{background:var(--sand-2);border-radius:14px;padding:14px 10px;text-align:center;}
   .hr-summary-card .label{font-size:11px;color:var(--ink-soft);font-weight:700;}
   .hr-summary-card .value{font-size:22px;font-weight:800;color:var(--sea-dark);margin-top:2px;}
   .hr-trend-table-wrap{display:none;}
   .tt-table tbody tr.is-total td{background:#fff6e6;font-weight:800;border-top:2px solid var(--sea-dark);}
+  /* まだ発表されていない時刻（0人・0%の枠）は、文字色を落として区別する */
+  .tt-table tbody tr.is-pending td{color:var(--ink-soft);}
   .bar-labels div.is-latest{color:var(--coral);font-weight:800;}
+  .tm-rate{font-size:11px;color:var(--ink-soft);text-align:right;margin-top:2px;}
   @media(max-width:600px){
-    .hr-summary{grid-template-columns:1fr 1fr 1fr;gap:6px;}
+    .hr-summary{grid-template-columns:1fr 1fr;gap:6px;}
     .hr-summary-card{padding:10px 4px;}
     .hr-summary-card .label{font-size:10px;}
     .hr-summary-card .value{font-size:17px;}
@@ -1286,16 +1289,11 @@
         <div class="chart-card">
           <div class="updated" id="hourly-updated-line"></div>
 
-          <div class="turnout-waiting" id="hourly-waiting">
-            <div class="tw-icon">🗳️</div>
-            <p class="tw-text">投票日の時間別投票状況はまだ公表されていません。<br>9月13日、9時・10時・11時・14時・16時・18時・19時30分・最終に、集計が整い次第更新します。</p>
-          </div>
-
           <div id="hr-body">
-            <!-- 現在時点（最新）の男女別・合計人数を一目で見せるサマリー -->
+            <!-- 現在時点（最新）の男女別・合計・投票率を一目で見せるサマリー -->
             <div class="hr-summary" id="hr-summary"></div>
 
-            <!-- 読谷村全体の時刻別推移：グラフ／表を切替 -->
+            <!-- 読谷村全体の時刻別推移：グラフ／表を切替（数値が未発表の時刻も、時刻の枠は常に表示し、数値は「ー」にする） -->
             <div class="hr-block-title">読谷村全体の投票者数の推移</div>
             <div class="view-toggle" id="hr-view-toggle">
               <button type="button" class="active" data-view="chart">グラフで見る</button>
@@ -1313,7 +1311,7 @@
 
             <div class="tt-scroll hr-trend-table-wrap" id="hr-trend-table-wrap">
               <table class="tt-table">
-                <thead><tr><th>時刻</th><th>男</th><th>女</th><th>計</th></tr></thead>
+                <thead><tr><th>時刻</th><th>男</th><th>女</th><th>計</th><th>投票率</th></tr></thead>
                 <tbody id="hr-trend-table-body"></tbody>
               </table>
             </div>
@@ -2142,13 +2140,18 @@ const ASSEMBLY_CANDIDATES = [
 /* ============================================================
    ★★★ 投票日 時間別投票状況：ここに時間ごとの数値を入力してください ★★★
    （当日アップされる「投開票速報」エクセルの「○○選挙_投票速報」シートと
-     同じ並び：速報時間ごとの、読谷村全体の男女別・合計【累計】人数）
+     同じ並び：速報時間ごとの、読谷村全体の男女別・合計【累計】人数。
+     エクセルの「投票率」列は、下のelectorsToday（当日有権者数）を使って
+     サイト側で自動計算するため、入力は不要です）
+   ・"electorsToday" … 投票日（9/13）時点の選挙人名簿登録者数（男・女・計）。
+     エクセルの「当日有権者数」欄の数値をそのまま入力してください。
    ・"times" … 集計時刻（9:00, 10:00, 11:00, 14:00, 16:00, 18:00, 19:30,
      最終　の8回。編集不要）
    ・"data[時刻のインデックス]" … その時刻「現在」の、読谷村全体の
      【累計】投票者数（男・女）を入力。まだ発表されていない時刻は
-     { male:null, female:null } のままにしておくと、「まだ発表されて
-     いません」として扱われます。
+     { male:null, female:null } のままにしておくと、「現在の最新値」
+     カードには反映されませんが、グラフ・表には時刻の枠として引き続き
+     表示され、数値部分は「ー」と表示されます（まっさらな空欄にはなりません）。
      例）11:00現在の読谷村全体が男1200人・女980人だった場合、
         governor.data[2]（9:00が0番目なので11:00は2番目）を
         { male: 1200, female: 980 } に書き換える
@@ -2162,6 +2165,8 @@ function emptyHourlyRow(){
 
 const HOURLY_DATA = {
   governor: {
+    // 投票日（9/13）時点の選挙人名簿登録者数：男15,675人／女16,968人／計32,643人
+    electorsToday: {male:15675, female:16968, total:32643},
     times: HOURLY_TIMES,
     // data[0]=9:00, data[1]=10:00, data[2]=11:00, data[3]=14:00,
     // data[4]=16:00, data[5]=18:00, data[6]=19:30, data[7]=最終
@@ -2172,6 +2177,8 @@ const HOURLY_DATA = {
     ]
   },
   assembly: {
+    // 投票日（9/13）時点の選挙人名簿登録者数：男15,675人／女16,968人／計32,643人
+    electorsToday: {male:15675, female:16968, total:32643},
     times: HOURLY_TIMES,
     data: [
       emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
@@ -2775,8 +2782,43 @@ const ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT = "2026-09-09T06:00:00+09:00"; // 村議
 })();
 
 /* ============================================================
+   新着案内：投票日（9/13）午前7:00、両選挙の投票開始を自動でお知らせする
+   ・ELECTION_BULLETIN_AT（投票開始と同時刻）になったら、新着案内リストの
+     先頭に追加する。リンク先は投票所案内ページ（#polling）。
+   ・上のannounceElectionBulletinStart（選挙速報のご案内）よりもさらに
+     あとに実行し、こちらが一番上に来るようにしている。
+   ============================================================ */
+(function announceElectionDayVotingStart(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+    if(!isAfterElectionBulletinTime()) return;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#polling";
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "news-date";
+    dateSpan.textContent = "9/13";
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "news-title";
+    titleSpan.textContent = "沖縄県知事選挙・読谷村議会議員選挙の投票が始まりました";
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "news-arrow";
+    arrowSpan.textContent = "›";
+    a.appendChild(dateSpan);
+    a.appendChild(titleSpan);
+    a.appendChild(arrowSpan);
+    li.appendChild(a);
+    listEl.insertBefore(li, listEl.firstChild);
+  }catch(err){
+    if(window.console && console.error) console.error("announceElectionDayVotingStart failed:", err);
+  }
+})();
+
+/* ============================================================
    新着案内：最新3件だけ常に表示し、それより古いものはアコーディオンに
-   たたむ。上の8つのannounce*関数がすべての自動お知らせを挿入し終えた
+   たたむ。上の9つのannounce*関数がすべての自動お知らせを挿入し終えた
    「あと」に実行する必要があるため、このタイミングに置いている。
    ============================================================ */
 (function collapseExtraNewsItems(){
@@ -3318,21 +3360,35 @@ function cellHR(v){
   return (v !== null && v !== undefined) ? v.toLocaleString("ja-JP") : "—";
 }
 
-// 読谷村全体の男女別・合計【累計】人数を返す（村全体の集計値をそのまま使う）
+// 読谷村全体の男女別・合計【累計】人数と投票率を返す。
+// まだ発表されていない時刻（male/femaleがnull）も0人・0%として計算し、
+// グラフ・表には常に全時刻分の枠を表示する（「発表済みかどうか」は
+// isHourlyRowPending()で別途判定し、latestHourlyIndex()やサマリーカードの
+// 表示にのみ使う）。
 function computeHourlyTotals(key, timeIdx){
   const data = HOURLY_DATA[key];
   if(!data || !data.data[timeIdx]) return null;
   const row = data.data[timeIdx];
-  if(row.male === null || row.male === undefined || row.female === null || row.female === undefined) return null;
-  return {totalMale: row.male, totalFemale: row.female, grandTotal: row.male + row.female};
+  const m = (row.male === null || row.male === undefined) ? 0 : row.male;
+  const f = (row.female === null || row.female === undefined) ? 0 : row.female;
+  const grandTotal = m + f;
+  const electorsTotal = data.electorsToday ? data.electorsToday.total : null;
+  const rate = electorsTotal ? round2(grandTotal / electorsTotal * 100) : null;
+  return {totalMale: m, totalFemale: f, grandTotal, rate};
+}
+
+// その時刻がまだ発表されていない（未入力＝null）かどうかを判定
+function isHourlyRowPending(key, timeIdx){
+  const data = HOURLY_DATA[key];
+  const row = data && data.data ? data.data[timeIdx] : null;
+  return !row || row.male === null || row.male === undefined;
 }
 
 function latestHourlyIndex(key){
   const data = HOURLY_DATA[key];
   if(!data) return -1;
   for(let i = data.data.length - 1; i >= 0; i--){
-    const r = data.data[i];
-    if(r && r.male !== null && r.male !== undefined) return i;
+    if(!isHourlyRowPending(key, i)) return i;
   }
   return -1;
 }
@@ -3349,20 +3405,24 @@ function renderHourlyTrendMobile(key, themeColor, latestIdx, totalsByHour, max){
   data.times.forEach((label, i)=>{
     const totals = totalsByHour[i];
     const isLatest = i === latestIdx;
+    const pending = isHourlyRowPending(key, i);
     const row = document.createElement("div");
-    row.className = "tm-row" + (isLatest ? " is-latest" : "");
+    row.className = "tm-row" + (isLatest ? " is-latest" : "") + (pending ? " is-pending" : "");
     row.innerHTML = `
       <div class="tm-date">${label}${isLatest ? '<span class="tm-latest-badge">最新</span>' : ""}</div>
       <div class="tm-line">
         <div class="tm-tag">計</div>
-        <div class="tm-track"><div class="tm-fill" style="width:${totals ? (totals.grandTotal/max*100) : 0}%;background:${themeColor}"></div></div>
-        <div class="tm-val">${totals ? totals.grandTotal.toLocaleString("ja-JP")+"人" : "—"}</div>
-      </div>`;
+        <div class="tm-track"><div class="tm-fill" style="width:${pending ? 0 : (totals.grandTotal/max*100)}%;background:${themeColor}"></div></div>
+        <div class="tm-val">${pending ? "—" : totals.grandTotal.toLocaleString("ja-JP") + "人"}</div>
+      </div>
+      <div class="tm-rate">投票率 ${pending || totals.rate === null ? "—" : fmtPct(totals.rate)}</div>`;
     wrap.appendChild(row);
   });
 }
 
 // 読谷村全体の時刻別推移：グラフ（棒グラフ／スマホ用リスト）と表の両方を作る
+// （未発表の時刻も時刻ラベル・枠は常に描画するが、数値は「ー」表示にし、
+//   is-pendingクラスで薄い文字色にする。実際の0人と区別するため）
 function renderHourlyTrend(key){
   const data = HOURLY_DATA[key];
   const themeColor = ELECTION_DATA[key].color;
@@ -3377,21 +3437,21 @@ function renderHourlyTrend(key){
   trendBody.innerHTML = "";
 
   const totalsByHour = data.times.map((_, i)=>computeHourlyTotals(key, i));
-  const grandTotals = totalsByHour.map(t=>t ? t.grandTotal : null).filter(v=>v!==null);
-  const max = Math.max(...grandTotals, 10);
+  const max = Math.max(...totalsByHour.map(t=>t.grandTotal), 10);
 
   data.times.forEach((label, i)=>{
     const totals = totalsByHour[i];
     const isLatest = i === latestIdx;
+    const pending = isHourlyRowPending(key, i);
 
     const group = document.createElement("div");
     group.className = "bar-group";
 
     const bar = document.createElement("div");
     bar.className = "bar cur";
-    bar.style.height = (totals ? (totals.grandTotal/max*100) : 0) + "%";
+    bar.style.height = (pending ? 0 : (totals.grandTotal/max*100)) + "%";
     bar.style.background = `linear-gradient(180deg, ${themeColor} 0%, var(--sea-dark) 100%)`;
-    if(totals){
+    if(!pending){
       const v = document.createElement("span");
       v.className = "val";
       v.style.color = themeColor;
@@ -3407,8 +3467,8 @@ function renderHourlyTrend(key){
     labelsWrap.appendChild(lbl);
 
     const row = document.createElement("tr");
-    row.className = !totals ? "is-empty" : (isLatest ? "is-latest" : "");
-    row.innerHTML = "<td>" + label + "</td><td>" + (totals?cellHR(totals.totalMale):"—") + "</td><td>" + (totals?cellHR(totals.totalFemale):"—") + "</td><td>" + (totals?cellHR(totals.grandTotal):"—") + "</td>";
+    row.className = pending ? "is-pending" : (isLatest ? "is-latest" : "");
+    row.innerHTML = "<td>" + label + "</td><td>" + (pending?"—":cellHR(totals.totalMale)) + "</td><td>" + (pending?"—":cellHR(totals.totalFemale)) + "</td><td>" + (pending?"—":cellHR(totals.grandTotal)) + "</td><td>" + (pending || totals.rate === null ? "—" : fmtPct(totals.rate)) + "</td>";
     trendBody.appendChild(row);
   });
 
@@ -3437,31 +3497,38 @@ function renderHourly(key){
   if(!data) return;
 
   const latestIdx = latestHourlyIndex(key);
-  const waitingEl = document.getElementById("hourly-waiting");
   const bodyEl = document.getElementById("hr-body");
   const updatedLineEl = document.getElementById("hourly-updated-line");
+  const summaryEl = document.getElementById("hr-summary");
 
-  if(latestIdx === -1){
-    if(waitingEl) waitingEl.style.display = "block";
-    if(bodyEl) bodyEl.style.display = "none";
-    if(updatedLineEl) updatedLineEl.innerHTML = "";
-    return;
-  }
-  if(waitingEl) waitingEl.style.display = "none";
+  // グラフ・表は未発表の時刻も0人・0%の枠として常に表示するため、
+  // ここでbr-bodyを隠すことはしない（renderHourlyTrendが常に全時刻分を描画する）。
   if(bodyEl) bodyEl.style.display = "";
 
-  const latestLabel = data.times[latestIdx];
-  if(updatedLineEl){
-    updatedLineEl.innerHTML = "最終更新：<b>" + latestLabel + "時点</b>（読谷村全体の累計）";
-  }
-
-  const latestTotals = computeHourlyTotals(key, latestIdx);
-  const summaryEl = document.getElementById("hr-summary");
-  if(summaryEl && latestTotals){
-    summaryEl.innerHTML =
-      '<div class="hr-summary-card"><div class="label">男（' + latestLabel + '現在）</div><div class="value">' + latestTotals.totalMale.toLocaleString("ja-JP") + '人</div></div>' +
-      '<div class="hr-summary-card"><div class="label">女（' + latestLabel + '現在）</div><div class="value">' + latestTotals.totalFemale.toLocaleString("ja-JP") + '人</div></div>' +
-      '<div class="hr-summary-card"><div class="label">合計（' + latestLabel + '現在）</div><div class="value">' + latestTotals.grandTotal.toLocaleString("ja-JP") + '人</div></div>';
+  if(latestIdx === -1){
+    if(updatedLineEl){
+      updatedLineEl.innerHTML = "投票日の時間別投票状況はまだ発表されていません。9月13日9時の集計から順次更新します。";
+    }
+    if(summaryEl){
+      summaryEl.innerHTML =
+        '<div class="hr-summary-card"><div class="label">男</div><div class="value">—</div></div>' +
+        '<div class="hr-summary-card"><div class="label">女</div><div class="value">—</div></div>' +
+        '<div class="hr-summary-card"><div class="label">合計</div><div class="value">—</div></div>' +
+        '<div class="hr-summary-card"><div class="label">投票率</div><div class="value">—</div></div>';
+    }
+  }else{
+    const latestLabel = data.times[latestIdx];
+    if(updatedLineEl){
+      updatedLineEl.innerHTML = "最終更新：<b>" + latestLabel + "時点</b>（読谷村全体の累計）";
+    }
+    const latestTotals = computeHourlyTotals(key, latestIdx);
+    if(summaryEl && latestTotals){
+      summaryEl.innerHTML =
+        '<div class="hr-summary-card"><div class="label">男（' + latestLabel + '現在）</div><div class="value">' + latestTotals.totalMale.toLocaleString("ja-JP") + '人</div></div>' +
+        '<div class="hr-summary-card"><div class="label">女（' + latestLabel + '現在）</div><div class="value">' + latestTotals.totalFemale.toLocaleString("ja-JP") + '人</div></div>' +
+        '<div class="hr-summary-card"><div class="label">合計（' + latestLabel + '現在）</div><div class="value">' + latestTotals.grandTotal.toLocaleString("ja-JP") + '人</div></div>' +
+        '<div class="hr-summary-card"><div class="label">投票率（' + latestLabel + '現在）</div><div class="value">' + (latestTotals.rate !== null ? fmtPct(latestTotals.rate) : "—") + '</div></div>';
+    }
   }
 
   renderHourlyTrend(key);
