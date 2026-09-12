@@ -1110,7 +1110,7 @@
     <div class="sec-head">
       <div class="kicker">Polling Places</div>
       <h2>投票所のご案内</h2>
-      <p>投票日当日の投票所は村内6か所です（期日前投票所は当日投票所と異なります）。</p>
+      <p>投票日当日の投票所は村内6か所です（期日前投票所は当日投票所と異なります）。投票時間は<b>7:00〜20:00</b>です。</p>
     </div>
     <div class="poll-grid">
       <div class="poll-card">
@@ -1325,13 +1325,13 @@
         <div class="sec-head bulletin-sub-head">
           <div class="kicker">Election Night / Vote Count</div>
           <h3>開票速報</h3>
-          <p>投票日9月13日（日）の開票状況を、21時から30分ごとに更新します。掲載する得票数は開票途中の速報値です。<b>当選人の決定は、読谷村選挙管理委員会の公式発表を必ずご確認ください。</b></p>
+          <p>投票日9月13日（日）の開票状況を、21時30分から30分ごとに更新します。掲載する得票数は開票途中の速報値です。<b>当選人の決定は、読谷村選挙管理委員会の公式発表を必ずご確認ください。</b></p>
         </div>
 
         <div class="chart-card">
           <div class="turnout-waiting" id="results-waiting">
             <div class="tw-icon">🗳️</div>
-            <p class="tw-text">開票速報はまだ公表されていません。<br>9月13日 21:00から、30分ごとに更新予定です。</p>
+            <p class="tw-text">開票速報はまだ公表されていません。<br>9月13日 21:30から、30分ごとに更新予定です。</p>
           </div>
 
           <div class="turnout-waiting" id="results-no-candidates">
@@ -2748,45 +2748,11 @@ const ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT = "2026-09-09T06:00:00+09:00"; // 村議
 })();
 
 /* ============================================================
-   新着案内：「選挙速報」開始（投票日 9/13 7:00・投票開始と同時刻）を
-   自動でお知らせする。プレビュー中（?preview=bulletin）は追加されない
-   （実際にその時刻を迎えたときだけお知らせする）。
-   リンク先は統合後の投票率速報ページ（#turnout）。
-   ============================================================ */
-(function announceElectionBulletinStart(){
-  try{
-    const listEl = document.getElementById("news-list");
-    if(!listEl) return;
-    if(!isAfterElectionBulletinTime()) return;
-
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.href = "#turnout";
-    const dateSpan = document.createElement("span");
-    dateSpan.className = "news-date";
-    dateSpan.textContent = "9/13";
-    const titleSpan = document.createElement("span");
-    titleSpan.className = "news-title";
-    titleSpan.textContent = "投票が始まりました。「選挙速報」で投票率・投票状況・開票速報をまとめてご覧いただけます";
-    const arrowSpan = document.createElement("span");
-    arrowSpan.className = "news-arrow";
-    arrowSpan.textContent = "›";
-    a.appendChild(dateSpan);
-    a.appendChild(titleSpan);
-    a.appendChild(arrowSpan);
-    li.appendChild(a);
-    listEl.insertBefore(li, listEl.firstChild);
-  }catch(err){
-    if(window.console && console.error) console.error("announceElectionBulletinStart failed:", err);
-  }
-})();
-
-/* ============================================================
    新着案内：投票日（9/13）午前7:00、両選挙の投票開始を自動でお知らせする
    ・ELECTION_BULLETIN_AT（投票開始と同時刻）になったら、新着案内リストの
      先頭に追加する。リンク先は投票所案内ページ（#polling）。
-   ・上のannounceElectionBulletinStart（選挙速報のご案内）よりもさらに
-     あとに実行し、こちらが一番上に来るようにしている。
+   ・下のannounceElectionBulletinStart（選挙速報のご案内）より先に実行し、
+     選挙速報のお知らせのほうが新着案内の一番上に来るようにしている。
    ============================================================ */
 (function announceElectionDayVotingStart(){
   try{
@@ -2813,6 +2779,42 @@ const ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT = "2026-09-09T06:00:00+09:00"; // 村議
     listEl.insertBefore(li, listEl.firstChild);
   }catch(err){
     if(window.console && console.error) console.error("announceElectionDayVotingStart failed:", err);
+  }
+})();
+
+/* ============================================================
+   新着案内：「選挙速報」開始（投票日 9/13 7:00・投票開始と同時刻）を
+   自動でお知らせする。プレビュー中（?preview=bulletin）は追加されない
+   （実際にその時刻を迎えたときだけお知らせする）。
+   リンク先は統合後の投票率速報ページ（#turnout）。
+   ・上のannounceElectionDayVotingStart（投票が始まりましたのお知らせ）
+     よりもさらにあとに実行し、こちらが一番上に来るようにしている。
+   ============================================================ */
+(function announceElectionBulletinStart(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+    if(!isAfterElectionBulletinTime()) return;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#turnout";
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "news-date";
+    dateSpan.textContent = "9/13";
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "news-title";
+    titleSpan.textContent = "「選挙速報」で投票率・投票状況・開票速報をまとめてご覧いただけます";
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "news-arrow";
+    arrowSpan.textContent = "›";
+    a.appendChild(dateSpan);
+    a.appendChild(titleSpan);
+    a.appendChild(arrowSpan);
+    li.appendChild(a);
+    listEl.insertBefore(li, listEl.firstChild);
+  }catch(err){
+    if(window.console && console.error) console.error("announceElectionBulletinStart failed:", err);
   }
 })();
 
@@ -4000,7 +4002,11 @@ const NAV_MODE = "tabs";
       // 投票率速報タブへ来たときは、そのグラフの最新日がすぐ見えるようにする
       // （renderTurnout自体はページ読込時に一度だけ動くため、非表示だった間は
       //   スクロール計算が効かない。タブを開いた瞬間に改めて計算し直す）。
-      if(target === "turnout" && typeof TURNOUT_DATA !== "undefined" && typeof currentTurnoutKey !== "undefined"){
+      // ただし「選挙速報」への統合後（9/13 7:00以降）は、期日前投票の投票率が
+      // ページの一番下に配置されるため、この自動スクロールは行わず
+      // ページの先頭（トップ）にとどめる。
+      const bulletinMerged = (typeof electionBulletinVisible === "function") && electionBulletinVisible();
+      if(target === "turnout" && !bulletinMerged && typeof TURNOUT_DATA !== "undefined" && typeof currentTurnoutKey !== "undefined"){
         try{
           const data = TURNOUT_DATA[currentTurnoutKey];
           if(data){
@@ -4023,8 +4029,25 @@ const NAV_MODE = "tabs";
           if(href.charAt(0) !== "#") return;
           e.preventDefault();
           const id = href.slice(1);
-          activate(id);
-          try{ history.replaceState(null, "", "#"+id); }catch(err){ /* no-op */ }
+          if(panels.some(p=>p.id===id)){
+            activate(id);
+            try{ history.replaceState(null, "", "#"+id); }catch(err){ /* no-op */ }
+            return;
+          }
+          // タブ内の特定ブロック（例：選挙速報ページの「投票日 時間別投票状況」）への
+          // アンカーリンク。該当パネルへ切り替えたうえで、その要素までスクロールする。
+          const targetEl = document.getElementById(id);
+          if(!targetEl){ return; }
+          const parentPanel = targetEl.closest("section[data-tab-panel]");
+          if(parentPanel){
+            activate(parentPanel.id, {skipScroll:true});
+            try{ history.replaceState(null, "", "#"+parentPanel.id); }catch(err){ /* no-op */ }
+          }
+          requestAnimationFrame(()=>{
+            requestAnimationFrame(()=>{
+              try{ targetEl.scrollIntoView({behavior:"smooth", block:"start"}); }catch(err){ /* no-op */ }
+            });
+          });
         });
       });
 
