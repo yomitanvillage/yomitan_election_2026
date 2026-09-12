@@ -3298,7 +3298,7 @@ function renderInfoTurnoutStats(){
       const diffCls = diff !== null ? (diff >= 0 ? "up" : "down") : "";
       const diffText = diff !== null ? ((diff >= 0 ? "+" : "") + diff.toFixed(1) + "pt") : "—";
       el.innerHTML =
-        '<div class="et-label">現在の累積投票率（' + data.dates[idx] + '時点）</div>' +
+        '<div class="et-label">期日前投票の投票率</div>' +
         '<div class="et-rate">' + latestCur.toFixed(2) + '<span class="et-unit">%</span></div>' +
         '<div class="et-diff ' + diffCls + '">前回同時点より ' + diffText + '</div>' +
         '<a class="et-link" href="#turnout">投票率速報で詳しく見る →</a>';
