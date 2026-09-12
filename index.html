@@ -204,8 +204,25 @@
   .sec-head p{color:var(--ink-soft);margin:0;max-width:640px;}
 
   /* ---------- 選挙速報：統合ページ内の区切り見出し（時間別投票状況／開票速報） ---------- */
-  .bulletin-sub-head{margin:40px 0 30px;}
+  .bulletin-sub-head{margin:40px 0 30px;padding-left:14px;border-left:4px solid transparent;}
   .bulletin-sub-head h3{font-size:clamp(19px,2.6vw,24px);margin:6px 0 8px;color:var(--sea-dark);}
+
+  /* ---------- 選挙速報／投票率速報：知事選・村議選の切替がひと目でわかるよう、
+     ページ全体の背景色とカードの縁取りを選挙ごとの色に変える（#turnout生成のtheme-*クラス）。
+     セクションが縦に長く、スクロールしても切替後の状態が常にわかるようにするための工夫。 ---------- */
+  #turnout{transition:background-color .25s ease;}
+  #turnout.theme-governor{background-color:#fdf1ef;}
+  #turnout.theme-assembly{background-color:#f3eefb;}
+  #turnout.theme-governor .chart-card{border-top:5px solid var(--gov);}
+  #turnout.theme-assembly .chart-card{border-top:5px solid var(--assembly);}
+  #turnout.theme-governor .bulletin-sub-head{border-left-color:var(--gov);}
+  #turnout.theme-assembly .bulletin-sub-head{border-left-color:var(--assembly);}
+  #turnout .bulletin-current-badge{
+    display:inline-block;font-size:12px;font-weight:800;color:#fff;border-radius:999px;
+    padding:3px 12px;margin-left:8px;vertical-align:2px;
+  }
+  #turnout.theme-governor .bulletin-current-badge{background:var(--gov);}
+  #turnout.theme-assembly .bulletin-current-badge{background:var(--assembly);}
 
   /* ---------- 新着案内（選挙情報タブ内にのみ表示） ---------- */
   .news-card{
@@ -1219,7 +1236,7 @@
     <div id="bulletin-blocks">
       <div id="block-turnout">
         <div class="sec-head bulletin-sub-head is-feature-hidden" id="turnout-sub-head">
-          <h3>期日前投票の投票率</h3>
+          <h3>期日前投票の投票率<span class="bulletin-current-badge"></span></h3>
         </div>
         <div class="chart-card">
           <!-- 中身はJSが自動生成します（TURNOUT_DATAのcurrentに数値が入っている最新日を表示）。手入力は不要です。 -->
@@ -1298,7 +1315,7 @@
       <div id="block-hourly" class="is-feature-hidden">
         <div class="sec-head bulletin-sub-head">
           <div class="kicker">Election Day / Hourly Turnout</div>
-          <h3>投票日 時間別投票状況</h3>
+          <h3>投票日 時間別投票状況<span class="bulletin-current-badge"></span></h3>
           <p>9月13日（日）投票日当日、読谷村全体の投票者数の累計を、9時・10時・11時・14時・16時・18時・19時30分・投票終了後（最終）に公表します。数値は集計でき次第、順次更新します。</p>
         </div>
 
@@ -1340,7 +1357,7 @@
       <div id="block-results" class="is-feature-hidden">
         <div class="sec-head bulletin-sub-head">
           <div class="kicker">Election Night / Vote Count</div>
-          <h3>開票速報</h3>
+          <h3>開票速報<span class="bulletin-current-badge"></span></h3>
           <p>投票日9月13日（日）の開票状況を、21時30分から30分ごとに更新します。掲載する得票数は開票途中の速報値です。<b>当選人の決定は、読谷村選挙管理委員会の公式発表を必ずご確認ください。</b></p>
         </div>
 
@@ -3076,7 +3093,13 @@ function renderTurnout(key){
 
   renderTurnoutTable(key, idx);
   applyTurnoutView();
-  scrollToLatestBar(idx);
+  // 「選挙速報」への統合後（9/13 7:00以降）は、期日前投票の投票率が
+  // ページの一番下に配置されるため、知事選／村議選の切替時に自動で
+  // そこへスクロールさせると使いづらい。統合前（従来の投票率速報単独
+  // ページ）のときだけ、最新日のバーが見えるよう自動スクロールする。
+  if(!electionBulletinVisible()){
+    scrollToLatestBar(idx);
+  }
 }
 
 // ---- 投票率速報：「表で見る」用のテーブル描画 ----
@@ -3242,15 +3265,35 @@ function openTurnoutDetail(key, i){
   }
 })();
 
+// ---- 選挙速報：知事選／村議選のどちらを表示中かを、ページ全体の背景色・
+// カードの縁取り・各見出しのバッジで示す（セクションが縦に長く、
+// switcherが見えない位置までスクロールしても切替がひと目でわかるようにするため） ----
+function applyBulletinTheme(key){
+  try{
+    const section = document.getElementById("turnout");
+    if(!section) return;
+    section.classList.remove("theme-governor", "theme-assembly");
+    section.classList.add(key === "assembly" ? "theme-assembly" : "theme-governor");
+    const label = (ELECTION_DATA[key] && ELECTION_DATA[key].label) ? ELECTION_DATA[key].label : "";
+    document.querySelectorAll("#turnout .bulletin-current-badge").forEach(b=>{
+      b.textContent = label ? (label + "を表示中") : "";
+    });
+  }catch(err){
+    if(window.console && console.error) console.error("applyBulletinTheme failed:", err);
+  }
+}
+
 // グラフ描画でエラーが起きても、ナビ等の初期化が止まらないようtry/catchで保護
 try{
   renderTurnout("governor");
+  applyBulletinTheme("governor");
 
   document.querySelectorAll(".switcher button").forEach(btn=>{
     btn.addEventListener("click", ()=>{
       document.querySelectorAll(".switcher button").forEach(b=>b.classList.remove("active"));
       btn.classList.add("active");
       renderTurnout(btn.dataset.target);
+      applyBulletinTheme(btn.dataset.target);
       // 「選挙速報」統合後は、この1つのswitcherが時間別投票状況・開票速報にも連動する
       try{ if(typeof HOURLY_DATA !== "undefined") renderHourly(btn.dataset.target); }catch(err){
         if(window.console && console.error) console.error("renderHourly on switcher click failed:", err);
