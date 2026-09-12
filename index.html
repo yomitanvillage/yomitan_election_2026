@@ -260,8 +260,15 @@
   .e-card dt{color:var(--ink-soft);font-weight:700;}
   .e-card dd{margin:0;}
 
-  /* ---------- 選挙情報カード内：最新の期日前投票率ミニ表示 ---------- */
+  /* ---------- 選挙情報カード内：最新の期日前投票率／投票日 時間別投票状況 ミニ表示 ----------
+     2つのミニカード（期日前投票の投票率／投票日 時間別投票状況の最新投票率）を
+     並べて表示する。スマホ（760px以下）では窮屈になるため縦積みに切り替える。 */
+  .e-card-turnout-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px;}
+  @media(max-width:760px){
+    .e-card-turnout-row{grid-template-columns:1fr;}
+  }
   .e-card-turnout{background:var(--sand-2);border-radius:14px;padding:14px 16px;margin-top:16px;}
+  .e-card-turnout-row .e-card-turnout{margin-top:0;}
   .e-card-turnout .et-label{font-size:11.5px;color:var(--ink-soft);font-weight:700;}
   .e-card-turnout .et-rate{font-size:30px;font-weight:800;color:var(--sea-dark);line-height:1.2;margin-top:2px;}
   .e-card-turnout .et-rate .et-unit{font-size:16px;font-weight:700;margin-left:1px;}
@@ -270,6 +277,9 @@
   .e-card-turnout .et-diff.down{color:var(--warn);}
   .e-card-turnout .et-link{display:block;margin-top:8px;font-size:12.5px;font-weight:700;color:var(--sea-dark);}
   .e-card-turnout .et-empty{font-size:12.5px;color:var(--ink-soft);}
+  /* 並べたときは文字量が増えるため、幅の狭い2カラム表示のときだけ少し縮める */
+  .e-card-turnout-row .e-card-turnout .et-rate{font-size:24px;}
+  .e-card-turnout-row .e-card-turnout .et-diff{font-size:13px;}
 
   /* ---------- Early voting timeline ----------
      PC・スマホとも常に横長（左にラベル、右に帯グラフ）のレイアウトで統一。
@@ -888,7 +898,10 @@
           <dt>選出</dt><dd>1名</dd>
           <dt>前回</dt><dd>2022年9月執行</dd>
         </dl>
-        <div class="e-card-turnout" id="info-turnout-governor"><!-- JSが自動生成 --></div>
+        <div class="e-card-turnout-row">
+          <div class="e-card-turnout" id="info-turnout-governor"><!-- JSが自動生成 --></div>
+          <div class="e-card-turnout" id="info-hourly-governor"><!-- JSが自動生成 --></div>
+        </div>
         <a class="btn" style="margin-top:14px;" target="_blank" rel="noopener" href="https://www.pref.okinawa.lg.jp/kensei/senkyo/1005009/1023802/1040303/index.html">沖縄県知事選挙 特設サイトへ →</a>
       </div>
       <div class="e-card assembly">
@@ -902,7 +915,10 @@
           <dt>定数</dt><dd>19名</dd>
           <dt>前回</dt><dd>2022年9月執行</dd>
         </dl>
-        <div class="e-card-turnout" id="info-turnout-assembly"><!-- JSが自動生成 --></div>
+        <div class="e-card-turnout-row">
+          <div class="e-card-turnout" id="info-turnout-assembly"><!-- JSが自動生成 --></div>
+          <div class="e-card-turnout" id="info-hourly-assembly"><!-- JSが自動生成 --></div>
+        </div>
         <div class="e-card-actions">
           <a class="btn" href="#candidates">候補者情報を見る →</a>
           <button type="button" class="btn js-open-gazette gazette-toggle is-feature-hidden" id="info-gazette-btn">選挙公報を読む</button>
@@ -3306,6 +3322,52 @@ try{
   renderInfoTurnoutStats();
 }catch(err){
   if(window.console && console.error) console.error("renderInfoTurnoutStats init failed:", err);
+}
+
+/* ---------- 選挙情報カード内：投票日「時間別投票状況」の最新投票率ミニ表示 ----------
+   上の期日前投票の投票率ミニカードと並べて表示する。データはHOURLY_DATA
+   （後段で定義／computeHourlyTotals・latestHourlyIndexは関数宣言のため
+   巻き上げにより、この時点でも呼び出せる）。まだ発表がない場合は
+   et-emptyの案内文のみ表示する。 */
+function renderInfoHourlyStats(){
+  ["governor","assembly"].forEach(key=>{
+    try{
+      const el = document.getElementById("info-hourly-" + key);
+      if(!el) return;
+      const data = HOURLY_DATA[key];
+      if(!data) return;
+      const idx = latestHourlyIndex(key);
+      if(idx === -1){
+        el.innerHTML = '<p class="et-empty">投票日（9/13）の時間別投票状況は、集計開始後にここへ最新の投票率を表示します。</p>';
+        return;
+      }
+      const totals = computeHourlyTotals(key, idx);
+      const label = data.times[idx];
+      el.innerHTML =
+        '<div class="et-label">投票日 時間別投票状況（' + label + '現在）</div>' +
+        '<div class="et-rate">' + (totals && totals.rate !== null ? totals.rate.toFixed(2) : "—") + '<span class="et-unit">%</span></div>' +
+        '<div class="et-diff">投票者数 ' + (totals ? totals.grandTotal.toLocaleString("ja-JP") : "—") + '人</div>' +
+        '<a class="et-link" href="#block-hourly">選挙速報で詳しく見る →</a>';
+      const link = el.querySelector(".et-link");
+      if(link){
+        link.addEventListener("click", ()=>{
+          try{
+            const btn = document.querySelector('#turnout .switcher button[data-target="' + key + '"]');
+            if(btn) btn.click();
+          }catch(err2){
+            if(window.console && console.error) console.error("info hourly link switch failed:", err2);
+          }
+        });
+      }
+    }catch(err){
+      if(window.console && console.error) console.error("renderInfoHourlyStats(" + key + ") failed:", err);
+    }
+  });
+}
+try{
+  renderInfoHourlyStats();
+}catch(err){
+  if(window.console && console.error) console.error("renderInfoHourlyStats init failed:", err);
 }
 
 /* ============================================================
