@@ -2245,9 +2245,11 @@ const HOURLY_DATA = {
      投票率は分けて管理します。期日前投票の投票率は投票率速報（TURNOUT_DATA）
      側の最終日の数値をそのまま使うので、ここには当日分だけを入力してください。
      20時の投票終了後、判明次第 null を実数（例: 52.24）に置き換えてください。
-   ・"completionRate" … 現在の開票率（%）。エクセルの「開票率:」欄の数値を
-     そのまま入力してください（自動計算はしません）。まだ発表されていない
-     うちは null のままにする。
+   ・"completionRates" … 各時刻ごとの開票率（%）。エクセルの「開票率:」欄の
+     数値を、その時刻のdataと同じ位置（インデックス）にそのまま入力して
+     ください（自動計算はしません）。まだ発表されていない時刻は null の
+     ままにする（時刻ごとに区切ることで、投票の得票数と同じ時刻ゲートで
+     公式発表前に表示されないようにしている）。
    ・"times"       … 開票の発表時刻（21:30から1:30まで30分おき）。エクセルの
      列見出しと同じ並びです。開票が長引く場合はRESULTS_TIMESにそのまま時刻を
      追記し、下のdataも同じ数だけ行を追加してください。
@@ -2275,10 +2277,10 @@ const RESULTS_DATA = {
     ],
     seats: 1,
     finalTurnoutRateDay: null,
-    completionRate: null,
+    completionRates: [null, null, 29.96, null, null, null, null, null, null],
     times: RESULTS_TIMES,
     data: [
-      [0,0,0,0,0,0], [0,0,0,0,0,0], emptyResultsRow(6),
+      [0,0,0,0,0,0], [0,0,0,0,0,0], [2900,0,0,3100,0,0],
       emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6),
       emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6)
     ]
@@ -2309,10 +2311,11 @@ const RESULTS_DATA = {
     ],
     seats: 19,
     finalTurnoutRateDay: null,
-    completionRate: null,
+    completionRates: [null, null, 15.97, null, null, null, null, null, null],
     times: RESULTS_TIMES,
     data: [
-      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], emptyResultsRow(20),
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+      [400,0,100,100,200,300,400,600,200,0,0,0,300,200,0,0,200,0,0,0],
       emptyResultsRow(20), emptyResultsRow(20), emptyResultsRow(20),
       emptyResultsRow(20), emptyResultsRow(20), emptyResultsRow(20)
     ]
@@ -3787,6 +3790,18 @@ function computeValidVotesAt(key, idx){
   return row.reduce((sum, v) => sum + (v || 0), 0);
 }
 
+// その時刻現在の開票率を返す（時刻ゲートを通っていない未来分は見せない。
+// 得票数と同じ発表タイミングで数値が来ることを想定し、直近で発表済みの
+// 値まで遡って探す：ある時刻で開票率の発表が無かった場合も直前の値を保持）
+function latestCompletionRate(key, latestIdx){
+  const data = RESULTS_DATA[key];
+  if(!data.completionRates || latestIdx < 0) return null;
+  for(let i = latestIdx; i >= 0; i--){
+    if(data.completionRates[i] !== null && data.completionRates[i] !== undefined) return data.completionRates[i];
+  }
+  return null;
+}
+
 // 開票率（＝エクセルで発表された開票率をそのまま表示。自動計算はしない）
 function renderResultsProgress(key){
   const data = RESULTS_DATA[key];
@@ -3795,8 +3810,8 @@ function renderResultsProgress(key){
   const noteEl = document.getElementById("rs-progress-note");
   if(!valueEl || !fillEl || !noteEl) return;
 
-  const rate = data.completionRate;
   const latestIdx = latestResultsIndex(key);
+  const rate = latestCompletionRate(key, latestIdx);
   const validNow = latestIdx >= 0 ? computeValidVotesAt(key, latestIdx) : null;
 
   if(rate === null || rate === undefined){
