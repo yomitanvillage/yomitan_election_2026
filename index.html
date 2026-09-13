@@ -1184,7 +1184,7 @@
       </div>
     </div>
     <div class="note-box">
-      最新情報は<a href="https://www.vill.yomitan.okinawa.jp/soshiki/senkan/gyomu/senkyo/1191.html" target="_blank" rel="noopener">読谷村公式サイト</a>でもご確認いただけます。期日前投票所は当日投票所とは別会場です。
+      期日前投票所は当日投票所とは別会場です。
     </div>
   </div>
 </section>
@@ -1326,23 +1326,21 @@
             <!-- 現在時点（最新）の男女別・合計・投票率を一目で見せるサマリー -->
             <div class="hr-summary" id="hr-summary"></div>
 
-            <!-- 読谷村全体の時刻別推移：グラフ／表を切替（数値が未発表の時刻も、時刻の枠は常に表示し、数値は「ー」にする） -->
+            <!-- 読谷村全体の時刻別推移：表のみで表示する（グラフ表示は廃止）。
+                 数値が未発表の時刻も、時刻の枠は常に表示し、数値は「ー」にする。
+                 hr-bars/hr-bar-labels/hr-trend-mobileはrenderHourlyTrend()が
+                 内部計算のために参照するため、非表示のままDOMに残している。 -->
             <div class="hr-block-title">読谷村全体の投票者数の推移</div>
-            <div class="view-toggle" id="hr-view-toggle">
-              <button type="button" class="active" data-view="chart">グラフで見る</button>
-              <button type="button" data-view="table">表で見る</button>
-            </div>
 
-            <div class="chart-scroll" id="hr-chart-scroll">
+            <div class="chart-scroll" id="hr-chart-scroll" style="display:none;">
               <div class="chart-inner">
                 <div class="bars" id="hr-bars"></div>
                 <div class="bar-labels" id="hr-bar-labels"></div>
               </div>
             </div>
-            <!-- スマホ表示用：縦積みの横バーリスト（PCでは非表示。投票率速報のturnout-mobileと同じ考え方） -->
-            <div class="hr-trend-mobile" id="hr-trend-mobile"></div>
+            <div class="hr-trend-mobile" id="hr-trend-mobile" style="display:none;"></div>
 
-            <div class="tt-scroll hr-trend-table-wrap" id="hr-trend-table-wrap">
+            <div class="tt-scroll hr-trend-table-wrap" id="hr-trend-table-wrap" style="display:block;">
               <table class="tt-table">
                 <thead><tr><th>時刻</th><th>男</th><th>女</th><th>計</th><th>投票率</th></tr></thead>
                 <tbody id="hr-trend-table-body"></tbody>
@@ -2198,13 +2196,13 @@ function emptyHourlyRow(){
 
 const HOURLY_DATA = {
   governor: {
-    // 投票日（9/13）時点の選挙人名簿登録者数：男15,675人／女16,968人／計32,643人
-    electorsToday: {male:15675, female:16968, total:32643},
+    // 投票日（9/13）時点の選挙人名簿登録者数：男15,764人／女17,072人／計32,836人
+    electorsToday: {male:15764, female:17072, total:32836},
     times: HOURLY_TIMES,
     // data[0]=9:00, data[1]=10:00, data[2]=11:00, data[3]=14:00,
     // data[4]=16:00, data[5]=18:00, data[6]=19:30, data[7]=最終
     data: [
-      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      {male:666, female:450}, emptyHourlyRow(), emptyHourlyRow(),
       emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
       emptyHourlyRow(), emptyHourlyRow()
     ]
@@ -2214,7 +2212,7 @@ const HOURLY_DATA = {
     electorsToday: {male:15675, female:16968, total:32643},
     times: HOURLY_TIMES,
     data: [
-      emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
+      {male:677, female:570}, emptyHourlyRow(), emptyHourlyRow(),
       emptyHourlyRow(), emptyHourlyRow(), emptyHourlyRow(),
       emptyHourlyRow(), emptyHourlyRow()
     ]
@@ -3461,7 +3459,7 @@ function applyElectionBulletinReveal(){
 applyElectionBulletinReveal();
 
 let currentHourlyKey = "governor";
-let hourlyViewMode = "chart"; // "chart" | "table" — 全体推移（合計）の表示切替。election切替をまたいで保持
+let hourlyViewMode = "table"; // グラフ表示は廃止し、常に表のみを表示する
 
 function cellHR(v){
   return (v !== null && v !== undefined) ? v.toLocaleString("ja-JP") : "—";
@@ -3647,13 +3645,7 @@ try{
     renderHourly("governor");
     // 選挙の切替は「選挙速報」統合ページ上部の.switcher（投票率速報と共通）が
     // 担うため、ここに専用の切替ボタンのイベント登録は不要。
-
-    document.querySelectorAll("#hr-view-toggle button").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        hourlyViewMode = btn.dataset.view;
-        applyHourlyView();
-      });
-    });
+    // グラフ／表の切替ボタンは廃止（表のみ表示のため）。
   }
 }catch(err){
   if(window.console && console.error) console.error("renderHourly init failed:", err);
