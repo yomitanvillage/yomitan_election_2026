@@ -2921,8 +2921,61 @@ const ASSEMBLY_EARLY_VOTING_ANNOUNCE_AT = "2026-09-09T06:00:00+09:00"; // 村議
 })();
 
 /* ============================================================
+   新着案内：両選挙（沖縄県知事選挙・読谷村議会議員選挙）とも開票作業が
+   終わったことを自動でお知らせする。
+   ・時刻ではなく、RESULTS_DATA側の実データを見て判定する：両選挙の
+     latestResultsIndex（時刻ゲートを通った最新の発表済み時刻）が、
+     それぞれのtimes配列の最後の要素「最終」を指しているときだけ表示する。
+   ・そのため、開票が終わった時点でこの関数を再度読み込む（このHTMLの
+     次回更新時にページが再読み込みされる）だけで、自動的に表示される。
+   リンク先は選挙速報ページの「開票速報」ブロック（#block-results）。
+   ・上のannounceResultsStart（開票速報が始まりましたのお知らせ）よりも
+     さらにあとに実行し、こちらが一番上に来るようにしている。
+   ============================================================ */
+function isResultsFullyFinal(){
+  try{
+    return ["governor", "assembly"].every(key=>{
+      const data = RESULTS_DATA[key];
+      if(!data || !data.times || !data.times.length) return false;
+      const idx = latestResultsIndex(key);
+      if(idx < 0) return false;
+      return data.times[idx] === "最終";
+    });
+  }catch(err){
+    return false;
+  }
+}
+(function announceResultsFinal(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+    if(!isResultsFullyFinal()) return;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#block-results";
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "news-date";
+    dateSpan.textContent = "9/13";
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "news-title";
+    titleSpan.textContent = "沖縄県知事選挙・読谷村議会議員選挙の開票作業が終わりました";
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "news-arrow";
+    arrowSpan.textContent = "›";
+    a.appendChild(dateSpan);
+    a.appendChild(titleSpan);
+    a.appendChild(arrowSpan);
+    li.appendChild(a);
+    listEl.insertBefore(li, listEl.firstChild);
+  }catch(err){
+    if(window.console && console.error) console.error("announceResultsFinal failed:", err);
+  }
+})();
+
+/* ============================================================
    新着案内：最新3件だけ常に表示し、それより古いものはアコーディオンに
-   たたむ。上の10つのannounce*関数がすべての自動お知らせを挿入し終えた
+   たたむ。上の11つのannounce*関数がすべての自動お知らせを挿入し終えた
    「あと」に実行する必要があるため、このタイミングに置いている。
    ============================================================ */
 (function collapseExtraNewsItems(){
