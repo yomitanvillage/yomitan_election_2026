@@ -1321,6 +1321,8 @@
 
         <div class="chart-card">
           <div class="updated" id="hourly-updated-line"></div>
+          <!-- 中身はJSが自動生成します（HOURLY_DATAのelectorsToday：当日有権者数の男女計） -->
+          <div class="electors-line" id="hourly-electors-line"></div>
 
           <div id="hr-body">
             <!-- 現在時点（最新）の男女別・合計・投票率を一目で見せるサマリー -->
@@ -2122,7 +2124,7 @@ const TURNOUT_DATA = {
     prevElectorsMale: 15900,
     prevElectorsFemale: 16869,
     currentDetail: [
-      {male:887, female:965}, {male:868, female:1075}, {male:899, female:1196}, {male:1247, female:1539}
+      {male:887, female:965}, {male:868, female:1076}, {male:899, female:1196}, {male:1247, female:1539}
     ],
     // 2022年 村議選 期日前投票状況（日別）PDFより（9/7〜9/10、4日分）
     previousDetail: [
@@ -3604,11 +3606,25 @@ function renderHourly(key){
   const latestIdx = latestHourlyIndex(key);
   const bodyEl = document.getElementById("hr-body");
   const updatedLineEl = document.getElementById("hourly-updated-line");
+  const electorsLineEl = document.getElementById("hourly-electors-line");
   const summaryEl = document.getElementById("hr-summary");
 
   // グラフ・表は未発表の時刻も0人・0%の枠として常に表示するため、
   // ここでbr-bodyを隠すことはしない（renderHourlyTrendが常に全時刻分を描画する）。
   if(bodyEl) bodyEl.style.display = "";
+
+  // 当日有権者数（男女計）を表示する
+  if(electorsLineEl){
+    if(data.electorsToday && data.electorsToday.total){
+      const e = data.electorsToday;
+      electorsLineEl.style.display = "";
+      electorsLineEl.innerHTML = "投票日（9/13）時点の選挙人名簿登録者数：<b>" + e.total.toLocaleString("ja-JP") + "人</b>" +
+        "（男" + e.male.toLocaleString("ja-JP") + "人／女" + e.female.toLocaleString("ja-JP") + "人）";
+    }else{
+      electorsLineEl.style.display = "none";
+      electorsLineEl.innerHTML = "";
+    }
+  }
 
   if(latestIdx === -1){
     if(updatedLineEl){
