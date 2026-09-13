@@ -571,8 +571,18 @@
   .rs-name{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:6px;}
   .rs-track{background:#f1ede2;border-radius:6px;height:16px;overflow:hidden;}
   .rs-fill{height:100%;border-radius:6px;background:linear-gradient(90deg,var(--sea) 0%,var(--sea-dark) 100%);transition:width .4s ease;}
-  .rs-votes{flex:0 0 auto;text-align:right;font-size:17px;font-weight:800;color:var(--ink);white-space:nowrap;}
+  /* 得票数の表示幅は固定にする（按分で小数点が付く候補者は文字数が長くなり、
+     flex:0 0 autoのままだと行ごとに.rs-votesの幅が変わって.rs-track（バー）の
+     利用可能幅も行ごとに変わってしまい、同じ得票率でもバーの見た目の長さが
+     揃わなくなるため。固定幅にして常に同じ.rs-track幅になるよう揃える。） */
+  .rs-votes{flex:0 0 96px;text-align:right;font-size:17px;font-weight:800;color:var(--ink);white-space:nowrap;font-variant-numeric:tabular-nums;}
   .rs-votes-unit{font-size:11px;font-weight:700;color:var(--ink-soft);margin-left:2px;}
+  @media(max-width:600px){
+    .rs-votes{flex:0 0 80px;font-size:14.5px;}
+    .rs-votes-unit{font-size:10px;}
+    .rs-badge{flex:0 0 44px;font-size:11px;padding:6px 2px;}
+    .rs-row{gap:8px;padding:12px 10px;}
+  }
   .rs-seat-divider{
     display:flex;align-items:center;gap:10px;margin:2px 0;font-size:11.5px;color:var(--ink-soft);font-weight:700;
   }
