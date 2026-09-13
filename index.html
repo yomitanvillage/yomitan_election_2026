@@ -2276,13 +2276,17 @@ const RESULTS_DATA = {
       {order:6, name:"屋良朝助"}
     ],
     seats: 1,
-    finalTurnoutRateDay: null,
-    completionRates: [null, null, 29.96, 64.91, 94.37, null, null, null, null],
-    times: RESULTS_TIMES,
+    // 開票率100%（確定）により、投票日の投票率速報の「最終」値（30.36%）を確定値として採用
+    finalTurnoutRateDay: 30.36,
+    completionRates: [null, null, 29.96, 64.91, 94.37, 100],
+    // 開票率が21:30〜23:30の集計中に100%に達したため、最後の枠は「最終」（確定）とし、
+    // 0:00以降の枠は用意しない（村議会議員選挙はまだ確定していないため、共通の
+    // RESULTS_TIMESではなく、知事選専用のtimes配列に切り替えている）
+    times: ["21:30","22:00","22:30","23:00","23:30","最終"],
     data: [
       [0,0,0,0,0,0], [0,0,0,0,0,0], [2900,0,0,3100,0,0], [6000,0,0,7000,0,0],
       [10500,100,0,8200,100,0],
-      emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6)
+      [10861,173,47,8508,191,92]
     ]
   },
   assembly: {
