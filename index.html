@@ -488,6 +488,8 @@
   .tt-table tbody tr:last-child td{border-bottom:none;}
   .tt-table tbody tr.is-empty td{color:var(--ink-soft);}
   .tt-table tbody tr.is-latest td{background:#fff6e6;font-weight:800;}
+  /* 開票速報の表（候補者×時刻）：最新時刻の列を縦に強調表示する */
+  .tt-table th.is-latest-col, .tt-table td.is-latest-col{background:#fff6e6;font-weight:800;}
   /* 「当日合計」「日別累計」は列見出しの中で最も横幅を取るため、
      狭い画面では短縮表示（tt-short）に切り替えて横スクロールを避ける。
      日付列の曜日（(金)など）も、狭い画面では省いて幅を詰める。 */
@@ -2265,7 +2267,7 @@ const RESULTS_DATA = {
     completionRate: null,
     times: RESULTS_TIMES,
     data: [
-      emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6),
+      [0,0,0,0,0,0], emptyResultsRow(6), emptyResultsRow(6),
       emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6),
       emptyResultsRow(6), emptyResultsRow(6), emptyResultsRow(6)
     ]
@@ -2299,7 +2301,7 @@ const RESULTS_DATA = {
     completionRate: null,
     times: RESULTS_TIMES,
     data: [
-      emptyResultsRow(20), emptyResultsRow(20), emptyResultsRow(20),
+      [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0], emptyResultsRow(20), emptyResultsRow(20),
       emptyResultsRow(20), emptyResultsRow(20), emptyResultsRow(20),
       emptyResultsRow(20), emptyResultsRow(20), emptyResultsRow(20)
     ]
@@ -3679,19 +3681,56 @@ function fmtVotes(v){
   return (v !== null && v !== undefined) ? v.toLocaleString("ja-JP") : "—";
 }
 
+// 開票速報：エクセルの数値はその時刻の公式発表前に準備しておけるようにする一方、
+// 実際にその時刻を迎える前にサイト上へ表示されてしまわないよう、RESULTS_TIMESの
+// 各時刻ラベルが実際の時計でその時刻を過ぎるまでは「まだ未発表」として扱う
+// （21:30〜23:30は投票日＝9/13、0:00〜1:30は日付が変わった翌未明＝9/14）。
+// ?preview=bulletin のときだけ、確認のため時刻を待たずに表示できる。
+function resultsSlotDateTime(label){
+  const m = String(label).match(/^(\d{1,2}):(\d{2})$/);
+  if(!m) return null;
+  const hour = parseInt(m[1], 10);
+  const min = parseInt(m[2], 10);
+  const day = hour < 21 ? "2026-09-14" : "2026-09-13";
+  const hh = String(hour).padStart(2, "0");
+  const mm = String(min).padStart(2, "0");
+  try{ return new Date(day + "T" + hh + ":" + mm + ":00+09:00"); }catch(err){ return null; }
+}
+function isResultsSlotRevealed(key, idx){
+  try{
+    if(typeof previewIncludes === "function" && previewIncludes("bulletin")) return true;
+    const data = RESULTS_DATA[key];
+    const label = data && data.times ? data.times[idx] : null;
+    if(!label) return true;
+    const t = resultsSlotDateTime(label);
+    if(!t) return true;
+    return new Date() >= t;
+  }catch(err){
+    return true;
+  }
+}
+// 時刻ゲートを通した行データを返す（未来の時刻分はまだ入力済みでも null 扱いにする）
+function resultsRowAt(key, idx){
+  const data = RESULTS_DATA[key];
+  const row = data && data.data ? data.data[idx] : null;
+  if(!row) return null;
+  if(!isResultsSlotRevealed(key, idx)) return null;
+  return row;
+}
+
 function latestResultsIndex(key){
   const data = RESULTS_DATA[key];
   if(!data || !data.data) return -1;
   for(let i = data.data.length - 1; i >= 0; i--){
-    if(data.data[i] && data.data[i].some(v => v !== null)) return i;
+    const row = resultsRowAt(key, i);
+    if(row && row.some(v => v !== null)) return i;
   }
   return -1;
 }
 
 // その時刻現在の、候補者得票数の合計（＝有効投票数の参考値）を算出
 function computeValidVotesAt(key, idx){
-  const data = RESULTS_DATA[key];
-  const row = data && data.data ? data.data[idx] : null;
+  const row = resultsRowAt(key, idx);
   if(!row || !row.some(v => v !== null)) return null;
   return row.reduce((sum, v) => sum + (v || 0), 0);
 }
@@ -3764,7 +3803,7 @@ function renderLeaderboard(key, idx){
   if(!wrap) return;
   const data = RESULTS_DATA[key];
   const cands = data.candidates;
-  const votesRow = data.data[idx] || [];
+  const votesRow = resultsRowAt(key, idx) || [];
   const hasVotes = votesRow.some(v => v !== null);
   const label = data.times[idx];
 
@@ -3820,7 +3859,7 @@ function renderLeaderboard(key, idx){
   wrap.innerHTML = rowsHTML.join("");
 }
 
-// 全時刻×全候補（届出順固定）の一覧表を描画
+// 全候補（届出順固定）×全時刻の一覧表を描画（縦：候補者、横：時刻）
 function renderResultsTrendTable(key){
   const data = RESULTS_DATA[key];
   const theadRow = document.getElementById("rs-trend-table-head");
@@ -3828,21 +3867,34 @@ function renderResultsTrendTable(key){
   if(!theadRow || !tbody) return;
 
   const orderedCands = data.candidates.map((c, i)=>({...c, origIndex:i})).sort((a, b)=> a.order - b.order);
-  theadRow.innerHTML = "<th>時刻</th><th>得票数合計</th>" + orderedCands.map(c => "<th>" + c.name + "</th>").join("");
-
   const latestIdx = latestResultsIndex(key);
-  tbody.innerHTML = data.times.map((label, i)=>{
-    const validAt = computeValidVotesAt(key, i);
-    const hasData = validAt !== null;
-    const rowVotes = data.data[i] || [];
-    const cls = !hasData ? "is-empty" : (i === latestIdx ? "is-latest" : "");
-    const vv = hasData ? fmtVotes(validAt) : "—";
-    const cells = orderedCands.map(c=>{
-      const v = rowVotes[c.origIndex];
-      return "<td>" + (hasData ? fmtVotes(v) : "—") + "</td>";
+
+  // ヘッダー行：候補者列＋各時刻（最新時刻の列を強調）
+  theadRow.innerHTML = "<th>候補者</th>" + data.times.map((label, i) =>
+    "<th class=\"" + (i === latestIdx ? "is-latest-col" : "") + "\">" + label + "</th>"
+  ).join("");
+
+  // 候補者ごとに1行、列は時刻順（まだその時刻を迎えていない／未発表の時刻は「ー」）
+  const candRows = orderedCands.map(c=>{
+    const cells = data.times.map((label, i)=>{
+      const row = resultsRowAt(key, i);
+      const hasData = row !== null;
+      const v = hasData ? row[c.origIndex] : null;
+      const cls = i === latestIdx ? "is-latest-col" : "";
+      return "<td class=\"" + cls + "\">" + (hasData ? fmtVotes(v) : "—") + "</td>";
     }).join("");
-    return '<tr class="' + cls + '"><td>' + label + '</td><td>' + vv + '</td>' + cells + '</tr>';
+    return '<tr><td>' + c.name + '</td>' + cells + '</tr>';
   }).join("");
+
+  // 最終行：候補者得票数合計（＝有効投票数の参考値）を時刻ごとに表示
+  const totalCells = data.times.map((label, i)=>{
+    const validAt = computeValidVotesAt(key, i);
+    const cls = i === latestIdx ? "is-latest-col" : "";
+    return "<td class=\"" + cls + "\">" + (validAt !== null ? fmtVotes(validAt) : "—") + "</td>";
+  }).join("");
+  const totalRow = '<tr class="is-total"><td>得票数合計</td>' + totalCells + '</tr>';
+
+  tbody.innerHTML = candRows + totalRow;
 }
 
 // 時刻チップ＋現在表示中の時刻ラベル＋リーダーボードをまとめて更新
