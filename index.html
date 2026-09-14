@@ -1395,6 +1395,10 @@
           </div>
 
           <div id="rs-body">
+            <!-- 中身はJSが自動生成します（沖縄県知事選挙のときだけ「読谷村開票区」である
+                 ことを明記する。村議会議員選挙は元々読谷村のみの選挙のため非表示にする） -->
+            <div class="note-box" id="results-district-note" style="display:none;margin:0 0 18px;"></div>
+
             <div class="rs-progress" id="rs-progress">
               <div class="rs-progress-head">
                 <span class="rs-progress-title">開票率</span>
@@ -4003,6 +4007,20 @@ function renderResultsFinalStats(key){
     '<div class="hr-summary-card"><div class="label">' + validLabel + '</div><div class="value">' + validText + '</div></div>';
 }
 
+// 沖縄県知事選挙は県内の市町村ごとの開票区で開票されるため、このページに載せているのが
+// 「読谷村開票区」の速報値であることを明記する（村議会議員選挙は元々読谷村のみの選挙のため不要）
+function renderResultsDistrictNote(key){
+  const el = document.getElementById("results-district-note");
+  if(!el) return;
+  if(key === "governor"){
+    el.textContent = "沖縄県知事選挙は、県内の市町村ごとに設置される開票区で開票されます。このページに掲載しているのは読谷村開票区（読谷村内）の開票速報であり、沖縄県全体の開票結果ではありません。";
+    el.style.display = "block";
+  }else{
+    el.textContent = "";
+    el.style.display = "none";
+  }
+}
+
 // 当選確定バナー：winnersConfirmedがtrue、かつ最新時刻が「最終」のときだけ表示する
 // （まだ集計途中の速報値の段階で当選を示唆してしまわないようにするため）
 function renderElectedBanner(key){
@@ -4230,6 +4248,7 @@ function renderResults(key){
     updatedLineEl.innerHTML = "最終更新：<b>" + data.times[latestIdx] + "時点</b>（開票途中の速報値）";
   }
 
+  renderResultsDistrictNote(key);
   renderResultsProgress(key);
   renderResultsFinalStats(key);
   renderElectedBanner(key);
