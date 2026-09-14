@@ -558,10 +558,20 @@
   }
   .rs-sort-toggle button.active{background:var(--sea-dark);border-color:var(--sea-dark);color:#fff;}
   .rs-current-label{margin:0 0 10px;font-size:12.5px;color:var(--ink-soft);font-weight:700;}
+  /* 当選確定バナー（法定得票数を満たした上位定数名の当選が確認できたときのみ表示） */
+  .rs-elected-banner{
+    display:flex;align-items:center;gap:10px;background:#eafbf2;border:1.5px solid var(--good);
+    border-radius:14px;padding:14px 16px;margin:0 0 16px;font-size:13.5px;font-weight:800;color:#1c7a4d;
+  }
   .rs-leaderboard{display:flex;flex-direction:column;gap:10px;}
   .rs-row{
     display:flex;align-items:center;gap:12px;padding:12px 14px;
     border:1px solid var(--line);border-radius:14px;background:#fff;
+  }
+  .rs-row.is-elected{border-color:var(--good);background:#f3fbf6;}
+  .rs-elected-tag{
+    display:inline-block;font-size:10.5px;font-weight:800;color:#fff;background:var(--good);
+    border-radius:999px;padding:2px 9px;margin-left:8px;vertical-align:1px;
   }
   .rs-badge{
     flex:0 0 52px;text-align:center;font-size:12px;font-weight:800;color:var(--sea-dark);
@@ -1397,6 +1407,10 @@
             <div class="hr-summary" id="rs-final-stats"></div>
 
             <div class="updated" id="results-updated-line"></div>
+
+            <!-- 中身はJSが自動生成します（該当選挙のwinnersConfirmedがtrue、かつ
+                 最新時刻が「最終」のときだけ表示） -->
+            <div class="rs-elected-banner" id="rs-elected-banner" style="display:none;"></div>
 
             <div class="rs-toolbar">
               <div class="rs-sort-toggle" id="rs-sort-toggle">
@@ -2324,6 +2338,9 @@ const RESULTS_DATA = {
       {order:20, name:"オオノ隆志"}
     ],
     seats: 19,
+    // 法定得票数を満たしていることを確認し、得票上位19名の当選が確認できたため true にしている。
+    // これがtrueかつ最新時刻が「最終」の場合のみ、当選確定バナーと各候補の「当選」表示を出す。
+    winnersConfirmed: true,
     // 開票率100%（確定）により、投票日の投票率速報の「最終」値（30.97%）を確定値として採用
     finalTurnoutRateDay: 30.97,
     completionRates: [null, null, 15.97, 63.87, 95.73, 100],
@@ -2984,8 +3001,55 @@ function isResultsFullyFinal(){
 })();
 
 /* ============================================================
+   新着案内：読谷村議会議員選挙の当選確認
+   RESULTS_DATA.assembly.winnersConfirmedがtrue、かつ開票が「最終」まで
+   終わっている場合のみお知らせを出す。announceResultsFinal（開票作業が
+   終わりました）よりもさらにあとに実行し、こちらが一番上に来るようにする。
+   ============================================================ */
+(function announceAssemblyWinnersConfirmed(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+    const data = RESULTS_DATA && RESULTS_DATA.assembly;
+    if(!data || !data.winnersConfirmed) return;
+    const idx = latestResultsIndex("assembly");
+    if(idx < 0 || data.times[idx] !== "最終") return;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#block-results";
+    // クリック時に「読谷村議会議員選挙」タブへ切り替える
+    // （投票率速報の開始お知らせ＝addTurnoutStartAnnouncementと同じやり方）
+    a.addEventListener("click", ()=>{
+      try{
+        const btn = document.querySelector('#turnout .switcher button[data-target="assembly"]');
+        if(btn) btn.click();
+      }catch(err){
+        if(window.console && console.error) console.error("assembly switch on news click failed:", err);
+      }
+    });
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "news-date";
+    dateSpan.textContent = "9/14";
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "news-title";
+    titleSpan.textContent = "読谷村議会議員選挙の当選人（上位19名）が確認されました";
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "news-arrow";
+    arrowSpan.textContent = "›";
+    a.appendChild(dateSpan);
+    a.appendChild(titleSpan);
+    a.appendChild(arrowSpan);
+    li.appendChild(a);
+    listEl.insertBefore(li, listEl.firstChild);
+  }catch(err){
+    if(window.console && console.error) console.error("announceAssemblyWinnersConfirmed failed:", err);
+  }
+})();
+
+/* ============================================================
    新着案内：最新3件だけ常に表示し、それより古いものはアコーディオンに
-   たたむ。上の11つのannounce*関数がすべての自動お知らせを挿入し終えた
+   たたむ。上の12つのannounce*関数がすべての自動お知らせを挿入し終えた
    「あと」に実行する必要があるため、このタイミングに置いている。
    ============================================================ */
 (function collapseExtraNewsItems(){
@@ -3939,6 +4003,25 @@ function renderResultsFinalStats(key){
     '<div class="hr-summary-card"><div class="label">' + validLabel + '</div><div class="value">' + validText + '</div></div>';
 }
 
+// 当選確定バナー：winnersConfirmedがtrue、かつ最新時刻が「最終」のときだけ表示する
+// （まだ集計途中の速報値の段階で当選を示唆してしまわないようにするため）
+function renderElectedBanner(key){
+  const el = document.getElementById("rs-elected-banner");
+  if(!el) return;
+  const data = RESULTS_DATA[key];
+  const latestIdx = latestResultsIndex(key);
+  const isFinal = latestIdx >= 0 && data.times[latestIdx] === "最終";
+  if(data && data.winnersConfirmed && isFinal){
+    const electionLabel = key === "assembly" ? "読谷村議会議員選挙" : "沖縄県知事選挙";
+    el.innerHTML =
+      '<span>' + electionLabel + 'は、法定得票数を満たした上位' + data.seats + '名の当選が確認されました。</span>';
+    el.style.display = "flex";
+  }else{
+    el.innerHTML = "";
+    el.style.display = "none";
+  }
+}
+
 // 得票数リーダーボード（候補者ごとの横バー）を描画。並び順トグル（届出順／得票数順）に従う。
 function renderLeaderboard(key, idx){
   const wrap = document.getElementById("rs-leaderboard");
@@ -3973,6 +4056,25 @@ function renderLeaderboard(key, idx){
 
   const maxVotes = Math.max(...items.map(it => it.votes || 0), 1);
 
+  // 当選が確認済み（winnersConfirmed）かつ、表示中の時刻が最新の確定結果（「最終」）のときだけ、
+  // 得票数上位（定数分）の候補に「当選」タグを付ける。過去時刻のスナップショット表示中は
+  // 誤解を避けるため付けない。同数得票（同順位）は同じ扱いで判定する。
+  const isFinalConfirmedView = !!data.winnersConfirmed && idx === latestResultsIndex(key);
+  let electedOrders = null;
+  if(isFinalConfirmedView){
+    electedOrders = new Set();
+    const byVotesDesc = items.slice().sort((a, b)=>{
+      const av = a.votes === null ? -1 : a.votes;
+      const bv = b.votes === null ? -1 : b.votes;
+      return bv - av;
+    });
+    let r = 0, prev = null;
+    byVotesDesc.forEach((it, pos)=>{
+      if(it.votes !== prev){ r = pos + 1; prev = it.votes; }
+      if(r <= data.seats) electedOrders.add(it.order);
+    });
+  }
+
   let rank = 0, prevVotes = null;
   const rowsHTML = ordered.map((it, pos)=>{
     let badge;
@@ -3983,10 +4085,11 @@ function renderLeaderboard(key, idx){
       badge = "届出" + it.order + "番";
     }
     const pct = it.votes ? (it.votes / maxVotes * 100) : 0;
-    return '<div class="rs-row">' +
+    const isElected = electedOrders && electedOrders.has(it.order);
+    return '<div class="rs-row' + (isElected ? ' is-elected' : '') + '">' +
       '<div class="rs-badge">' + badge + '</div>' +
       '<div class="rs-info">' +
-        '<div class="rs-name">' + it.name + '</div>' +
+        '<div class="rs-name">' + it.name + (isElected ? '<span class="rs-elected-tag">当選</span>' : '') + '</div>' +
         '<div class="rs-track"><div class="rs-fill" style="width:' + pct + '%"></div></div>' +
       '</div>' +
       '<div class="rs-votes">' + fmtVotes(it.votes) + '<span class="rs-votes-unit">票</span></div>' +
@@ -4129,6 +4232,7 @@ function renderResults(key){
 
   renderResultsProgress(key);
   renderResultsFinalStats(key);
+  renderElectedBanner(key);
   renderResultsSnapshot(key);
   applyResultsView();
 }
