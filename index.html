@@ -3052,8 +3052,41 @@ function isResultsFullyFinal(){
 })();
 
 /* ============================================================
+   新着案内：特設サイトの閉鎖予告
+   選挙結果の確認がすべて終わったあと、サイト閉鎖の告知として一度だけ
+   新着案内に追加する。上のannounceAssemblyWinnersConfirmedよりもさらに
+   あとに実行し、こちらが一番上に来るようにしている。
+   ============================================================ */
+(function announceSiteClosing(){
+  try{
+    const listEl = document.getElementById("news-list");
+    if(!listEl) return;
+
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.href = "#info";
+    const dateSpan = document.createElement("span");
+    dateSpan.className = "news-date";
+    dateSpan.textContent = "9/24";
+    const titleSpan = document.createElement("span");
+    titleSpan.className = "news-title";
+    titleSpan.textContent = "本特設サイトは9月30日をもって閉鎖します";
+    const arrowSpan = document.createElement("span");
+    arrowSpan.className = "news-arrow";
+    arrowSpan.textContent = "›";
+    a.appendChild(dateSpan);
+    a.appendChild(titleSpan);
+    a.appendChild(arrowSpan);
+    li.appendChild(a);
+    listEl.insertBefore(li, listEl.firstChild);
+  }catch(err){
+    if(window.console && console.error) console.error("announceSiteClosing failed:", err);
+  }
+})();
+
+/* ============================================================
    新着案内：最新3件だけ常に表示し、それより古いものはアコーディオンに
-   たたむ。上の12つのannounce*関数がすべての自動お知らせを挿入し終えた
+   たたむ。上の13つのannounce*関数がすべての自動お知らせを挿入し終えた
    「あと」に実行する必要があるため、このタイミングに置いている。
    ============================================================ */
 (function collapseExtraNewsItems(){
